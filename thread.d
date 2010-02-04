@@ -31,13 +31,28 @@ export rawRunSequence(localInterpState:threadLocalInterp,ec:exprCell):void := (
 
       stdout << "test" << endl;
       a := ec.e;
+      test:= Sequence(a,a,a);
       when a is seq:Sequence do (
-       	    if length(seq)==2 then (
+       	    if length(seq)!=2 then 
+	    (
+	    return;
+	    );
+	    arg := seq.1;
+	    when arg is argSeq:Sequence do (
+	       stdout << "CASE1" << endl;
+	       applyES(localInterpState,seq.0 , argSeq);
+	    )
+	    else
+	    (
+	       stdout << "CASE2" << endl;
        	       applyEE(localInterpState,seq.0 ,seq.1);
-
             );
       )
-      else (nullE;)
+      else 
+      (
+          stdout << "ELSECASE" << endl;
+      );
+      stdout << "Done applying" << endl;
 );
 --setupfun("rawRunSequence",rawRunSequence);
 

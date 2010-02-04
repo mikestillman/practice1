@@ -23,6 +23,7 @@ protected:
   const int m_ThreadId;
   pthread_t m_Thread;
   M2ThreadPool* const m_ThreadPool;
+  struct M2TaskStruct* m_CurrentTask;
   struct threadLocalInterp* m_ThreadLocalInterp;
 };
 

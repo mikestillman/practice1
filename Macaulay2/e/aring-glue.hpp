@@ -13,15 +13,15 @@ namespace M2 {
     @ingroup rings
 */
   template <class RingType>
-  class RingWrap : public Ring
+  class ConcreteRing : public Ring
   {
     const RingType *R;
-    RingWrap(const RingType *R0) : R(R0) {}
-    virtual ~RingWrap() {}
+    ConcreteRing(const RingType *R0) : R(R0) {}
+    virtual ~ConcreteRing() {}
   public:
     typedef typename RingType::ElementType ElementType;
 
-    static RingWrap<RingType> * create(const RingType *R);
+    static ConcreteRing<RingType> * create(const RingType *R);
 
     //  Z_mod * cast_to_Z_mod() { return this; }
     //  const Z_mod * cast_to_Z_mod() const { return this; }

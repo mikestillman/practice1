@@ -15,7 +15,7 @@ const Ring /* or null */ *rawARingZZp(int p)
       return 0;
     }
   M2::ARingZZp *A = new M2::ARingZZp(p);
-  return M2::RingWrap<M2::ARingZZp>::create(A);
+  return M2::ConcreteRing<M2::ARingZZp>::create(A);
 }
 
 
@@ -51,10 +51,10 @@ const Ring /* or null */ *rawARingGaloisField(int prime, int dimension)
         if (dimension==1 && M2::ARingFFPACK::getMaxModulus()> prime) 
         {
           M2::ARingFFPACK *A = new M2::ARingFFPACK(prime);
-          return M2::RingWrap<M2::ARingFFPACK>::create(A);
+          return M2::ConcreteRing<M2::ARingFFPACK>::create(A);
         }
         M2::ARingGF *A = new M2::ARingGF(prime,dimension);
-        return M2::RingWrap<M2::ARingGF>::create(A);
+        return M2::ConcreteRing<M2::ARingGF>::create(A);
 #else
        ERROR("add --enable-fflas-ffpack --enable-givaro when building M2");
        return 0;

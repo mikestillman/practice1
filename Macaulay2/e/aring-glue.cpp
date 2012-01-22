@@ -9,9 +9,9 @@ namespace M2 {
 
 
   template<class RingType>
-  RingWrap<RingType> * RingWrap<RingType>::create(const RingType *R)
+  ConcreteRing<RingType> * ConcreteRing<RingType>::create(const RingType *R)
   {
-    RingWrap<RingType> *result = new RingWrap<RingType>(R);
+    ConcreteRing<RingType> *result = new ConcreteRing<RingType>(R);
     result->initialize_ring(R->characteristic());
     result->declare_field();
 
@@ -24,19 +24,19 @@ namespace M2 {
 
 
   //explicit instantiation
- template class RingWrap< ARingZZp >;
+ template class ConcreteRing< ARingZZp >;
 
 #if defined(HAVE_FFLAS_FFPACK) && defined(HAVE_GIVARO)
 
   //explicit instantiation
- template class RingWrap< ARingGF >;
+ template class ConcreteRing< ARingGF >;
  
 #endif
 #if defined(HAVE_FFLAS_FFPACK)  
 
   //explicit instantiation
  
- template class RingWrap< ARingFFPACK >;
+ template class ConcreteRing< ARingFFPACK >;
 #endif
 
 

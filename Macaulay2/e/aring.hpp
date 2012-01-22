@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#define RING(T,A) static_cast<const RingWrap<T> *>(A)->R_
+#define RING(T,A) static_cast<const ConcreteRing<T> *>(A)->R_
 #define RELEM(T,a) static_cast<RElementWrap<T> &>(a).val_
 #define constRELEM(T,a) static_cast<const RElementWrap<T> &>(a).val_
 
@@ -18,12 +18,12 @@ namespace M2 {
 /**
 \ingroup rings
 */
-  class RingInterface {}; ///< inherit from this if the class is to be used as a template parameter for RingWrap
+  class RingInterface {}; ///< inherit from this if the class is to be used as a template parameter for ConcreteRing
 
 /**
 \ingroup rings
 */
-  class PolynomialRingInterface {}; ///< inherit from this if the class is to be used as a template param for PolynomialRingWrap
+  class PolynomialRingInterface {}; ///< inherit from this if the class is to be used as a template param for PolynomialConcreteRing
   class UserObject {};
 
 /**
@@ -41,7 +41,7 @@ namespace M2 {
     ring_top = 8 ///< used to determine the number of ring types
   };
 
-  template <class RingType> class ARingWrap;
+  template <class RingType> class AConcreteRing;
 
 
   class RElement
@@ -60,7 +60,7 @@ namespace M2 {
   {
   public:
     template<class RingType>
-    const ARingWrap<RingType> * cast_to_ARingWrap() const { return dynamic_cast< const ARingWrap<RingType> * >(this) ; }
+    const AConcreteRing<RingType> * cast_to_AConcreteRing() const { return dynamic_cast< const AConcreteRing<RingType> * >(this) ; }
     // result will be either 0, or this.
 
     virtual RingID getRingID() const = 0;

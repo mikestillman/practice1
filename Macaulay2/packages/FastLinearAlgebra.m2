@@ -19,6 +19,8 @@ newPackage(
 
 -- also: rank, det, solve
 export {
+   ARing,
+   ZZp,
    testDivide,
     testAdd,
     testNegate,
@@ -46,6 +48,40 @@ export {
      }
 
 debug Core
+
+savedZZpQuotients := new MutableHashTable
+
+ZZp = method(Options=> {ARing => true})
+ZZp Ideal := opts -> (I) -> (
+     gensI := generators I;
+     if ring gensI =!= ZZ then error "expected an ideal of ZZ";
+     n := gcd flatten entries gensI;
+     if n < 0 then n = -n;
+     if n === 0 then ZZ
+     else if savedZZpQuotients#?n 
+     then savedZZpQuotients#n
+     else (
+	  --if n > 32767 then error "large characteristics not implemented yet";
+	  if n > 1 and not isPrime n
+	  then error "ZZ/n not implemented yet for composite n";
+	  S := new QuotientRing from 
+	    if opts.ARing then rawARingZZp n else rawZZp n;
+	  S.cache = new CacheTable;
+	  S.isBasic = true;
+	  S.ideal = I;
+	  S.baseRings = {ZZ};
+     	  commonEngineRingInitializations S;
+	  S.relations = gensI;
+	  S.isCommutative = true;
+	  S.presentation = matrix{{n}};
+	  S.order = S.char = n;
+	  S.dim = 0;					    -- n != 0 and n!= 1
+	  expression S := x -> expression raw x;
+	  fraction(S,S) := S / S := (x,y) -> x//y;
+	  S.frac = S;		  -- ZZ/n with n PRIME!
+	  savedZZpQuotients#n = S;
+	  --lift(S,QQ) := opts -> liftZZmodQQ;
+	  S))
 
 isPrimeField = method()
 isPrimeField Ring := (R) -> (
@@ -538,8 +574,10 @@ det D
 
 restart
 loadPackage "FastLinearAlgebra"
-
-
+kk = ZZp (ideal 19)
+3_kk  -- printing is wrong here
+matrix{{3_kk}}
+matrix {for i from 0 to 30 list i_kk}
 
 -- TODO:
 --   top level M2 package (this file): calls the rawFFPack routines

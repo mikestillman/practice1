@@ -26,7 +26,7 @@ namespace M2 {
     @brief wrapper for the  FFPACK::ModularBalanced<double>   field implementation
 */
   
-  class ARingFFPACK : RingInterface
+  class ARingZZpFFPACK : RingInterface
   {
 
 
@@ -47,7 +47,7 @@ namespace M2 {
 
 
    // @todo: problem, wenn typ von cHarakteristif 
-    ARingFFPACK( UTT charac_);
+    ARingZZpFFPACK( UTT charac_);
 
   private:
    mutable  FieldType::RandIter     ffpackRandomIterator;
@@ -175,6 +175,12 @@ namespace M2 {
 
             void random(ElementType &result) const;
     /** @} */
+
+    bool promote(const Ring *S, const ring_elem f, ElementType &result) const
+    {
+      //TODO: write me.
+      return false;
+    }
      
     static inline double getMaxModulus() 
     {

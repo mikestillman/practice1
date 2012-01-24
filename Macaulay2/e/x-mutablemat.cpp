@@ -14,7 +14,6 @@
 #include "exceptions.hpp"
 
 #include "matrix.hpp"
-#include "ring-test.hpp"
 
 MutableMatrix * IM2_MutableMatrix_identity(const Ring *R,
                                                  int n,

@@ -10,7 +10,6 @@ INTERFACE = \
 	aring-zzp \
 	aring-gf \
 	aring-ffpack \
-	aring-wrap \
 	aring \
 	schurSn \
 	schur2 \

@@ -3,28 +3,27 @@
 #ifndef _aring_hpp_
 #define _aring_hpp_
 
-#include <vector>
+#ifdef DEBUG
+#include <cassert>
+#define ASSERT(X) assert(X);
+#define IF_DEBUG(X) X
+#else
+#define ASSERT(X)
+#define IF_DEBUG(X)
+#endif
 
+#if 0
 #define RING(T,A) static_cast<const ConcreteRing<T> *>(A)->R_
 #define RELEM(T,a) static_cast<RElementWrap<T> &>(a).val_
 #define constRELEM(T,a) static_cast<const RElementWrap<T> &>(a).val_
+#endif
+
 
 namespace M2 {
 
   ////////////////////////////////////////////////////////
   // Programming level interfaces ////////////////////////
   ////////////////////////////////////////////////////////
-
-/**
-\ingroup rings
-*/
-  class RingInterface {}; ///< inherit from this if the class is to be used as a template parameter for ConcreteRing
-
-/**
-\ingroup rings
-*/
-  class PolynomialRingInterface {}; ///< inherit from this if the class is to be used as a template param for PolynomialConcreteRing
-  class UserObject {};
 
 /**
 \ingroup rings
@@ -38,8 +37,21 @@ namespace M2 {
     ring_FFPACK,
     ring_RRR,
     ring_CCC,
+    ring_old,  ///< refers to all rings which are not ConcreteRing's.
     ring_top = 8 ///< used to determine the number of ring types
   };
+
+/**
+\ingroup rings
+*/
+  class RingInterface {}; ///< inherit from this if the class is to be used as a template parameter for ConcreteRing
+
+/**
+\ingroup rings
+*/
+  class PolynomialRingInterface {}; ///< inherit from this if the class is to be used as a template param for PolynomialConcreteRing
+  class UserObject {};
+
 
   template <class RingType> class AConcreteRing;
 

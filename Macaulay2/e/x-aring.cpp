@@ -48,10 +48,10 @@ const Ring /* or null */ *rawARingGaloisField(int prime, int dimension)
             ERROR("givaro Galois Field: polynomial representation is needed  - todo ");
             return 0;
         }*/
-        if (dimension==1 && M2::ARingFFPACK::getMaxModulus()> prime) 
+        if (dimension==1 && M2::ARingZZpFFPACK::getMaxModulus()> prime) 
         {
-          M2::ARingFFPACK *A = new M2::ARingFFPACK(prime);
-          return M2::ConcreteRing<M2::ARingFFPACK>::create(A);
+          M2::ARingZZpFFPACK *A = new M2::ARingZZpFFPACK(prime);
+          return M2::ConcreteRing<M2::ARingZZpFFPACK>::create(A);
         }
         M2::ARingGF *A = new M2::ARingGF(prime,dimension);
         return M2::ConcreteRing<M2::ARingGF>::create(A);

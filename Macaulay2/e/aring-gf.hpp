@@ -170,6 +170,14 @@ namespace M2 {
 
             void random(ElementType &result) const;
     /** @} */
+
+
+    bool promote(const Ring *S, const ring_elem f, ElementType &result) const
+    {
+      //TODO: write me.
+      return false;
+    }
+
   };
 
 };

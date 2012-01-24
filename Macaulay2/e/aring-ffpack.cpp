@@ -10,7 +10,7 @@ namespace M2 {
 
 
 
-  ARingFFPACK::ARingFFPACK(	 UTT charact_ )  :   charac(charact_),
+  ARingZZpFFPACK::ARingZZpFFPACK(	 UTT charact_ )  :   charac(charact_),
                                         dimension(1),
                                         ffpackField( FieldType((double)charact_) ),
                                         ffpackRandomIterator(ffpackField),
@@ -20,7 +20,7 @@ namespace M2 {
   }
  
 /// @mike correct output : print generator variable of the ring instead of 'X', whatever generator variable will be 
-        void ARingFFPACK::elem_text_out(buffer &o, 
+        void ARingZZpFFPACK::elem_text_out(buffer &o, 
         const ElementType  elem, 
         bool p_one, 
         bool p_plus, 
@@ -30,7 +30,7 @@ namespace M2 {
 }
 
 //  http://www.johnkerl.org/doc/ffcomp.pdf
-ARingFFPACK::ElementType ARingFFPACK::computeGenerator ( ) const
+ARingZZpFFPACK::ElementType ARingZZpFFPACK::computeGenerator ( ) const
  {
             
       for (UTT currIntElem=2;currIntElem<charac; currIntElem++)
@@ -54,21 +54,21 @@ ARingFFPACK::ElementType ARingFFPACK::computeGenerator ( ) const
 }
         
         
-bool ARingFFPACK::is_unit(const ElementType f) const 	
+bool ARingZZpFFPACK::is_unit(const ElementType f) const 	
     {   return ! ffpackField.isZero(f); }
 
-bool ARingFFPACK::is_zero(const ElementType f) const 	
+bool ARingZZpFFPACK::is_zero(const ElementType f) const 	
     {   return ffpackField.isZero(f); }
 
-bool ARingFFPACK::is_equal(const ElementType f, const ElementType g) const 	
+bool ARingZZpFFPACK::is_equal(const ElementType f, const ElementType g) const 	
 {   return	ffpackField.areEqual(f,g); }
 
 
 /// compare exponents of the used generator 
 /// @return -1: f < g, 1: f>g; 0: f==g;
-int ARingFFPACK::compare_elems(const ElementType f, const ElementType g) const 
+int ARingZZpFFPACK::compare_elems(const ElementType f, const ElementType g) const 
 {
-    //std::cerr << "ARingFFPACK::compare_elems" << std::endl;
+    //std::cerr << "ARingZZpFFPACK::compare_elems" << std::endl;
     if (f < g) return -1; 
     if (f > g) return 1;
 
@@ -79,40 +79,40 @@ int ARingFFPACK::compare_elems(const ElementType f, const ElementType g) const
 ///@todo how should this function behave? 
 ///@todo also consider conversion problems depending on 'elem' type
 /// @todo: review return type. 
-int ARingFFPACK::get_int(const ElementType f) const 
+int ARingZZpFFPACK::get_int(const ElementType f) const 
 {
-    std::cerr << "ARingFFPACK::get_int" << std::endl;
+    std::cerr << "ARingZZpFFPACK::get_int" << std::endl;
     return (int)f;
 }
 
 
 /// @todo where this function will be used? ; 
 /// @todo problems if type 'elem' is bigger than  int
-int ARingFFPACK::get_repr(const ElementType f) const 
+int ARingZZpFFPACK::get_repr(const ElementType f) const 
 {
-    std::cerr << "ARingFFPACK::get_repr" << std::endl;
+    std::cerr << "ARingZZpFFPACK::get_repr" << std::endl;
     return f; 
 }
 
     // 'init', 'init_set' functions
 
-    void ARingFFPACK::init(ElementType &result) const                { result = 0;  } //{ result = ffpackField.zero;  }
+    void ARingZZpFFPACK::init(ElementType &result) const                { result = 0;  } //{ result = ffpackField.zero;  }
 
-    void ARingFFPACK::clear(ElementType &result) const             { /* nothing */ }
+    void ARingZZpFFPACK::clear(ElementType &result) const             { /* nothing */ }
 
-    void ARingFFPACK::set_zero(ElementType &result) const         { result = 0;  } //{ result = ffpackField.zero;  }
+    void ARingZZpFFPACK::set_zero(ElementType &result) const         { result = 0;  } //{ result = ffpackField.zero;  }
 
-    void ARingFFPACK::copy(ElementType &result, const ElementType a) const { result = a; }
+    void ARingZZpFFPACK::copy(ElementType &result, const ElementType a) const { result = a; }
 
 
 /// @todo possible problem if type UTT is smaller than an int?
-void ARingFFPACK::set_from_int(ElementType &result, int a) const 
+void ARingZZpFFPACK::set_from_int(ElementType &result, int a) const 
 {
     //std::cerr << "ARingGF::set_from_int" << std::endl;
     ffpackField.init(result, a);
 }
 
-    void ARingFFPACK::set_from_mpz(ElementType &result, const mpz_ptr a) const 
+    void ARingZZpFFPACK::set_from_mpz(ElementType &result, const mpz_ptr a) const 
     {
         //std::cerr << "set_from_mpz" << std::endl;
         UTT b = static_cast< UTT>(mpz_fdiv_ui(a, charac));
@@ -121,7 +121,7 @@ void ARingFFPACK::set_from_int(ElementType &result, int a) const
        // std::cerr << "result " << result << std::endl;
     }
 
-    void ARingFFPACK::set_from_mpq(ElementType &result, const mpq_ptr a) const {
+    void ARingZZpFFPACK::set_from_mpq(ElementType &result, const mpq_ptr a) const {
       //  std::cerr << "set_from_mpq" << std::endl;
         ElementType n, d;
         set_from_mpz(n, mpq_numref(a));
@@ -130,14 +130,14 @@ void ARingFFPACK::set_from_int(ElementType &result, int a) const
     }
 
     // arithmetic
-    void ARingFFPACK::negate(ElementType &result, const ElementType a) const
+    void ARingZZpFFPACK::negate(ElementType &result, const ElementType a) const
     {
         ffpackField.neg(result,a);
     }
 
     /// if a is zero, the result is 1 , but is that what we expect?
     /// I vote for two invert functions, one with this check and one without.(Jakob)
-    void ARingFFPACK::invert(ElementType &result, const ElementType a) const
+    void ARingZZpFFPACK::invert(ElementType &result, const ElementType a) const
     {
        // std::cerr << "ARingGF::invert" << std::endl;
         if ( ffpackField.isZero(a))
@@ -146,18 +146,18 @@ void ARingFFPACK::set_from_int(ElementType &result, int a) const
     }
 
 
-    void ARingFFPACK::add(ElementType &result, const ElementType a, const ElementType b) const
+    void ARingZZpFFPACK::add(ElementType &result, const ElementType a, const ElementType b) const
     {
         ffpackField.add(result,a,b);
     }
 
-    void ARingFFPACK::subtract(ElementType &result, const ElementType a, const ElementType b) const
+    void ARingZZpFFPACK::subtract(ElementType &result, const ElementType a, const ElementType b) const
     {
         ffpackField.sub(result,a,b);
     }
 
     /// @param c[in][out] c = c- a*b
-    void ARingFFPACK::subtract_multiple(ElementType &c, const ElementType a, const ElementType b) const
+    void ARingZZpFFPACK::subtract_multiple(ElementType &c, const ElementType a, const ElementType b) const
     {
        ///@todo negin was added in later ffpack revision
       ElementType nega=a ;
@@ -165,12 +165,12 @@ void ARingFFPACK::set_from_int(ElementType &result, int a) const
         ffpackField. axpyin(c,nega,b);
     }
 
-    void ARingFFPACK::mult(ElementType &result, const ElementType a, const ElementType b) const
+    void ARingZZpFFPACK::mult(ElementType &result, const ElementType a, const ElementType b) const
     {
         ffpackField.mul(result,a,b);
     }
 
-    void ARingFFPACK::divide(ElementType &result, const ElementType a, const ElementType b) const
+    void ARingZZpFFPACK::divide(ElementType &result, const ElementType a, const ElementType b) const
     {
         if ( ffpackField.isZero(b))
            ERROR(" division by zero");
@@ -179,7 +179,7 @@ void ARingFFPACK::set_from_int(ElementType &result, int a) const
 
    /// @jakob: overflow can be occured due to multiplication. use exact mpz for multiply and modulo operation instead!
    /// @jakob  should 'power' be implemented 
-    void ARingFFPACK::power(ElementType &result, const ElementType a, const  STT n) const
+    void ARingZZpFFPACK::power(ElementType &result, const ElementType a, const  STT n) const
     {
         if (! ffpackField.isZero(a)) 
         {
@@ -217,7 +217,7 @@ void ARingFFPACK::set_from_int(ElementType &result, int a) const
     }
 
     /// @pre ensure that  ffpackField.cardinality() fits in a unsigned long, otherwise instead of mpz_fdiv_ui a different function has to be called)
-    void ARingFFPACK::power_mpz(ElementType &result, const  ElementType a, const  mpz_ptr n) const
+    void ARingZZpFFPACK::power_mpz(ElementType &result, const  ElementType a, const  mpz_ptr n) const
     {
         STT n1 = static_cast< STT>(mpz_fdiv_ui(n, ffpackField.cardinality()-1));
 
@@ -227,7 +227,7 @@ void ARingFFPACK::set_from_int(ElementType &result, int a) const
     }
 
     ///@note dublicate code
-    void ARingFFPACK::swap(ElementType &a, ElementType &b) const
+    void ARingZZpFFPACK::swap(ElementType &a, ElementType &b) const
     {
       ElementType tmp = a;
       a = b;
@@ -241,7 +241,7 @@ void ARingFFPACK::set_from_int(ElementType &result, int a) const
        no need to consider the case a==0 or b==0.
     */
 
-    void ARingFFPACK::syzygy(const ElementType a, const ElementType b,
+    void ARingZZpFFPACK::syzygy(const ElementType a, const ElementType b,
                         ElementType &x, ElementType &y) const
    
     {
@@ -252,7 +252,7 @@ void ARingFFPACK::set_from_int(ElementType &result, int a) const
     }
 
     /// @jakob: document possible overflow and other nasty things
-    void ARingFFPACK::random(ElementType &result) const
+    void ARingZZpFFPACK::random(ElementType &result) const
     {
         ffpackRandomIterator.random(result);
     }

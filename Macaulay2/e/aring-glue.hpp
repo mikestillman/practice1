@@ -3,10 +3,9 @@
 #ifndef _ring_glue_hh_
 #define _ring_glue_hh_
 
-#include "ring.hpp"
 #include "aring.hpp"
-
 #include "ring.hpp"
+
 
 namespace M2 {
 /**
@@ -23,15 +22,21 @@ namespace M2 {
 
     static ConcreteRing<RingType> * create(const RingType *R);
 
+    virtual M2::RingID ringID() const { return RingType::ringID; }
+
+    const RingType & ring() const { return *R; }
+
     //  Z_mod * cast_to_Z_mod() { return this; }
     //  const Z_mod * cast_to_Z_mod() const { return this; }
 
     virtual int coerce_to_int(ring_elem a) const
     {
+      //TODO: implement or remove
       return 0;
     }
     virtual int discrete_log(ring_elem a) const // returns -1 if a is 0
     {
+      //TODO: implement or remove
       return 0;
     }
 
@@ -81,13 +86,35 @@ namespace M2 {
       return result;
     }
 
-    virtual bool promote(const Ring *S, const ring_elem f, ring_elem &result) const
-    {
-      fprintf(stderr, "calling promote\n");
-      return false;
-    }
+    //* If there is a "natural" map S --> R=this, where f is an element of
+    // S , then result is set to the image of f, and true is returned.
+    // Otherwise, false is returned.
+    //
+    // The map must one-step, e.g. for k --> k[x] --> k[x][y], promotion
+    // must be done with two consecutive calls to promote (with different arguments).
+    // Examples of natural maps:
+    //  ZZ --> R, for any R
+    //  QQ --> RR --> CC
+    //  ZZ --> ZZ/p
+    //  ZZ/p --> GF(p^n)
+    //  GF(p^m) --> GF(p^n), where m|n
+    //  A --> A[vars]/I
+    //  A[vars]/J --> A[vars]/I  (assumption: I contains J).
+
+    virtual bool promote(const Ring *S, const ring_elem f, ring_elem &result) const;
+
+    //* If there is a "natural" map S --> R=this, where f is an element of
+    // R, then result is set to an element f in S which maps to f, and true is returned.
+    // Otherwise, false is returned.
+    //
+    // For examples of maps, see 'promote'.
+    //
+    // Lifting elements of ZZ/p to QQ does not count, as there is no actual homomorphism
+    // from QQ --> ZZ/p
+
     virtual bool lift(const Ring *S, const ring_elem f, ring_elem &result) const
     {
+      //TODO: implement
       fprintf(stderr, "calling lift\n");
       return false;
     }
@@ -141,6 +168,7 @@ namespace M2 {
     virtual void remove(ring_elem &f) const
     {
       fprintf(stderr, "calling remove\n");
+      /* currently, do nothing... */
     }
 
     virtual ring_elem negate(const ring_elem f) const
@@ -282,10 +310,12 @@ namespace M2 {
 
     virtual ring_elem eval(const RingMap *map, const ring_elem f, int first_var) const
     {
+      //TODO: implement
       fprintf(stderr, "calling eval\n");
       return 0;
     }
   };
+
 };
 
 #endif

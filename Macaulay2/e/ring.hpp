@@ -8,6 +8,7 @@
 #include "ringelem.hpp"
 #include "monoid.hpp"
 
+#include "aring.hpp"
 
 ///// Ring Hierarchy ///////////////////////////////////
 
@@ -89,6 +90,9 @@ public:
   const PolynomialRing *get_degree_ring() const { return degree_ring; }
   M2_arrayint get_heft_vector() const { return heft_vector; } // This CAN BE NULL
 
+  virtual M2::RingID ringID() const { 
+    return M2::ring_old; 
+  }
   virtual bool is_basic_ring() const { return true; } // The default is to be a basic ring.
   virtual bool is_ZZ() const { return false; }
   virtual bool is_QQ() const { return false; }

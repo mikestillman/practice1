@@ -1,6 +1,7 @@
 // Copyright 2011 Michael E. Stillman
 
 #include "aring-zzp.hpp"
+#include "aring-promoter.hpp"
 
 namespace M2 {
   int ARingZZp::findPrimitiveRoot(int P)

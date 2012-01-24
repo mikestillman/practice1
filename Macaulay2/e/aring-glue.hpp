@@ -91,7 +91,7 @@ namespace M2 {
     // Otherwise, false is returned.
     //
     // The map must one-step, e.g. for k --> k[x] --> k[x][y], promotion
-    // must be done with two consecutive calls to promote (with different arguments).
+    // must be done with two consecutive calls to promote(with different arguments).
     // Examples of natural maps:
     //  ZZ --> R, for any R
     //  QQ --> RR --> CC

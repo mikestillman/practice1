@@ -578,7 +578,22 @@ kk = ZZp (ideal 19)
 3_kk  -- printing is wrong here
 matrix{{3_kk}}
 matrix {for i from 0 to 30 list i_kk}
+1_kk == 1
+1_kk
+0_kk
+oo == ooo
 
+matrix{{1_kk}}
+R = kk[a..d]
+basis(2,R) 
+random(R^1, R^{-2})  
+I = ideal random(R^1, R^{-2,-2,-2})  
+gens gb I;
+
+kk = ZZ/19
+debug Core
+rawDiscreteLog(raw 2_kk)
+rawDiscreteLog(raw 3_kk)
 -- TODO:
 --   top level M2 package (this file): calls the rawFFPack routines
 --   interface.dd:  glue functions to call engine functions
@@ -710,7 +725,7 @@ matrix {for i from 0 to 30 list i_kk}
 -- TODO notes 19 Jan 2012
 --    a. get latest changes of Jakob working (Givaro problem Jakob TODO)
 --    b. merge in trunk changes (Mike TODO)
---    c. possibly: merge out changes back to the trunk, delete the branch, and create a new branch. (ask Dan for read/write privs for Jakob on new branch)
+--    c. DONE possibly: merge out changes back to the trunk, delete the branch, and create a new branch. (ask Dan for read/write privs for Jakob on new branch)
 --    d. put x-mutablemat routines (fast linear algebra) into dmat.  Organize dispatch in x-mutablemat.
 --    e. tests: for matrices/elements for all of our new ring types (ffpack ZZ/p, givaro GF, ...)
 --    f. have toplevel GF have an option to call new GF code, same with ZZ/p.

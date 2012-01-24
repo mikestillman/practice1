@@ -211,6 +211,17 @@ rings = {ZZ, ZZ/101, ZZ/2, GF(4), GF(25), QQ, QQ[x,y], frac(QQ[x,y]), RR_53, RR_
 rings/testMutableMatrices
 ///
 
+TEST ///
+-- of rawDiscreteLog
+kk = ZZ/32003
+L = for i from 1 to 32002 list rawDiscreteLog raw (i_kk);
+a = 2_kk;
+assert(1 == rawDiscreteLog (raw a))
+L2 = for i from 0 to 32001 list a^(L#i);
+L3 = toList (1..32002);
+assert(L2 == L3)
+
+///
 end
 
 restart

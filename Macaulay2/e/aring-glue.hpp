@@ -34,11 +34,6 @@ namespace M2 {
       //TODO: implement or remove
       return 0;
     }
-    virtual int discrete_log(ring_elem a) const // returns -1 if a is 0
-    {
-      //TODO: implement or remove
-      return 0;
-    }
 
     // The following are all the routines required by 'ring'
     virtual void text_out(buffer &o) const { return R->text_out(o); }
@@ -124,7 +119,7 @@ namespace M2 {
       fprintf(stderr, "calling is_unit\n");
       ElementType a;
       R->from_ring_elem(a, f);
-      return R->is_unit(f);
+      return R->is_unit(a);
     }
 
     virtual bool is_zero(const ring_elem f) const
@@ -132,7 +127,7 @@ namespace M2 {
       fprintf(stderr, "calling is_zero\n");
       ElementType a;
       R->from_ring_elem(a, f);
-      return R->is_zero(f);
+      return R->is_zero(a);
     }
 
     virtual bool is_equal(const ring_elem f, const ring_elem g) const

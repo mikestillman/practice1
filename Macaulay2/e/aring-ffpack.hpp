@@ -13,50 +13,44 @@
 // #define HAVE_FFLAS_FFPACK 1 
 // #define HAVE_GIVARO 1
 
-#if defined(HAVE_FFLAS_FFPACK) 
+#if defined(HAVE_FFLAS_FFPACK) && defined(HAVE_GIVARO)
 #include <fflas-ffpack/field/modular-balanced.h>
- 
-
+#include <givaro/givgfq.h>
 
 namespace M2 {
 
-/**
-    @ingroup rings
-
-    @brief wrapper for the  FFPACK::ModularBalanced<double>   field implementation
-*/
+  /**
+     @ingroup rings
+     
+     @brief wrapper for the  FFPACK::ModularBalanced<double>   field implementation
+  */
   
   class ARingZZpFFPACK : RingInterface
   {
-
-
   public:
     static const RingID ringID = ring_FFPACK;
     
-  typedef FFPACK::ModularBalanced<double> FieldType;
-  typedef FieldType::Element ElementType;
- 
+    typedef FFPACK::ModularBalanced<double> FieldType;
 
- 
+    typedef FieldType::Element ElementType;
     typedef ElementType elem;
 
     typedef  uint32_t UTT; ////// attention: depends on STT;currently manual update
+
     // to use the signed_trait thing, we need givaro....
-    //typedef Signed_Trait<UTT>::signed_type STT;///< types depends on FieldType definition!
-    typedef  int32_t STT; /// attention: depends on UTT; currently manual update
+    typedef Signed_Trait<UTT>::signed_type STT;///< types depends on FieldType definition!
 
+    // if no givaro, use this:
+    //typedef  int32_t STT; /// attention: depends on UTT; currently manual update
 
-   // @todo: problem, wenn typ von cHarakteristif 
+    // @todo: problem, wenn typ von cHarakteristif 
     ARingZZpFFPACK( UTT charac_);
 
   private:
-   mutable  FieldType::RandIter     ffpackRandomIterator;
+    mutable  FieldType::RandIter     ffpackRandomIterator;
 
-
-   
-   
     const FieldType ffpackField;
-
+    
     UTT charac;
     UTT dimension; ///< same as extensionDegree
     
@@ -64,48 +58,53 @@ namespace M2 {
     //  int p1; // p-1
     // int minus_one;
     // int prim_root; // element we will use for our primitive root
-
+    
   public:
     // ring informational
-   UTT   characteristic() const { return charac; }
-
+    UTT characteristic() const { return charac; }
+    
     /** @name IO
-    @{ */
-            void text_out(buffer &o) const { o << "FFIELD(" << charac << "," << dimension << ")"; }
+	@{ 
+    */
+    void text_out(buffer &o) const { o << "ZZpFPACK(" << charac << "," << dimension << ")"; }
 
-            void elem_text_out(buffer &o, 
-                                const  ElementType a,
-                                bool p_one, 
-                                bool p_plus, 
-                                bool p_parens) const;
-
+    void elem_text_out(buffer &o, 
+		       const  ElementType a,
+		       bool p_one, 
+		       bool p_plus, 
+		       bool p_parens) const;
     /** @} */
-
 
     /** @name properties
-    @{ */
-        bool is_unit(const ElementType f) const ;
-        bool is_zero(const ElementType f) const ;
+	@{     
+    */
+        
+      bool is_unit(const ElementType f) const ;
+      bool is_zero(const ElementType f) const ;
+
     /** @} */
 
 
-        /** @name translation functions
+    /** @name translation functions
         @{ */
-    void to_ring_elem(ring_elem &result, const ElementType &a) const
-    {
-      result.int_val = a;
-    }
- 
-    void from_ring_elem(ElementType &result, const ring_elem &a) const
-    {
-      result = a.int_val;
-    }
+
+      void to_ring_elem(ring_elem &result, const ElementType &a) const
+      {
+        result.int_val = a;
+      }
+    
+      void from_ring_elem(ElementType &result, const ring_elem &a) const
+      {
+        result = a.int_val;
+      }
+
     /** @} */
 
-  /** @name operators
-    @{ */
-        bool is_equal(const ElementType f,const ElementType g) const    ;
-        int compare_elems(const ElementType f,const ElementType g) const ;
+    /** @name operators
+	@{ */
+
+    bool is_equal(const ElementType f,const ElementType g) const    ;
+    int compare_elems(const ElementType f,const ElementType g) const ;
     /** @} */
 
     /** @name get functions
@@ -196,4 +195,5 @@ namespace M2 {
 
 // Local Variables:
 // compile-command: "make -C $M2BUILDDIR/Macaulay2/e  "
+// indent-tabs-mode: nil
 // End:

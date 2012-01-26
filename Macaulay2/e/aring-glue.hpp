@@ -81,7 +81,7 @@ namespace M2 {
       return result;
     }
 
-    //* If there is a "natural" map S --> R=this, where f is an element of
+    /** If there is a "natural" map S --> R=this, where f is an element of
     // S , then result is set to the image of f, and true is returned.
     // Otherwise, false is returned.
     //
@@ -95,6 +95,7 @@ namespace M2 {
     //  GF(p^m) --> GF(p^n), where m|n
     //  A --> A[vars]/I
     //  A[vars]/J --> A[vars]/I  (assumption: I contains J).
+    */
 
     virtual bool promote(const Ring *S, const ring_elem f, ring_elem &result) const;
 

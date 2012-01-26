@@ -50,6 +50,7 @@ const Ring /* or null */ *rawARingGaloisField(int prime, int dimension)
         }*/
         if (dimension==1 && M2::ARingZZpFFPACK::getMaxModulus()> prime) 
         {
+	  std::cout << "maximum modulus = " << M2::ARingZZpFFPACK::getMaxModulus() << std::endl;
           M2::ARingZZpFFPACK *A = new M2::ARingZZpFFPACK(prime);
           return M2::ConcreteRing<M2::ARingZZpFFPACK>::create(A);
         }

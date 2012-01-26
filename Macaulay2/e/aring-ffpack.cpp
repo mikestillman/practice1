@@ -29,28 +29,30 @@ namespace M2 {
     o << (STT)elem; // todo: modulo reduction ?
 }
 
-//  http://www.johnkerl.org/doc/ffcomp.pdf
+  /**  @todo Remove this function?
+   //  http://www.johnkerl.org/doc/ffcomp.pdf
+   */
+
 ARingZZpFFPACK::ElementType ARingZZpFFPACK::computeGenerator ( ) const
  {
-            
-      for (UTT currIntElem=2;currIntElem<charac; currIntElem++)
-      {
-        ElementType currElem;
-        set_from_int(currElem,currIntElem);
-        bool found = true;
-        ElementType tmpElem=currElem;
-        for (UTT count=0;count<charac-2; count++)
-        {
-          mult(tmpElem,tmpElem,currElem);
-          if (is_equal(currElem,tmpElem))
-            found = false;
-        }
-        if (found) 
-        {
-          std::cerr << "generator = " << currElem << std::endl;
-          return currElem;
-        }
-      }
+   for (UTT currIntElem=2;currIntElem<charac; currIntElem++)
+     {
+       ElementType currElem;
+       set_from_int(currElem,currIntElem);
+       bool found = true;
+       ElementType tmpElem=currElem;
+       for (UTT count=0;count<charac-2; count++)
+	 {
+	   mult(tmpElem,tmpElem,currElem);
+	   if (is_equal(currElem,tmpElem))
+	     found = false;
+	 }
+       if (found) 
+	 {
+	   std::cerr << "generator = " << currElem << std::endl;
+	   return currElem;
+	 }
+     }
 }
         
         
@@ -82,7 +84,7 @@ int ARingZZpFFPACK::compare_elems(const ElementType f, const ElementType g) cons
 int ARingZZpFFPACK::get_int(const ElementType f) const 
 {
     std::cerr << "ARingZZpFFPACK::get_int" << std::endl;
-    return (int)f;
+    return static_cast<int>(f);
 }
 
 
@@ -177,8 +179,10 @@ void ARingZZpFFPACK::set_from_int(ElementType &result, int a) const
         ffpackField.div(result,a,b);
     }
 
-   /// @jakob: overflow can be occured due to multiplication. use exact mpz for multiply and modulo operation instead!
-   /// @jakob  should 'power' be implemented 
+  /// @jakob: overflow can be occured due to multiplication. use exact mpz for multiply and modulo operation instead!
+  /// @jakob  should 'power' be implemented 
+  /// @todo: use a different algorithm for power.  Once division by charac-1 is done, use divide by 2 method
+  ///
     void ARingZZpFFPACK::power(ElementType &result, const ElementType a, const  STT n) const
     {
         if (! ffpackField.isZero(a)) 
@@ -262,4 +266,5 @@ void ARingZZpFFPACK::set_from_int(ElementType &result, int a) const
 #endif
 // Local Variables:
 // compile-command: "make -C $M2BUILDDIR/Macaulay2/e  "
+// indent-tabs-mode: nil
 // End:

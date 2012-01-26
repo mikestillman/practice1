@@ -28,6 +28,7 @@ export {
     testMultiply,
     testAxioms,    
     constructGivaroField,
+    constructZZpFFPACK,
     constructMacaulayGF,
     constructMacaulayZZp,
     testField,
@@ -65,7 +66,7 @@ ZZp Ideal := opts -> (I) -> (
 	  if n > 1 and not isPrime n
 	  then error "ZZ/n not implemented yet for composite n";
 	  S := new QuotientRing from 
-	    if opts.ARing then rawARingZZp n else rawZZp n;
+	    if opts.ARing then rawARingGaloisField(n,1)  else rawZZp n;  -- rawARingZZp n
 	  S.cache = new CacheTable;
 	  S.isBasic = true;
 	  S.ideal = I;
@@ -313,6 +314,27 @@ constructGivaroField (ZZ,ZZ) := (characteristic,dimension)->
     assert( result#"generator"!=0_(result#"field"));
     return result;
 )
+constructZZpFFPACK = method();
+constructZZpFFPACK (ZZ,ZZ) := (characteristic,dimension)->
+(
+    assert(dimension == 1);
+    result := new MutableHashTable;
+    --
+    result#"field" = ZZp (ideal characteristic);
+    result#"char" =  characteristic;
+    result#"characteristic" =  characteristic;
+    result#"dimension" =  dimension;
+    result#"cardinality" =  characteristic^dimension;
+
+    tmp:=GF(characteristic,1);
+    prim := (gens tmp)_0;
+    result#"generator" = sub(prim, result#"field");
+--    result#"generator"= (gens tmp)_0;
+    assert( result#"generator"!=0);
+
+    return result;
+)
+
 constructMacaulayGF = method();
 constructMacaulayGF (ZZ,ZZ) := (characteristic,dimension)->
 (
@@ -330,6 +352,7 @@ constructMacaulayGF (ZZ,ZZ) := (characteristic,dimension)->
 constructMacaulayZZp = method();
 constructMacaulayZZp (ZZ,ZZ) := (characteristic,dimension)->
 (
+    assert(dimension == 1);
     result := new MutableHashTable;
     --
     result#"field" = ZZ/characteristic;
@@ -346,8 +369,8 @@ constructMacaulayZZp (ZZ,ZZ) := (characteristic,dimension)->
 testField = method();
 testField (MutableHashTable,ZZ) := (fieldHashTable,nrTests )->
 (
-    assert( fieldHashTable#"generator" != 0_(fieldHashTable#"field"));
-    assert( fieldHashTable#"generator" != 1_(fieldHashTable#"field"));
+    assert( fieldHashTable#"generator" != 0 );
+    assert( fieldHashTable#"generator" != 1 );
     --testEqual(fieldHashTable, nrTests);
     testPower(fieldHashTable);
     testDivide(fieldHashTable, nrTests);
@@ -388,6 +411,8 @@ testField(fieldHashTable, nrTests);
 fieldHashTable = constructMacaulayZZp(23,1);
 testField(fieldHashTable, nrTests);
 
+fieldHashTable = constructZZpFFPACK(23,1);
+testField(fieldHashTable, nrTests);
 
 ///
 
@@ -741,6 +766,19 @@ rawDiscreteLog(raw 3_kk)
 --                          ConcreteRing<ARingType> This is a "Ring" in M2.
 --                          ConcretePolynomialRing<APolyRingType>
 --                          ConcreteField<AFieldType>
+--
+-- TODO generated 26 Jan 2012
+--  Getting ZZ/p and GF ffpack and givaro and M2 routines all working at top level, and with dense/sparse matrices
+--    a. bugs in ffpack ZZ/p: basis(2,R) fails (R = polyring over ZZ/p).  Fix this?  MIKE
+--    b. GF givaro: routine to get the defining polynomial coeffs (see M2_makearrayint in monordering.c). JAKOB
+---   b1. M2 GF in the same framework (as ConcreteRing). MIKE
+--    c. promote/lift/eval beween these rings MIKE (or both of us, after a,b,d,e are done).
+--    d. top level M2 function to create GF from Givaro. (needs (b).  MIKE).
+--       this needs: the polynomial
+--       another routine: create givaro GF ring using a specific poly (M2_arrayint as input) (JAKOB)
+--    e. make a function called primitiveGenerator(ZZ/p), or primitiveGenerator(GF). (BOTH: Jakob for givaro and ffpack, Mike for M2)
+--       top level: each finite field should have routines: char, order, vdim??, generator. (MIKE)
+--    f. more testing! (JAKOB, mike too)
 -- Local Variables:
 -- compile-command: "make -C $M2BUILDDIR/Macaulay2/packages PACKAGES=FastLinearAlgebra all check-FastLinearAlgebra RemakeAllDocumentation=true RerunExamples=true RemakePackages=true"
 -- End:

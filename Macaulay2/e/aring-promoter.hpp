@@ -25,7 +25,8 @@ namespace M2 {
       
       R1.from_ring_elem(fR1, fR);
       bool retval = promote(R1,S1,fR1,gS1);
-      S1.to_ring_elem(resultS, gS1);
+      if (retval)
+        S1.to_ring_elem(resultS, gS1);
       return retval;
     }
   private:

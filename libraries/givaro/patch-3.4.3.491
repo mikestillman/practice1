@@ -1,0 +1,37 @@
+diff -rupN givaro-3.4.3.491//src/kernel/zpz/givextension.C givaro-3.4.3.491//src/kernel/zpz/givextension.C
+--- givaro-3.4.3.491//src/kernel/zpz/givextension.C	1970-01-01 01:00:00.000000000 +0100
++++ givaro-3.4.3.491//src/kernel/zpz/givextension.C	2012-01-26 15:12:47.853880766 +0100
+@@ -0,0 +1,10 @@
++
++#include "givaro/givextension.h"
++
++namespace Givaro {
++
++	template<> unsigned long Exponent_Trait(const GFqDom<long>& F) {
++	    return F.exponent();
++	}
++
++}
+diff -rupN givaro-3.4.3.491//src/kernel/zpz/givextension.h givaro-3.4.3.491.fixed//src/kernel/zpz/givextension.h
+--- givaro-3.4.3.491//src/kernel/zpz/givextension.h	2011-05-24 17:32:04.000000000 +0200
++++ givaro-3.4.3.491.fixed//src/kernel/zpz/givextension.h	2012-01-26 15:10:06.653882108 +0100
+@@ -39,9 +39,6 @@ template<typename Field> unsigned long E
+ }
+ 
+ 
+-template<> unsigned long Exponent_Trait(const GFqDom<long>& F) {
+-    return F.exponent();
+-}
+ 
+ template<typename BaseField> class Extension;
+ 
+diff -rupN givaro-3.4.3.491//src/kernel/zpz/Makefile.am givaro-3.4.3.491.fixed//src/kernel/zpz/Makefile.am
+--- givaro-3.4.3.491//src/kernel/zpz/Makefile.am	2011-05-24 17:32:04.000000000 +0200
++++ givaro-3.4.3.491.fixed//src/kernel/zpz/Makefile.am	2012-01-26 15:09:37.483882349 +0100
+@@ -53,4 +53,5 @@ libgivzpz_la_SOURCES=   \
+ 	givzpz64std.C		\
+ 	givprimes16.C		\
+ 	givtablelimits.C	\
+-	givzpz16table1.C
++	givzpz16table1.C	\
++	givextension.C

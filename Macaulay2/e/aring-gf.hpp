@@ -48,6 +48,7 @@ class ARingGF : RingInterface
 
 
     ARingGF( UTT charac_,   UTT dimension_);
+    ARingGF( UTT charac_,  const M2_arrayint & modPolynomial);  
 
   private:
     mutable  FieldType::randIter     givaroRandomIterator;
@@ -62,7 +63,10 @@ class ARingGF : RingInterface
     // int prim_root; // element we will use for our primitive root
 
 
-      M2_arrayint representationToM2Array(UTT representation) const;
+    M2_arrayint representationToM2Array(UTT representation) const;
+
+    static      UTT               M2arrayToGFRepresentation(UTT pCharac , const  M2_arrayint & m2array ) ;
+    static      std::vector<UTT>  M2arrayToStdVec(const  M2_arrayint  & m2array ) ;
 
 
   public:

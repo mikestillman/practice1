@@ -19,8 +19,58 @@ namespace M2 {
         //debug
         getModPolynomialCoeffs();
         getGeneratorPolynomialCoeffs();
+        ARingGF *testGF = new ARingGF(charact_, getModPolynomialCoeffs() );
 
   }
+  ARingGF::ARingGF(  UTT charact_, 
+                    const M2_arrayint & modPolynomial)  :   charac(charact_),
+                                            dimension( modPolynomial->len-1 ),
+                                            givaroField( FieldType( charact_,dimension, ARingGF::M2arrayToStdVec(modPolynomial) ))
+
+  {
+        /// @jakob: find out if the irreducible polynomial is checked in givaro.     
+        UTT localdegree = modPolynomial->len-1;
+        assert( modPolynomial->len > 1 && modPolynomial[ localdegree-1 ]>0 );
+
+        getModPolynomialCoeffs();
+        getGeneratorPolynomialCoeffs();
+  }
+
+
+    ARingGF::UTT ARingGF::M2arrayToGFRepresentation( ARingGF::UTT pCharac ,const  M2_arrayint & m2array ) 
+    {
+        // std::vector< UTT > stdvec;
+       std::cerr << "M2arrayToGFRepresentation"  << std::endl;
+        ARingGF::UTT rep=0;
+        assert( m2array->len > 1  );
+
+        for ( ARingGF::STT pos =  m2array->len-1 ; pos>=0;pos--)
+        {
+            std::cerr << " m2array->array["<< pos << "]" <<  m2array->array[pos] << std::endl;
+           rep= rep*pCharac+  ( m2array->array[pos] );
+            
+        }
+        return rep;
+        std::cerr << "rep" << rep << std::endl;
+    }
+
+
+     std::vector< ARingGF::UTT> ARingGF::M2arrayToStdVec(const  M2_arrayint &  m2array ) 
+    {
+        // std::vector< UTT > stdvec;
+       std::cerr << "M2arrayToStdVec"  << std::endl;
+        assert( m2array->len > 0  );
+
+        std::vector< ARingGF::UTT> vec;
+
+         vec.resize(m2array->len );
+
+        for ( UTT pos=0 ;pos < m2array->len; pos++)
+        {
+           vec[pos]=  m2array->array[pos] ;            
+        }
+        return vec;
+    }
 
 /// @mike correct output : print generator variable of the ring instead of 'X', whatever generator variable will be 
         void ARingGF::elem_text_out(buffer &o, 

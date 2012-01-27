@@ -53,7 +53,7 @@ namespace M2 {
        std::cerr << "M2arrayToGFRepresentation"  << std::endl;
         ARingGF::UTT rep=0;
         assert( m2array->len > 1  );
-        assert( sizeof( m2array->array[pos] ) < sizeof( ARingGF::UTT) );
+        assert( sizeof( m2array->array[0] ) < sizeof( ARingGF::UTT) );
 
         for ( ARingGF::STT pos =  m2array->len-1 ; pos>=0;pos--)
         {

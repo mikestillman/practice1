@@ -65,9 +65,10 @@ class ARingGF : RingInterface
 
     M2_arrayint representationToM2Array(UTT representation) const;
 
+  public:
     M2_arrayint fieldElementToM2Array(ElementType el) const;
 
-
+  private:
     static      UTT               M2arrayToGFRepresentation(UTT pCharac , const  M2_arrayint & m2array ) ;
     static      std::vector<UTT>  M2arrayToStdVec(UTT pCharac , const  M2_arrayint  & m2array ) ;
      

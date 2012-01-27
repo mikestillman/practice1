@@ -41,7 +41,10 @@ namespace M2 {
   {
         /// @jakob: find out if the irreducible polynomial is checked in givaro.     
         UTT localdegree = modPolynomial->len-1;
-        assert( modPolynomial->len > 1 && modPolynomial[ localdegree-1 ]>0 );
+        if ( !( modPolynomial->len > 1 && modPolynomial->array[ localdegree-1 ]>0 ))
+          {
+            std::cout << "assertion would have failed" << std::endl;
+          }
 
         getModPolynomialCoeffs();
         getGeneratorPolynomialCoeffs();

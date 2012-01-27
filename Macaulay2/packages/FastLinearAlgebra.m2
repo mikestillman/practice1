@@ -619,6 +619,14 @@ kk = ZZ/19
 debug Core
 rawDiscreteLog(raw 2_kk)
 rawDiscreteLog(raw 3_kk)
+
+TEST ///
+-- Testing Givaro GF
+debug Core
+R = rawARingGaloisField(2,3)
+rawARingGFPolynomial R
+///
+
 -- TODO:
 --   top level M2 package (this file): calls the rawFFPack routines
 --   interface.dd:  glue functions to call engine functions

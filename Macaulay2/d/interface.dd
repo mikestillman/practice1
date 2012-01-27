@@ -735,6 +735,18 @@ export rawARingGaloisField(e:Expr):Expr := (
      else WrongNumArgs(2));
 setupfun("rawARingGaloisField", rawARingGaloisField);
 
+export rawARingGFPolynomial(e:Expr):Expr := (
+     when e
+     is R:RawRingCell do toExpr( Ccode(RawArrayIntOrNull, "rawARingGFPolynomial(", R.p, ")" ) )
+     else WrongArg("a raw ring"));
+setupfun("rawARingGFPolynomial",rawARingGFPolynomial);
+
+export rawARingGFCoefficients(e:Expr):Expr := (
+     when e
+     is a:RawRingElementCell do toExpr( Ccode(RawArrayIntOrNull, "rawARingGFCoefficients(", a.p, ")" ) )
+     else WrongArg("a raw ring element"));
+setupfun("rawARingGFCoefficients",rawARingGFCoefficients);
+
 export rawFractionRing(e:Expr):Expr := (
      when e is R:RawRingCell do toExpr( Ccode(RawRingOrNull,"IM2_Ring_frac(", R.p, ")"))
      else WrongArg("a raw ring"));

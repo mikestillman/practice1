@@ -175,6 +175,18 @@ extern "C" {
   const Ring /* or null */ *rawARingGaloisField(int p, int n); /* connected */
   /* creates a ring GF(p^n).  Constraints on p, n? */
 
+  M2_arrayintOrNull rawARingGFPolynomial(const Ring *R);
+  /* given an ARingGF, return the coefficient array of the quotient polynoials.
+     So, if R = kk[a]/(f(a)), where kk = ZZ/p, then the (integer) coefficients
+     {f0, f1, f2, ..., f_(degree f)} is returned.
+   */
+
+  M2_arrayintOrNull rawARingGFCoefficients(const RingElement *f);
+  /* f can be written as a polynomial in the generator a, e.g.
+     f = f0 + a*f1 + ... + a^(d-1) * f_(d-1), where d = deg of the
+     ring over ZZ/p.  This function returns {f0, f1, ..., f_(d-1)},
+     where each entry is an integer */
+
   /**************************************************/
   /**** Ring routines *******************************/
   /**************************************************/

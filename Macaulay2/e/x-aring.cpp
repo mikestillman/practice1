@@ -1,6 +1,7 @@
 #include "engine.h"
 #include "exceptions.hpp"
 
+#include "relem.hpp"
 #include "aring-glue.hpp"
 #include "aring-zzp.hpp"
 #include "aring-gf.hpp"
@@ -65,4 +66,30 @@ const Ring /* or null */ *rawARingGaloisField(int prime, int dimension)
           ERROR(e.what());
           return NULL;
      }
+}
+
+M2_arrayintOrNull rawARingGFPolynomial(const Ring *R)
+{
+  const M2::ConcreteRing<M2::ARingGF> *RGF = dynamic_cast<const M2::ConcreteRing<M2::ARingGF> *>(R);
+  if (RGF == 0)
+    {
+      ERROR("expected a GaloisField");
+      return 0;
+    }
+  const M2::ARingGF &A = RGF->ring();
+  return A.getModPolynomialCoeffs();
+}
+
+M2_arrayintOrNull rawARingGFCoefficients(const RingElement *f)
+{
+  const M2::ConcreteRing<M2::ARingGF> *RGF = dynamic_cast<const M2::ConcreteRing<M2::ARingGF> *>(f->get_ring());
+  if (RGF == 0)
+  {
+      ERROR("expected a GaloisField");
+      return 0;
+  }
+  const M2::ARingGF &A = RGF->ring();
+  M2::ARingGF::ElementType a;
+  A.from_ring_elem(a, f->get_value());
+  return A.fieldElementToM2Array(a);
 }

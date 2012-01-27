@@ -17,7 +17,7 @@
 #include <givaro/givgfq.h>
 #include <givaro/givpower.h>
 #include <givaro/givtimer.h>
-//#include <givaro/givextension.h>     //multiple definition problem...   solvable by encapsulating (see linbox)? Also solvable with the namespace trick, but do not overuse that...
+#include <givaro/givextension.h>     //multiple definition problem...   solvable by encapsulating (see linbox)? Also solvable with the namespace trick, but do not overuse that...
 
 
 namespace M2 {
@@ -27,10 +27,9 @@ namespace M2 {
 
     @brief wrapper for the  Givaro::GFqDom<>  galois field implementation
 */
-  /// @todo: think about deriving from RingInterface AND from Ring
-  class ARingGF : RingInterface
-  {
-
+/// @todo: think about deriving from RingInterface AND from Ring
+class ARingGF : RingInterface
+{
 
   public:
     static const RingID ringID = ring_GF;
@@ -61,6 +60,10 @@ namespace M2 {
     //  int p1; // p-1
     // int minus_one;
     // int prim_root; // element we will use for our primitive root
+
+
+      M2_arrayint representationToM2Array(UTT representation) const;
+
 
   public:
     // ring informational
@@ -109,6 +112,9 @@ namespace M2 {
         @{ */
         int get_int(elem f) const ;
         int get_repr(elem f) const ;
+        M2_arrayint getModPolynomialCoeffs() const;
+        M2_arrayint getGeneratorPolynomialCoeffs() const;
+      
     /** @} */
 
 

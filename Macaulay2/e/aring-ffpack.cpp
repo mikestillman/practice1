@@ -34,26 +34,29 @@ namespace M2 {
    */
 
 ARingZZpFFPACK::ElementType ARingZZpFFPACK::computeGenerator ( ) const
- {
-   for (UTT currIntElem=2;currIntElem<charac; currIntElem++)
-     {
-       ElementType currElem;
-       set_from_int(currElem,currIntElem);
-       bool found = true;
-       ElementType tmpElem=currElem;
-       for (UTT count=0;count<charac-2; count++)
-	 {
-	   mult(tmpElem,tmpElem,currElem);
-	   if (is_equal(currElem,tmpElem))
-	     found = false;
-	 }
-       if (found) 
-	 {
-	   std::cerr << "generator = " << currElem << std::endl;
-	   return currElem;
-	 }
-     }
+{
+    for (UTT currIntElem=2;currIntElem<charac; currIntElem++)
+    {
+        ElementType currElem;
+        set_from_int(currElem,currIntElem);
+        bool found = true;
+        ElementType tmpElem=currElem;
+        for (UTT count=0;count<charac-2; count++)
+        {
+            mult(tmpElem,tmpElem,currElem);
+            if (is_equal(currElem,tmpElem))
+                found = false;
+        }
+        if (found) 
+        {
+            std::cerr << "generator = " << currElem << std::endl;
+            return currElem;
+        }
+    }
+    assert(false);
+    return ElementType(1);    
 }
+
         
         
 bool ARingZZpFFPACK::is_unit(const ElementType f) const 	

@@ -46,17 +46,17 @@ class ARingGF : RingInterface
     typedef Signed_Trait<FieldType::Residu_t>::signed_type STT;///< types depends on FieldType definition!
 
 
-
     ARingGF( UTT charac_,   UTT dimension_);
     ARingGF( UTT charac_,  const M2_arrayint & modPolynomial);  
 
   private:
-    mutable  FieldType::randIter     givaroRandomIterator;
+   
     UTT charac;
     UTT dimension; ///< same as extensionDegree
 
     const FieldType givaroField;
-
+ 
+    mutable  FieldType::randIter     givaroRandomIterator;
 
     //  int p1; // p-1
     // int minus_one;
@@ -65,8 +65,12 @@ class ARingGF : RingInterface
 
     M2_arrayint representationToM2Array(UTT representation) const;
 
+    M2_arrayint fieldElementToM2Array(ElementType el) const;
+
+
     static      UTT               M2arrayToGFRepresentation(UTT pCharac , const  M2_arrayint & m2array ) ;
-    static      std::vector<UTT>  M2arrayToStdVec(const  M2_arrayint  & m2array ) ;
+    static      std::vector<UTT>  M2arrayToStdVec(UTT pCharac , const  M2_arrayint  & m2array ) ;
+     
 
 
   public:
@@ -178,7 +182,10 @@ class ARingGF : RingInterface
     @{ */
             void swap(ElementType &a, ElementType &b) const;
 
+
+            void random(FieldType::randIter &it, ElementType &result) const;
             void random(ElementType &result) const;
+            
     /** @} */
 
 

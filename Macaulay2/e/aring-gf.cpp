@@ -13,19 +13,30 @@ namespace M2 {
   ARingGF::ARingGF(	 UTT charact_, 
              UTT extensionDegree_)  :   charac(charact_),
                                         dimension(extensionDegree_),
-                                        givaroField(FieldType(charact_, extensionDegree_))
+                                        givaroField(FieldType(charact_, extensionDegree_)),
+                                        givaroRandomIterator( FieldType::randIter(givaroField ))     
   {
 
-        //debug
+        /// @todo: remove debug code
+        /// debug code:
         getModPolynomialCoeffs();
         getGeneratorPolynomialCoeffs();
         ARingGF *testGF = new ARingGF(charact_, getModPolynomialCoeffs() );
 
+        std::cerr <<"random"<< std::endl;
+        ElementType rnd ;
+        this->random(rnd);
+        std::cerr << " rnd = "<< rnd << std::endl;
+        fieldElementToM2Array(rnd);    
+        
+        
+        /// end debug
   }
   ARingGF::ARingGF(  UTT charact_, 
                     const M2_arrayint & modPolynomial)  :   charac(charact_),
                                             dimension( modPolynomial->len-1 ),
-                                            givaroField( FieldType( charact_,dimension, ARingGF::M2arrayToStdVec(modPolynomial) ))
+                                            givaroField( FieldType( charact_,dimension, ARingGF::M2arrayToStdVec(charact_, modPolynomial) )),
+                                            givaroRandomIterator( FieldType::randIter(givaroField ))      
 
   {
         /// @jakob: find out if the irreducible polynomial is checked in givaro.     
@@ -39,23 +50,42 @@ namespace M2 {
 
     ARingGF::UTT ARingGF::M2arrayToGFRepresentation( ARingGF::UTT pCharac ,const  M2_arrayint & m2array ) 
     {
-        // std::vector< UTT > stdvec;
        std::cerr << "M2arrayToGFRepresentation"  << std::endl;
         ARingGF::UTT rep=0;
         assert( m2array->len > 1  );
+        assert( sizeof( m2array->array[pos] ) < sizeof( ARingGF::UTT) );
 
         for ( ARingGF::STT pos =  m2array->len-1 ; pos>=0;pos--)
         {
             std::cerr << " m2array->array["<< pos << "]" <<  m2array->array[pos] << std::endl;
-           rep= rep*pCharac+  ( m2array->array[pos] );
-            
+
+            if (m2array->array[pos]>=0 ) 
+            {
+                 assert( (ARingGF::UTT)(m2array->array[pos]) < pCharac); 
+                rep= rep*pCharac+   (m2array->array[pos])    ;
+            }
+            if (m2array->array[pos]<0 ) 
+            {           
+                 assert( (ARingGF::UTT)( - (m2array->array[pos]) ) < pCharac);
+                rep= rep*pCharac+  (m2array->array[pos]+pCharac)  ;
+            }
         }
         return rep;
         std::cerr << "rep" << rep << std::endl;
     }
 
 
-     std::vector< ARingGF::UTT> ARingGF::M2arrayToStdVec(const  M2_arrayint &  m2array ) 
+    M2_arrayint     ARingGF::fieldElementToM2Array(ElementType el) const
+    {
+        UTT  rep;
+        rep = this->givaroField.convert(rep,el);
+        std::cerr << "rep" << rep<< std::endl;
+        return representationToM2Array(rep);
+    }
+
+    
+
+    std::vector< ARingGF::UTT> ARingGF::M2arrayToStdVec( ARingGF::UTT pCharac, const  M2_arrayint &  m2array ) 
     {
         // std::vector< UTT > stdvec;
        std::cerr << "M2arrayToStdVec"  << std::endl;
@@ -63,11 +93,21 @@ namespace M2 {
 
         std::vector< ARingGF::UTT> vec;
 
-         vec.resize(m2array->len );
+        vec.resize(m2array->len );
 
         for ( UTT pos=0 ;pos < m2array->len; pos++)
         {
-           vec[pos]=  m2array->array[pos] ;            
+           vec[pos]=  m2array->array[pos] ;          
+            if (m2array->array[pos]>=0 ) 
+            {
+                 assert( (ARingGF::UTT)(m2array->array[pos]) < pCharac); 
+                vec[pos]=  m2array->array[pos] ;          
+            }
+            if (m2array->array[pos]<0 ) 
+            {           
+               assert( (ARingGF::UTT)( - (m2array->array[pos]) ) < pCharac);
+               vec[pos]=  (m2array->array[pos]+pCharac)  ;
+            }             
         }
         return vec;
     }
@@ -353,10 +393,18 @@ void ARingGF::set_from_int(ElementType &result, int a) const
     }
 
     /// @jakob: document possible overflow and other nasty things
+    void ARingGF::random(FieldType::randIter &it, ElementType &result) const
+    {
+         givaroField.random( it,result);
+      //   std::cerr << " givaroField.cardinality()" << givaroField.cardinality();
+      //   std::cerr << " givaroRandomIterator()" << it();
+    }
+
     void ARingGF::random(ElementType &result) const
     {
+        return  random(givaroRandomIterator,result);
         //result = rawRandomInt((int32_t) givaroField.cardinality());
-        result = givaroRandomIterator() %   givaroField.cardinality();
+        //result = givaroRandomIterator() %   givaroField.cardinality();
     }
 
 };

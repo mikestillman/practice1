@@ -10,45 +10,54 @@ namespace M2 {
 //std::vector<GFqDom<long>::Residu_t> irreducible_11_2;
 //GFqDom<long> gfqField(11,2,irreducible_11_2);
 
-  ARingGF::ARingGF(	 UTT charact_, 
+    ARingGF::ARingGF(	 UTT charact_, 
              UTT extensionDegree_)  :   charac(charact_),
                                         dimension(extensionDegree_),
                                         givaroField(FieldType(charact_, extensionDegree_)),
                                         givaroRandomIterator( FieldType::randIter(givaroField ))     
-  {
+    {
+    
+            /// @todo: remove debug code
+            /// debug code:
+            getModPolynomialCoeffs();
 
-        /// @todo: remove debug code
-        /// debug code:
-        getModPolynomialCoeffs();
-        getGeneratorPolynomialCoeffs();
-        ARingGF *testGF = new ARingGF(charact_, getModPolynomialCoeffs() );
+           /*
+             getModPolynomialCoeffs();
+            getGeneratorPolynomialCoeffs();
+            ARingGF *testGF = new ARingGF(charact_, getModPolynomialCoeffs() );
+    
+            std::cerr <<"random"<< std::endl;
+            ElementType rnd ;
+            this->random(rnd);
+            std::cerr << " rnd = "<< rnd << std::endl;
+            fieldElementToM2Array(rnd);    
+            fieldElementToM2Array(givaroField.one);
+            fieldElementToM2Array(givaroField.zero);
+            */
+             
+            /// end debug
+    }
 
-        std::cerr <<"random"<< std::endl;
-        ElementType rnd ;
-        this->random(rnd);
-        std::cerr << " rnd = "<< rnd << std::endl;
-        fieldElementToM2Array(rnd);    
+
+    ARingGF::ARingGF(  UTT charact_, 
+                        const M2_arrayint & modPolynomial)  :   charac(charact_),
+                                                dimension( M2arrayGetDegree(modPolynomial)-1 ),
+                                                givaroField( FieldType( charact_,dimension, ARingGF::M2arrayToStdVec(charact_, modPolynomial) )),
+                                                givaroRandomIterator( FieldType::randIter(givaroField ))      
+    
+    {
+            /// @jakob: find out if the irreducible polynomial is checked in givaro.     
+            UTT localdegree = M2arrayGetDegree(modPolynomial);
         
-        
-        /// end debug
-  }
-  ARingGF::ARingGF(  UTT charact_, 
-                    const M2_arrayint & modPolynomial)  :   charac(charact_),
-                                            dimension( modPolynomial->len-1 ),
-                                            givaroField( FieldType( charact_,dimension, ARingGF::M2arrayToStdVec(charact_, modPolynomial) )),
-                                            givaroRandomIterator( FieldType::randIter(givaroField ))      
-
-  {
-        /// @jakob: find out if the irreducible polynomial is checked in givaro.     
-        UTT localdegree = modPolynomial->len-1;
-        if ( !( modPolynomial->len > 1 && modPolynomial->array[ localdegree-1 ]>0 ))
-          {
-            std::cout << "assertion would have failed" << std::endl;
-          }
-
-        getModPolynomialCoeffs();
-        getGeneratorPolynomialCoeffs();
-  }
+            if ( !( modPolynomial->len > 1 && modPolynomial->array[ localdegree ]>0 ))
+            {
+                std::cout << "assertion would have failed" << std::endl;
+                assert(modPolynomial->len > 1);
+                assert(modPolynomial->array[ localdegree ]>0);
+            }
+            /// debug code:
+            getModPolynomialCoeffs();
+    }
 
 
     ARingGF::UTT ARingGF::M2arrayToGFRepresentation( ARingGF::UTT pCharac ,const  M2_arrayint & m2array ) 
@@ -83,10 +92,21 @@ namespace M2 {
         UTT  rep;
         rep = this->givaroField.convert(rep,el);
         std::cerr << "rep" << rep<< std::endl;
-        return representationToM2Array(rep);
+        return elementRepresentationToM2Array(rep);
     }
 
     
+    ARingGF::UTT     ARingGF::M2arrayGetDegree( const  M2_arrayint &  m2array ) 
+    {
+        ARingGF::UTT degree=0;
+        ///@jakob find out the type of m2array->len
+        for ( UTT pos=0 ;pos < m2array->len; pos++)
+        {
+                if (m2array->array[pos]>0) 
+                degree=pos;
+        }
+        return degree;
+    }
 
     std::vector< ARingGF::UTT> ARingGF::M2arrayToStdVec( ARingGF::UTT pCharac, const  M2_arrayint &  m2array ) 
     {
@@ -96,7 +116,7 @@ namespace M2 {
 
         std::vector< ARingGF::UTT> vec;
 
-        vec.resize(m2array->len );
+        vec.resize( M2arrayGetDegree(m2array)+1  );       
 
         for ( UTT pos=0 ;pos < m2array->len; pos++)
         {
@@ -137,14 +157,15 @@ namespace M2 {
     }
 }
 
-M2_arrayint ARingGF::representationToM2Array(UTT representation) const
+M2_arrayint ARingGF::representationToM2Array(UTT representation,  long coeffNum ) const
 {
-  std::cerr << "representationToM2Array:\n";
-  long coeffNum=this->dimension + 1;
+    std::cerr << "representationToM2Array:\n";
     M2_arrayint     polynomialCoeffs = M2_makearrayint(coeffNum);
-
-  long exp = 0;
+    std::cerr << "coeffNum" << coeffNum << std::endl;
+    long exp = 0;
     assert( representation !=0 );
+    
+
     while ( representation !=0 )
     {
         assert(exp < coeffNum);
@@ -162,10 +183,26 @@ M2_arrayint ARingGF::representationToM2Array(UTT representation) const
 
     for ( ;exp < coeffNum ;exp ++)
     {
+         assert(exp < coeffNum);
          polynomialCoeffs->array[ exp ] = 0;
     }
     std::cerr << "\n";
     return polynomialCoeffs;
+}
+
+M2_arrayint ARingGF::elementRepresentationToM2Array(UTT representation) const
+{
+     std::cerr << "representationToM2Array:\n";
+    long coeffNum  ;
+    return representationToM2Array(representation, coeffNum = this->dimension );
+}
+
+
+M2_arrayint ARingGF::modPolynomialRepresentationToM2Array(UTT representation) const
+{
+    std::cerr << "modPolynomialRepresentationToM2Array:\n";
+    long coeffNum  ;
+    return representationToM2Array(representation, coeffNum = this->dimension +1 );
 }
 
 
@@ -177,7 +214,7 @@ M2_arrayint ARingGF::getModPolynomialCoeffs() const
     long coeffNum=this->dimension + 1;
     M2_arrayint     modPolynomialCoeffs = M2_makearrayint(coeffNum);
     UTT             modPolynomialRepresentation = this->givaroField.irreducible();
-    return representationToM2Array(modPolynomialRepresentation);
+    return modPolynomialRepresentationToM2Array( modPolynomialRepresentation );
 
 }
 
@@ -190,7 +227,7 @@ M2_arrayint ARingGF::getGeneratorPolynomialCoeffs() const
     givaroField.generator(gen);
     UTT  generatorRepresentation;
     generatorRepresentation = this->givaroField.convert(generatorRepresentation,gen);
-    return representationToM2Array(generatorRepresentation);
+    return elementRepresentationToM2Array( generatorRepresentation ) ; 
 }
 
 

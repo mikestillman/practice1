@@ -63,7 +63,12 @@ class ARingGF : RingInterface
     // int prim_root; // element we will use for our primitive root
 
 
-    M2_arrayint representationToM2Array(UTT representation) const;
+    M2_arrayint representationToM2Array(UTT representation,  long coeffNum ) const;
+
+    M2_arrayint modPolynomialRepresentationToM2Array(UTT representation) const;
+    M2_arrayint elementRepresentationToM2Array(UTT representation) const;
+
+
 
   public:
     M2_arrayint fieldElementToM2Array(ElementType el) const;
@@ -73,6 +78,7 @@ class ARingGF : RingInterface
     static      std::vector<UTT>  M2arrayToStdVec(UTT pCharac , const  M2_arrayint  & m2array ) ;
      
 
+    static UTT   M2arrayGetDegree( const  M2_arrayint &  m2array )  ;
 
   public:
     // ring informational

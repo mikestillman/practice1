@@ -37,8 +37,6 @@ class ARingGF : RingInterface
     typedef Givaro::GFqDom<long> FieldType;
     typedef FieldType::Element ElementType;
     typedef M2::ARingGF    ring_type ;
-    //  CoefficientRingZZp * get_CoeffRing() const { return coeffR; }
-    M2::ARingGF * get_ARing() const { return new M2::ARingGF(charac,dimension); }
   
     typedef ElementType elem;
 

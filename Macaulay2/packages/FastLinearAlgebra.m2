@@ -404,6 +404,8 @@ testField(fieldHashTable, nrTests);
 nrTests = 100; -- may depend on cardinality, e.g. 1 % or so
 fieldHashTable = constructGivaroField( 11,2 );
 testField(fieldHashTable, nrTests);
+fieldHashTable = constructGivaroField( 2,3 );
+testField(fieldHashTable, nrTests);
 
 fieldHashTable = constructMacaulayGF( 5,3 );
 testField(fieldHashTable, nrTests);
@@ -413,6 +415,9 @@ testField(fieldHashTable, nrTests);
 
 fieldHashTable = constructZZpFFPACK(23,1);
 testField(fieldHashTable, nrTests);
+
+ R = rawARingGaloisField(2,3)
+
 
 ///
 

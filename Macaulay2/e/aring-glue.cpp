@@ -67,6 +67,8 @@ namespace M2 {
   //explicit instantiation
  template class ConcreteRing< ARingZZp >;
 
+  template class ConcreteRing< ARingGFM2 >;
+
 #if defined(HAVE_FFLAS_FFPACK) && defined(HAVE_GIVARO)
 
   //explicit instantiation

@@ -626,10 +626,191 @@ rawDiscreteLog(raw 2_kk)
 rawDiscreteLog(raw 3_kk)
 
 TEST ///
+-- Test that for GF(p,n) (fixed p, various n):
+-- that the polynomials for different n are compatible:
+-- if (p^m-1) | (p^n-1), then
+--   if N = (p^n-1)//(p^m-1),
+--   and Fn(x) = min poly of the generator x
+--   and Fm(y) = min poly of the generator y
+-- then y = x^N
+-- 
+-- Check this: eliminate(x,ideal(Fn(x), y-x^N)).  If we get Fm(y), great, if not, ERROR>
+
+univariateCoefficients = method()
+univariateCoefficients RingElement := (F) -> (
+     R := ring F;
+     n := first degree F;
+     for i from 0 to n list lift(leadCoefficient part(i,F), ZZ)
+     )
+univariatePoly = method()
+univariatePoly(List, RingElement) := (coeffs, x) -> (
+     sum apply(#coeffs, i -> coeffs#i * x^i)
+     )
+
+checkPair = method()
+checkPair(Ring,Ring,Ring) := (R,S,T) -> (
+     -- R should be GF(p,m), S should be GF(p,n).
+     -- T should be ZZ/p[x1,x2] (with some names of vars)
+     -- if N = (p^n-1)/(p^m-1) is not an integer, then just return
+     -- otherwise:
+     -- 
+     Qm := R.order;
+     Qn := S.order;
+     if (Qn-1) % (Qm-1) == 0
+     then (
+	  N := (Qn-1) / (Qm-1);
+	  << "does divide, N=" << N << endl;
+	  Fm := univariateCoefficients (ideal ambient R)_0;
+	  Fn := univariateCoefficients (ideal ambient S)_0;
+	  -- now check result:
+	  ans := univariatePoly(Fm, T_1);
+	  I := ideal(univariatePoly(Fn, T_0), T_0^N-T_1);
+          GB := flatten entries selectInSubring(1, gens gb I);
+     	  if #GB != 1 then << "error: wrong number of elements in GB!!" << endl;
+	  if ideal ans != ideal GB then (
+	       << "Fm = " << ans << endl;
+	       << "Fn = " << univariatePoly(Fn, T_0) << endl;
+	       << "minpoly = " << GB_0 << endl;
+	       );
+	  )
+     )
+
+R = ZZ/2[x,y, MonomialSize=>32, MonomialOrder=>Eliminate 1]
+L = for i from 1 to 23 list GF(2,i)
+L2 = subsets(L,2);
+for p in L2 do checkPair(p_0, p_1, R)
+
+R = ZZ/3[x,y, MonomialSize=>32, MonomialOrder=>Eliminate 1]
+L = for i from 1 to 15 list GF(3,i)
+L2 = subsets(L,2);
+for p in L2 do checkPair(p_0, p_1, R)
+
+R = ZZ/5[x,y, MonomialSize=>32, MonomialOrder=>Eliminate 1]
+L = for i from 1 to 10 list GF(5,i)
+L2 = subsets(L,2);
+for p in L2 do checkPair(p_0, p_1, R)
+
+R = ZZ/7[x,y, MonomialSize=>32, MonomialOrder=>Eliminate 1]
+L = for i from 1 to 8 list GF(7,i)
+L2 = subsets(L,2);
+for p in L2 do checkPair(p_0, p_1, R)
+
+R = ZZ/11[x,y, MonomialSize=>32, MonomialOrder=>Eliminate 1]
+L = for i from 1 to 7 list GF(11,i)
+L2 = subsets(L,2);
+for p in L2 do checkPair(p_0, p_1, R)
+
+R = ZZ/13[x,y, MonomialSize=>32, MonomialOrder=>Eliminate 1]
+L = for i from 1 to 6 list GF(13,i)
+L2 = subsets(L,2);
+for p in L2 do checkPair(p_0, p_1, R)
+
+R = ZZ/17[x,y, MonomialSize=>32, MonomialOrder=>Eliminate 1]
+L = for i from 1 to 6 list GF(17,i)
+L2 = subsets(L,2);
+for p in L2 do checkPair(p_0, p_1, R)
+
+R = ZZ/19[x,y, MonomialSize=>32, MonomialOrder=>Eliminate 1]
+L = for i from 1 to 5 list GF(19,i)
+L2 = subsets(L,2);
+for p in L2 do checkPair(p_0, p_1, R)
+
+R = ZZ/23[x,y, MonomialSize=>32, MonomialOrder=>Eliminate 1]
+L = for i from 1 to 5 list GF(23,i)
+L2 = subsets(L,2);
+for p in L2 do checkPair(p_0, p_1, R)
+
+R = ZZ/29[x,y, MonomialSize=>32, MonomialOrder=>Eliminate 1]
+L = for i from 1 to 5 list GF(29,i)
+L2 = subsets(L,2);
+for p in L2 do checkPair(p_0, p_1, R)
+
+R = ZZ/31[x,y, MonomialSize=>32, MonomialOrder=>Eliminate 1]
+L = for i from 1 to 5 list GF(31,i)
+L2 = subsets(L,2);
+for p in L2 do checkPair(p_0, p_1, R)
+
+R = GF(5,6)
+kk = ZZ/5
+phi = map(R,kk)
+phi(1_kk)
+phi(2_kk)
+phi(3_kk)
+phi(4_kk)
+
+factor(5^6-1)
+factor(5^2-1)
+factor(5^3-1)
+R6 = GF(5,6)
+R3 = GF(5,3)
+map(R6,R3)
+a = R6_0
+a
+N = (5^6-1)//(5^3-1)
+a^126
+///
+
+
+TEST ///
 -- Testing Givaro GF
 debug Core
 R = rawARingGaloisField(2,3)
 rawARingGFPolynomial R
+a = R_0
+rawARingGFCoefficients (a^3)
+
+ L = lines get "~/src/M2-trunk/M2-jakob-jan2012/Macaulay2/packages/ConwayPolynomials/ConwayPolynomials.txt";
+L#2 
+L#6
+kk = GF(2,7)
+R = ambient kk
+describe R
+
+debug Core
+R = rawARingGaloisField(2,7)
+rawARingGFPolynomial R
+
+k2 = rawARingGaloisField(2,2)
+rawARingGFPolynomial k2  -- a^2+a+1
+rawARingGFCoefficients (k2_0)
+
+k3 = rawARingGaloisField(2,3)
+rawARingGFPolynomial k3  -- 1+a^2+a^3
+rawARingGFCoefficients (k3_0)
+
+k4 = rawARingGaloisField(2,4)
+rawARingGFPolynomial k4  -- a^4+a+1
+rawARingGFCoefficients (k4_0)
+
+k5 = rawARingGaloisField(2,5)
+rawARingGFPolynomial k5  -- a^5+a^2+1
+rawARingGFCoefficients (k5_0)
+
+k6 = rawARingGaloisField(2,6)
+rawARingGFPolynomial k6  -- a^6+a^4+a^3+a+1
+rawARingGFCoefficients (k6_0)
+
+R = ZZ/2[a,b]
+I = ideal"a6+a4+a3+a+1,b-a21"
+eliminate(a, I)
+
+gf2 = GF(2,2)
+(ideal ambient gf2)_0 -- a2+a+1
+
+gf3 = GF(2,3)
+(ideal ambient gf3)_0 -- a3+a+1
+
+gf4 = GF(2,4)
+(ideal ambient gf4)_0 -- a4+a+1
+
+(map(gf4,gf2))(gf2_0) -- gf2_0 = a^2+a
+R = ZZ/2[a,b]
+I = ideal"a4+a+1,b-a5"
+eliminate(a, I)
+
+-- is there a way to lift from gf4 to gf2? Doesn't appear so...
+-- is there a way to expand a matrix of gf4 elements to a matrix over ZZ/2 or gf2?
+
 ///
 
 -- TODO:

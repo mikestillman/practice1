@@ -34,6 +34,7 @@ namespace M2 {
     ring_ZZp,
     ring_logZZp,
     ring_GF,
+    ring_GFM2,
     ring_FFPACK,
     ring_RRR,
     ring_CCC,

@@ -84,6 +84,7 @@ ZZp Ideal := opts -> (I) -> (
 	  --lift(S,QQ) := opts -> liftZZmodQQ;
 	  S))
 
+
 isPrimeField = method()
 isPrimeField Ring := (R) -> (
      true
@@ -813,6 +814,134 @@ eliminate(a, I)
 
 ///
 
+
+TEST /// -- Testing M2 ARing GF interface
+R = ambient GF(2,3)
+f = R_0
+debug Core
+F = rawARingGaloisField1 raw f
+b = F_0
+elemsR = prepend(0_R, for i from 1 to 7 list a^i)
+elemsF = prepend(0_F, for i from 1 to 7 list b^i)
+
+for i from 0 to 7 list (toString raw elemsR#i == toString elemsF#i)
+
+-- negation
+for i from 0 to 7 list (
+       -- in R:
+       ans := toString raw(- elemsR#i);
+       ans2 := toString(- elemsF#i);
+       if ans != ans2 then << "error: " << i << " " << ans << " " << ans2 << endl;
+       )
+
+-- addition table
+for i from 0 to 7 list (
+  for j from 0 to 7 list (
+       -- in R:
+       ans := toString raw(elemsR#i + elemsR#j);
+       ans2 := toString(elemsF#i + elemsF#j);
+       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
+       ))
+
+-- subtraction
+for i from 0 to 7 list (
+  for j from 0 to 7 list (
+       -- in R:
+       ans := toString raw(elemsR#i - elemsR#j);
+       ans2 := toString(elemsF#i - elemsF#j);
+       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
+       ))
+
+-- multiplication
+for i from 0 to 7 list (
+  for j from 0 to 7 list (
+       -- in R:
+       ans := toString raw(elemsR#i * elemsR#j);
+       ans2 := toString(elemsF#i * elemsF#j);
+       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
+       ))
+
+-- division
+for i from 0 to 7 list (
+  for j from 0 to 7 list (
+       if elemsR#j == 0 then continue;
+       -- in R:
+       ans := toString raw(elemsR#i // elemsR#j);
+       ans2 := toString(elemsF#i // elemsF#j);
+       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
+       ))
+
+-- power table
+for i from 0 to 7 list (
+  for j from -7 to 7 list (
+       -- in R:
+       if j < 0 and i == 0 then continue;       
+       ans := toString raw(elemsR#i ^ j);
+       ans2 := toString(elemsF#i ^ j);
+       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
+       ))
+
+-- big power table: fails...
+for i from 0 to 7 list (
+  for p from  0 to 20 list (
+       -- in R:
+       j = p + 273128731287312310;
+       << "doing: " << i << " " << j << endl;
+       ans := toString raw(elemsR#i ^ j);
+       ans2 := toString(elemsF#i ^ j);
+       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
+       ))
+
+///
+
+TEST /// -- XXXXXXXXXX -- of findGalois  (which will be placed into the engine?)
+restart
+loadPackage "FastLinearAlgebra"
+
+R = ZZ/5[b]
+G = (b^(5^4)-b) // (b^(5^2)-b)
+Gfacs = factorize G  -- 150 factors
+apply(Gfacs, fac -> (
+	  f := fac#1;
+	  S := R/f;
+	  S.char = 5;
+	  S.degree = 4;
+	  findPrimitive S
+	  ))
+
+findGalois(5,5)
+findGalois(5,5, Strategy=>"Blah")
+findGalois(5,5, Strategy=>"Givaro")
+findGalois(5,7, Strategy=>"Givaro")
+findGalois(5,8, Strategy=>"Givaro")
+findGalois(5,8)
+
+
+findGalois(5,4)
+findGalois(5,4)
+findGalois(5,3)
+findGalois(5,2)
+findGalois(5,1)
+findGalois(5^7, Variable=>getSymbol "c")
+
+debug Core
+rawARingGaloisField(5,2)
+rawARingGaloisField(5,3)
+kk = rawARingGaloisField(5,4)
+rawARingGFPolynomial kk
+rawARingGaloisField(5,5)
+rawARingGaloisField(5,6)
+rawARingGaloisField(5,7)
+
+rawARingGaloisField(5,8)
+
+
+GF(2,3)
+GF(2,3,Strategy=>"Givaro")  -- fails
+GF(2,3,Strategy=>"New")  -- fails, needs 'promote'
+
+///
+
 -- TODO:
 --   top level M2 package (this file): calls the rawFFPack routines
 --   interface.dd:  glue functions to call engine functions
@@ -973,6 +1102,66 @@ eliminate(a, I)
 --    e. make a function called primitiveGenerator(ZZ/p), or primitiveGenerator(GF). (BOTH: Jakob for givaro and ffpack, Mike for M2)
 --       top level: each finite field should have routines: char, order, vdim??, generator. (MIKE)
 --    f. more testing! (JAKOB, mike too)
+
+
+steps:
+1. find f (but with Givaro: this also produces a raw ring
+2. find primitive element
+3. construct GF
+
+findGaloisField(p,n)
+  find quotient poly f (using Conway Polynomials)
+  form R = kk[a]/f
+  find primitive element x
+  return x
+
+findGaloisField(p,n,Givaro=>true)
+findGaloisField(kka,n,Givaro=>true)
+  construct R0 = rawARingGF
+  get quotient poly as array
+  make a poly in one variable out of it (either in kka = kk[a], or in ZZ/p[a])
+  form R = kk[a]/f
+  find primitive element x
+  in R, set R#"RawGivaroRing" = R0
+  return x
+
+findGaloisField(kk[a], n, Givaro=>true/false)
+
+
+GF(p,n,Strategy=>"Givaro")
+
+-- checks to make sure size is OK, if not: error.
+-- first construct a raw Givaro field.
+-- then create a poly ring S in one var matching this.
+-- then call GF(S, rawGFRing)
+
+GF(R, Strategy=>"Givaro")
+-- calls Givaro with a given poly already
+GF(R, Strategy=>"New")
+
+
+Overall logic:
+Strategy=>null:  current method
+
+Strategy=>"New": 
+  case 1: GF(p,n):  (small rep) as currently done, EXCEPT: call different rawGaloisField routine.
+  case 2: GF a_R: (small rep) as currently done, EXCEPT: call different rawGaloisField routine.
+
+Strategy=>"Givaro":
+  case 1: GF a_R:
+    if size is too big, error
+    do current GF code, except: use different raw routine.
+
+  case 2: (p,n) or p^n:
+    if size is too big, error
+    make rawARingGF?  (Alternate: ?)
+    find f that they use
+    make ZZ/p[a]/(f) ring
+    have a new version of GF which takes an already constructed raw ring
+     but otherwise does exactly what is done now.
+
+
+
 -- Local Variables:
 -- compile-command: "make -C $M2BUILDDIR/Macaulay2/packages PACKAGES=FastLinearAlgebra all check-FastLinearAlgebra RemakeAllDocumentation=true RerunExamples=true RemakePackages=true"
 -- End:

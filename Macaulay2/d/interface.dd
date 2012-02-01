@@ -718,6 +718,11 @@ export rawGaloisField(e:Expr):Expr := (
      else WrongArg("a raw ring element"));
 setupfun("rawGaloisField", rawGaloisField);
 
+export rawARingGaloisField1(e:Expr):Expr := (
+     when e is f:RawRingElementCell do toExpr(Ccode(RawRingOrNull,"rawARingGaloisField1(", f.p, ")"))
+     else WrongArg("a raw ring element"));
+setupfun("rawARingGaloisField1", rawARingGaloisField1);
+
 export rawARingGaloisField(e:Expr):Expr := (
      when e is a:Sequence do 
      if length(a) == 2 then 

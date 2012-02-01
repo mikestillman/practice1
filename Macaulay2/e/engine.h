@@ -172,8 +172,13 @@ extern "C" {
   const Ring /* or null */ *rawARingZZp(int p); /* connected */
     /* Expects a prime number p in range 2 <= p <= 32749 */
 
+  const Ring /* or null */ *rawARingGaloisField1(const RingElement *prim); /* connected */
+  /* same interface as rawGaloisField, but uses different internal code */
+
   const Ring /* or null */ *rawARingGaloisField(int p, int n); /* connected */
   /* creates a ring GF(p^n).  Constraints on p, n? */
+  /* returns null if the values p,n are too large  */
+
 
   M2_arrayintOrNull rawARingGFPolynomial(const Ring *R);
   /* given an ARingGF, return the coefficient array of the quotient polynoials.

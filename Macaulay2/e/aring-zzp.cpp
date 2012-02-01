@@ -50,7 +50,7 @@ namespace M2 {
 #endif
   }
 
-  ARingZZp::ARingZZp(int p0)
+  ARingZZp::ARingZZp(size_t p0)
     : p(p0),
       p1(p-1)
   {
@@ -60,6 +60,11 @@ namespace M2 {
       minus_one = (p-1)/2;
 
     initialize_tables();
+  }
+
+  void ARingZZp::text_out(buffer &o) const 
+  { 
+    o << "AZZ/" << characteristic(); 
   }
 
   void ARingZZp::elem_text_out(buffer &o,

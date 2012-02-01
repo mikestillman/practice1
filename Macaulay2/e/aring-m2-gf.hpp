@@ -7,6 +7,8 @@
 #include "buffer.hpp"
 #include "ringelem.hpp"
 
+#include "aring-glue.hpp"
+
 class GF;
 class PolynomialRing;
 class RingElement;
@@ -43,7 +45,7 @@ namespace M2 {
     
     const PolynomialRing& ring() const { return mOriginalRing; }
     const ring_elem primitiveElement() const { return mPrimitiveElement; }
-
+    size_t generatorExponent() const { return mGeneratorExponent; }
   private:
     // CONSTANT usable fields. 
     size_t mCharac;
@@ -68,11 +70,12 @@ namespace M2 {
 \ingroup rings
 */
 
+
   class ARingGFM2 : public RingInterface
   {
   public:
     static const RingID ringID = ring_GFM2;
-    typedef GF ring_type;
+    typedef ConcreteRing<ARingGFM2> ring_type;
     typedef int ElementType;
     typedef int elem;
     
@@ -87,7 +90,7 @@ namespace M2 {
     /// such that if (GF(p^m) sits inside GF(p^n) (i.e. m|n), then the inclusion
     /// is given by 0 --> 0, and a --> a^N, where N = (p^n-1)/(p^m-1).
     ARingGFM2(const PolynomialRing &R,
-              ring_elem a);
+              const ring_elem a);
 
     size_t characteristic() const { return mGF.characteristic(); }
 
@@ -113,6 +116,8 @@ namespace M2 {
     }
 
   public:
+    int get_repr(elem f) const { /*TODO: WRITE WRITE ;*/ }
+
     void to_ring_elem(ring_elem &result, const ElementType &a) const
     {
       result.int_val = a;
@@ -134,11 +139,11 @@ namespace M2 {
     }
 
     void copy(elem &result, elem a) const { result = a; }
-
-    void init(elem &result) const
-    {
-      result = 0;
-    }
+    void init(elem &result) const {result = 0;}
+    void init_set(elem &result, elem a) const { result = a; }
+    void set(elem &result, elem a) const { result = a; }
+    void set_zero(elem &result) const { result = 0; }
+    void clear(elem &result) const { /* nothing */ }
     
     void set_from_int(elem &result, int a) const {
       a = a % characteristic();
@@ -157,7 +162,7 @@ namespace M2 {
       elem n, d;
       set_from_mpz(n, mpq_numref(a));
       set_from_mpz(d, mpq_denref(a));
-      ASSERT(d != 0);  // actually: we need to check for this...
+      ASSERT(d != 0);  //TODO actually: we need to check for this...
       divide(result,n,d);
     }
     
@@ -188,7 +193,7 @@ namespace M2 {
               if (n == mGF.minusOne())
                 result = 0;
               else
-                result = modulus_add(a, mGF.oneTable(n), mGF.orderMinusOne());
+                result = modulus_add(b, mGF.oneTable(n), mGF.orderMinusOne());
             }
           else if (n < 0)
             {
@@ -209,22 +214,30 @@ namespace M2 {
 
     void subtract(elem &result, elem a, elem b) const
     {
-      //TODO: WRITE
+      result = a;
+      if (b == 0) return;
+      elem c = modulus_add(b, mGF.minusOne(), mGF.orderMinusOne()); // c = -b
+      add(result,a,c);
     }
 
     void subtract_multiple(elem &result, elem a, elem b) const
     {
-      // we assume: a, b are NONZERO!!
       // result -= a*b
       ASSERT(a != 0);
       ASSERT(b != 0);
+
+      int ab = a+b;
+      if (ab > mGF.minusOne()) ab -= mGF.orderMinusOne();
+      subtract(result, ab, result);
     }
 
     void mult(elem &result, elem a, elem b) const
     {
       if (a != 0 && b != 0)
         {
-          //TODO: WRITE
+          int c = a+b;
+          if (c > mGF.orderMinusOne()) c -= mGF.orderMinusOne();
+          result = c;
         }
       else
         result = 0;
@@ -235,7 +248,9 @@ namespace M2 {
       ASSERT(b != 0);
       if (a != 0)
         {
-          // TODO:Write
+          int c = a-b;
+          if (c <= 0) c += mGF.orderMinusOne();
+          result = c;
         }
       else
         result = 0;
@@ -245,7 +260,8 @@ namespace M2 {
     {
       if (a != 0)
         {
-          //TODO: write
+          result = (a*n) % mGF.orderMinusOne();
+          if (result <= 0) result += mGF.orderMinusOne();
         }
       else
         result = 0;
@@ -253,6 +269,8 @@ namespace M2 {
 
     void power_mpz(elem &result, elem a, mpz_ptr n) const
     {
+      int n1 = static_cast<int>(mpz_fdiv_ui(n, mGF.orderMinusOne()));
+      power(result,a,n1);
     }
 
     void swap(ElementType &a, ElementType &b) const
@@ -274,11 +292,22 @@ namespace M2 {
     // if possible, x is set to 1.
     // no need to consider the case a==0 or b==0.
     {
+      ASSERT(a != 0);
+      ASSERT(b != 0);
+      x = mGF.one();
+      divide(y,a,b);
+      negate(y,y);
     }
 
     void random(ElementType &result) const
     {
+      result = rawRandomInt((int32_t)characteristic());
     }
+
+
+    bool promote(const Ring *Rf, const ring_elem f, elem &result) const;
+
+    bool lift(const Ring *Rg, const elem f, ring_elem &result) const;
 
   };
 

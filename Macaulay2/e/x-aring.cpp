@@ -5,7 +5,10 @@
 #include "aring-glue.hpp"
 #include "aring-zzp.hpp"
 #include "aring-gf.hpp"
+#include "aring-m2-gf.hpp"
 #include "aring-ffpack.hpp"
+
+#include "polyring.hpp"
 
 const Ring /* or null */ *rawARingZZp(int p)
   /* p must be a prime number <= 32767 */
@@ -17,6 +20,43 @@ const Ring /* or null */ *rawARingZZp(int p)
     }
   M2::ARingZZp *A = new M2::ARingZZp(p);
   return M2::ConcreteRing<M2::ARingZZp>::create(A);
+}
+
+const Ring /* or null */ *rawARingGaloisField1(const RingElement *f)
+{
+  // Check that the ring R of f is a polynomial ring in one var over a ZZ/p
+  // Check that f has degree >= 2
+  // Check that f is monic
+  // If any of these fail, then return 0.
+  const PolynomialRing *R = f->get_ring()->cast_to_PolynomialRing();
+  if (R == 0)
+    {
+      ERROR("expected poly ring of the form ZZ/p[x]/(f)");
+      return 0;
+    }
+  if (R->n_vars() != 1)
+    {
+      ERROR("expected poly ring of the form ZZ/p[x]/(f)");
+      return 0;
+    }
+  if (R->n_quotients() != 1)
+    {
+      ERROR("expected poly ring of the form ZZ/p[x]/(f)");
+      return 0;
+    }
+  if (R->charac() == 0)
+    {
+      ERROR("expected poly ring of the form ZZ/p[x]/(f)");
+      return 0;
+    }
+  try {
+    M2::ARingGFM2 *A = new M2::ARingGFM2(*R,f->get_value());
+    return M2::ConcreteRing<M2::ARingGFM2>::create(A);
+  }
+  catch (exc::engine_error e) {
+    ERROR(e.what());
+    return NULL;
+  }
 }
 
 

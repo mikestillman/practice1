@@ -12,6 +12,8 @@
 #include "dmat-LU.hpp"
 
 #include "aring-zzp.hpp"
+#include "aring-m2-gf.hpp"
+#include "aring-glue.hpp"
 
 template<typename MatT> 
 MatT * MutableMatrix::coerce()
@@ -51,6 +53,21 @@ MutableMatrix *MutableMatrix::zero_matrix(const Ring *R,
 	return MutableMat< SMat<M2::ARingZZp> >
 	    ::zero_matrix(KZZp,nrows,ncols);
     }
+#if 0
+  if (R->ringID() == M2::ring_GFM2)
+    {
+      const M2::ConcreteRing<M2::ARingGFM2> *AGF = dynamic_cast<const M2::ConcreteRing<M2::ARingGFM2> *>(R);
+      ASSERT(AGF != 0);
+      if (dense)
+	{
+	  return MutableMat< DMat<M2::ARingGFM2> >
+	    ::zero_matrix(&AGF->ring(),nrows,ncols);
+	}
+      else
+	return MutableMat< SMat<M2::ARingGFM2> >
+          ::zero_matrix(&AGF->ring(),nrows,ncols);
+    }
+#endif
   if (R == globalZZ)
     {
 #ifdef DEVELOPMENT
@@ -617,6 +634,11 @@ template class MutableMat< SMat<CoefficientRingRRR> >;
 template class MutableMat< SMat<CoefficientRingCCC> >;
 template class MutableMat< SMat<CoefficientRingZZ_NTL> >;
 template class MutableMat< SMat<CoefficientRingR> >;
+
+#if 0
+template class MutableMat< DMat<M2::ARingGFM2> >;
+template class MutableMat< SMat<M2::ARingGFM2> >;
+#endif
 
 // Local Variables:
 // compile-command: "make -C $M2BUILDDIR/Macaulay2/e "

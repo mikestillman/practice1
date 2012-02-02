@@ -11,10 +11,12 @@ namespace M2 {
 //GFqDom<long> gfqField(11,2,irreducible_11_2);
 
     ARingGF::ARingGF(	 UTT charact_, 
-             UTT extensionDegree_)  :   charac(charact_),
-                                        dimension(extensionDegree_),
-                                        givaroField(FieldType(charact_, extensionDegree_)),
-                                        givaroRandomIterator( FieldType::randIter(givaroField ))     
+                         UTT extensionDegree_)  :   
+      charac(charact_),
+      dimension(extensionDegree_),
+      mOriginalRing(0),
+      givaroField(FieldType(charact_, extensionDegree_)),
+      givaroRandomIterator( FieldType::randIter(givaroField ))     
     {
     
             /// @todo: remove debug code
@@ -40,10 +42,15 @@ namespace M2 {
 
 
     ARingGF::ARingGF(  UTT charact_, 
-                        const M2_arrayint & modPolynomial)  :   charac(charact_),
-                                                dimension( M2arrayGetDegree(modPolynomial)-1 ),
-                                                givaroField( FieldType( charact_,dimension, ARingGF::M2arrayToStdVec(charact_, modPolynomial) )),
-                                                givaroRandomIterator( FieldType::randIter(givaroField ))      
+                       const M2_arrayint & modPolynomial,
+                       const PolynomialRing &originalRing)  :   
+      charac(charact_),
+      dimension( M2arrayGetDegree(modPolynomial) ),
+      mOriginalRing(&originalRing),
+      mPrimitiveElement(originalRing.var(0)),
+      mGeneratorExponent(1),
+      givaroField( FieldType( charact_,dimension, ARingGF::M2arrayToStdVec(charact_, modPolynomial) )),
+      givaroRandomIterator( FieldType::randIter(givaroField ))      
     
     {
             /// @jakob: find out if the irreducible polynomial is checked in givaro.     
@@ -59,6 +66,12 @@ namespace M2 {
             getModPolynomialCoeffs();
     }
 
+  
+  const M2_arrayint ARingGF::findMinimalPolynomial(UTT charac, UTT dim)
+  {
+    ARingGF tmp(charac,dim);
+    return tmp.getModPolynomialCoeffs();
+  }
 
     ARingGF::UTT ARingGF::M2arrayToGFRepresentation( ARingGF::UTT pCharac ,const  M2_arrayint & m2array ) 
     {
@@ -102,7 +115,7 @@ namespace M2 {
         ///@jakob find out the type of m2array->len
         for ( UTT pos=0 ;pos < m2array->len; pos++)
         {
-                if (m2array->array[pos]>0) 
+                if (m2array->array[pos]!=0) 
                 degree=pos;
         }
         return degree;
@@ -446,6 +459,54 @@ void ARingGF::set_from_int(ElementType &result, int a) const
         //result = rawRandomInt((int32_t) givaroField.cardinality());
         //result = givaroRandomIterator() %   givaroField.cardinality();
     }
+
+extern const M2_arrayint getPolynomialCoefficients(const PolynomialRing *R, const ring_elem f);
+
+  bool ARingGF::promote(const Ring *Rf, const ring_elem f, ElementType &result) const
+  {
+    if (mOriginalRing != Rf) return false;
+
+    result = givaroField.zero;
+    int exp[1];
+    ElementType gen;
+    givaroField.generator(gen);
+    for (Nterm *t = f; t != NULL; t = t->next)
+      {
+        elem a, b;
+        int coeff = mOriginalRing->getCoefficientRing()->coerce_to_int(t->coeff);
+        set_from_int(a, coeff);
+        mOriginalRing->getMonoid()->to_expvector(t->monom, exp);
+        // exp[0] is the variable we want.  Notice that since the ring is a quotient,
+        // this degree is < n (where Q_ = P^n).
+        power(b, gen, exp[0]);
+        mult(a, a, b);
+        add(result, result, a);
+      }
+    return true;
+    
+  }
+
+  bool ARingGF::lift(const Ring *Rg, const ElementType f, ring_elem &result) const
+  {
+    // Rg = Z/p[x]/F(x) ---> GF(p,n)
+    // promotion: need to be able to know the value of 'x'.
+    // lift: need to compute (primite_element)^e
+
+    if (mOriginalRing != Rg) return false;
+    
+    
+    if (f == givaroField.zero)
+      result = mOriginalRing->from_int(0);
+    else if (f == givaroField.one)
+      result = mOriginalRing->from_int(1);
+    else
+      {
+        result = mOriginalRing->power(mPrimitiveElement, f);
+      }
+    
+    return true;
+  }
+  
 
 };
 

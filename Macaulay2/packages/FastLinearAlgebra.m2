@@ -936,10 +936,17 @@ rawARingGaloisField(5,7)
 rawARingGaloisField(5,8)
 
 
-GF(2,3)
-GF(2,3,Strategy=>"Givaro")  -- fails
-GF(2,3,Strategy=>"New")  -- fails, needs 'promote'
+A = GF(2,3)
+B = GF(2,3,Strategy=>"Givaro")  -- fails
+GF(2,3,Strategy=>"CompleteGivaro")  -- fails
 
+
+A = GF(2,3,Strategy=>"New")  -- fails, needs 'promote'
+
+debug Core
+B = ambient A
+B_0
+rawARingGaloisFieldFromQuotient(raw B_0)
 ///
 
 -- TODO:

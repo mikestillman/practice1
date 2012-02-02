@@ -187,12 +187,9 @@ GF(Ring) := GaloisField => opts -> (S) -> (
 	  rawF := if opts.Strategy === null then 
 	              rawGaloisField raw primitiveElement
 		  else if opts.Strategy === "Givaro" then
-		       rawARingGaloisField(p,n)
-		  else if opts.Strategy === "CompleteGivaro" then (
-		       if not S#?"Givaro" then 
-		           error "CompleteGivaro given as Strategy, but quotient ring has been constructed elsewhere";
-		       S#"Givaro"
-		      )
+		       rawARingGaloisFieldFromQuotient raw primitiveElement
+		  else if opts.Strategy === "CompleteGivaro" then 
+		       rawARingGaloisFieldFromQuotient raw primitiveElement
 		  else if opts.Strategy === "New" then
 		      rawARingGaloisField1 raw primitiveElement;
 	  F := new GaloisField from rawF;

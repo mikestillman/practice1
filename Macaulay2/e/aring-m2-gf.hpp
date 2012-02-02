@@ -59,7 +59,7 @@ namespace M2 {
     size_t* mFromIntTable;
     
     const PolynomialRing& mOriginalRing;
-    const ring_elem mPrimitiveElement;
+    const ring_elem mPrimitiveElement; // is an element of mOriginalRing
     size_t mGeneratorExponent;  
     // the given generator of mOriginalRing is 
     // mPrimitiveElement^mGeneratorExponent (in this ring).

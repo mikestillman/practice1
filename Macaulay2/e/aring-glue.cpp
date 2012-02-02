@@ -90,12 +90,41 @@ namespace M2 {
     return retval;
   }
 
+
+
   //explicit instantiation
  template class ConcreteRing< ARingZZp >;
 
   template class ConcreteRing< ARingGFM2 >;
 
 #if defined(HAVE_FFLAS_FFPACK) && defined(HAVE_GIVARO)
+
+
+  template<>
+  bool ConcreteRing<ARingGF>::promote(const Ring *Rf, const ring_elem f, ring_elem &result) const
+  {
+    // Rf = Z/p[x]/F(x) ---> GF(p,n)
+    // promotion: need to be able to know the value of 'x'.
+    // lift: need to compute (primite_element)^e
+
+    ElementType a;
+    bool retval = R->promote(Rf,f,a);
+    R->to_ring_elem(result, a);
+    return retval;
+  }
+
+  template<>
+  bool ConcreteRing<ARingGF>::lift(const Ring *Rg, const ring_elem f, ring_elem &result) const
+  {
+    // Rf = Z/p[x]/F(x) ---> GF(p,n)
+    // promotion: need to be able to know the value of 'x'.
+    // lift: need to compute (primite_element)^e
+
+    ElementType a;
+    R->from_ring_elem(a, f);
+    bool retval = R->lift(Rg,a,result);
+    return retval;
+  }
 
   //explicit instantiation
  template class ConcreteRing< ARingGF >;

@@ -19,6 +19,7 @@
 #include <givaro/givtimer.h>
 #include <givaro/givextension.h>     //multiple definition problem...   solvable by encapsulating (see linbox)? Also solvable with the namespace trick, but do not overuse that...
 
+#include "polyring.hpp"
 
 namespace M2 {
 
@@ -45,7 +46,18 @@ class ARingGF : RingInterface
 
 
     ARingGF( UTT charac_,   UTT dimension_);
-    ARingGF( UTT charac_,  const M2_arrayint & modPolynomial);  
+
+  // returns a polynomial that Givaro would choose for this GF(charac^dim).
+  // We hope that if the polynomial is F(t), that t is a generator of the
+  // multiplicative group.  We need to check this.
+  //TODO: check whether Givaro can handle F(t) with t not primitive.
+  static const M2_arrayint findMinimalPolynomial(UTT charac, UTT dim);
+
+  ARingGF( UTT charac_,  
+           const M2_arrayint & modPolynomial, 
+           const PolynomialRing &originalR
+           //TODO: other information too?
+           );
 
   private:
    
@@ -55,6 +67,10 @@ class ARingGF : RingInterface
     const FieldType givaroField;
  
     mutable  FieldType::randIter     givaroRandomIterator;
+
+    const PolynomialRing* mOriginalRing;
+    const ring_elem mPrimitiveElement; // is an element of mOriginalRing
+    size_t mGeneratorExponent;  
 
     //  int p1; // p-1
     // int minus_one;
@@ -84,7 +100,7 @@ class ARingGF : RingInterface
 
     /** @name IO
     @{ */
-            void text_out(buffer &o) const { o << "GF(" << charac << "," << dimension << ")"; }
+            void text_out(buffer &o) const { o << "GF(" << charac << "," << dimension << ",Givaro)"; }
 
             void elem_text_out(buffer &o, 
                                 const  ElementType a,
@@ -193,12 +209,9 @@ class ARingGF : RingInterface
             
     /** @} */
 
+    bool promote(const Ring *Rf, const ring_elem f, ElementType &result) const;
 
-    bool promote(const Ring *S, const ring_elem f, ElementType &result) const
-    {
-      //TODO: write me.
-      return false;
-    }
+    bool lift(const Ring *Rg, const ElementType f, ring_elem &result) const;
 
   };
 

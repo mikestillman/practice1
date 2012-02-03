@@ -285,8 +285,8 @@ class MutableMat : public MutableMatrix
   // Specific template instances must provide these functions
   MutableMat() {}
 
-  MutableMat(const RingType *R, int nrows, int ncols)
-    : mat(R,nrows,ncols) {}
+  MutableMat(const Ring *R, const CoeffRing *coeffR, int nrows, int ncols)
+    : mat(R,coeffR,nrows,ncols) {}
 public:
 #if 0
   virtual DMatRR * get_DMatRR();
@@ -332,9 +332,9 @@ public:
     void copy_ring_elem(ring_elem &result) { i.copy_elem(result); }
   };
 
-  static MutableMat *zero_matrix(const RingType *R, int nrows, int ncols)
+  static MutableMat *zero_matrix(const Ring *R, const CoeffRing *coeffR, int nrows, int ncols)
   {
-    return new MutableMat(R,nrows,ncols);
+    return new MutableMat(R,coeffR,nrows,ncols);
   }
 
   static MutableMat *grab_Mat(const Mat *m);

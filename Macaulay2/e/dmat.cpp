@@ -15,24 +15,27 @@
 #include "aring-zzp.hpp"
 
 template<typename CoeffRing>
-DMat<CoeffRing>::DMat(const RingType *R0, int nrows, int ncols)
+DMat<CoeffRing>::DMat(const Ring *R0, const CoeffRing *coeffR0, int nrows, int ncols)
   : R(R0),
-    coeffR(R0->get_ARing()),
+    coeffR(coeffR0),
     nrows_(nrows),
     ncols_(ncols)
 {
   initialize(nrows,ncols,0);
 }
 
-template <> DMat<CoefficientRingR>::DMat(const Ring *R0, int nrows, int ncols)
+#if 0
+//TODO: MES: remove if above works fine.
+template <> DMat<CoefficientRingR>::DMat(const Ring *R0, const CoefficientRingR *coeffR, int nrows, int ncols)
   : R(R0),
-    coeffR(0),
+    coeffR(coeffR),
     nrows_(nrows),
     ncols_(ncols)
 {
   coeffR = new CoefficientRingR(R0);
   initialize(nrows,ncols,0);
 }
+#endif
 
 template<typename CoeffRing>
 void DMat<CoeffRing>::initialize(int nrows, int ncols, elem *array)
@@ -87,7 +90,7 @@ void DMat<CoeffRing>::grab(DMat<CoeffRing> *M)
 template<typename CoeffRing>
 DMat<CoeffRing> *DMat<CoeffRing>::copy() const
 {
-  DMat<CoeffRing> *result = new DMat<CoeffRing>(get_ring(), 0, 0);
+  DMat<CoeffRing> *result = new DMat<CoeffRing>(get_ring(), get_CoeffRing(), 0, 0);
   result->initialize(nrows_, ncols_, array_);
   return result;
 }
@@ -580,7 +583,7 @@ template<typename CoeffRing>
 DMat<CoeffRing> * DMat<CoeffRing>::submatrix(M2_arrayint rows,
                                              M2_arrayint cols) const
 {
-  DMat<CoeffRing> *result = new DMat<CoeffRing>(R,rows->len,cols->len);
+  DMat<CoeffRing> *result = new DMat<CoeffRing>(get_ring(), get_CoeffRing(),rows->len,cols->len);
   for (int r=0; r<rows->len; r++)
     for (int c=0; c<cols->len; c++)
       {
@@ -594,7 +597,7 @@ DMat<CoeffRing> * DMat<CoeffRing>::submatrix(M2_arrayint rows,
 template<typename CoeffRing>
 DMat<CoeffRing> * DMat<CoeffRing>::submatrix(M2_arrayint cols) const
 {
-  DMat<CoeffRing> *result = new DMat<CoeffRing>(R,nrows_,cols->len);
+  DMat<CoeffRing> *result = new DMat<CoeffRing>(get_ring(), get_CoeffRing(),nrows_,cols->len);
   for (int r=0; r<nrows_; r++)
     for (int c=0; c<cols->len; c++)
       {

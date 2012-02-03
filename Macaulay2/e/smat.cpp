@@ -506,15 +506,17 @@ void SMat<CoeffRing>::vec_delete_rows(sparsevec *&v, int i, int j) const
 // SMat //////////////////
 //////////////////////////
 template<typename CoeffRing>
-SMat<CoeffRing>::SMat(const RingType *R0, int nrows, int ncols)
+SMat<CoeffRing>::SMat(const Ring *R0, const CoeffRing *coeffR0, int nrows, int ncols)
   : R(R0),
-    coeffR(R0->get_ARing()),
+    coeffR(coeffR0),
     nrows_(nrows),
     ncols_(ncols)
 {
   initialize(nrows,ncols,0);
 }
 
+#if 0
+//TODO: MES remove this once above compiles.
 template <> SMat<CoefficientRingR>::SMat(const Ring *R0, int nrows, int ncols)
   : R(R0),
     coeffR(0),
@@ -524,6 +526,7 @@ template <> SMat<CoefficientRingR>::SMat(const Ring *R0, int nrows, int ncols)
   coeffR = new CoefficientRingR(R0);
   initialize(nrows,ncols,0);
 }
+#endif
 
 template<typename CoeffRing>
 void SMat<CoeffRing>::initialize(int nrows, int ncols, sparsevec **cols)
@@ -556,7 +559,7 @@ void SMat<CoeffRing>::grab(SMat<CoeffRing> *M)
 template<typename CoeffRing>
 SMat<CoeffRing> *SMat<CoeffRing>::copy() const
 {
-  SMat<CoeffRing> *result = new SMat<CoeffRing>(get_ring(), 0, 0);
+  SMat<CoeffRing> *result = new SMat<CoeffRing>(get_ring(), get_CoeffRing(), 0, 0);
   result->initialize(nrows_, ncols_, columns_);
   return result;
 }
@@ -856,7 +859,7 @@ template<typename CoeffRing>
 SMat<CoeffRing> * SMat<CoeffRing>::submatrix(M2_arrayint rows,
                                              M2_arrayint cols) const
 {
-  SMat<CoeffRing> *result = new SMat<CoeffRing>(R,rows->len,cols->len);
+  SMat<CoeffRing> *result = new SMat<CoeffRing>(get_ring(), get_CoeffRing(),rows->len,cols->len);
   for (int r=0; r<rows->len; r++)
     for (int c=0; c<cols->len; c++)
       {
@@ -870,7 +873,7 @@ SMat<CoeffRing> * SMat<CoeffRing>::submatrix(M2_arrayint rows,
 template<typename CoeffRing>
 SMat<CoeffRing> * SMat<CoeffRing>::submatrix(M2_arrayint cols) const
 {
-  SMat<CoeffRing> *result = new SMat<CoeffRing>(R,nrows_,cols->len);
+  SMat<CoeffRing> *result = new SMat<CoeffRing>(get_ring(), get_CoeffRing(),nrows_,cols->len);
   for (int r=0; r<nrows_; r++)
     for (int c=0; c<cols->len; c++)
       {

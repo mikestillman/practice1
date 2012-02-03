@@ -45,15 +45,12 @@ MutableMatrix *MutableMatrix::zero_matrix(const Ring *R,
   if (KZZp != 0)
     {
       if (dense)
-	{
-	  return MutableMat< DMat<M2::ARingZZp> >
-	    ::zero_matrix(KZZp,nrows,ncols);
-	}
+        return MutableMat< DMat<M2::ARingZZp> >
+          ::zero_matrix(R,KZZp->get_ARing(), nrows,ncols);
       else
-	return MutableMat< SMat<M2::ARingZZp> >
-	    ::zero_matrix(KZZp,nrows,ncols);
+        return MutableMat< SMat<M2::ARingZZp> >
+          ::zero_matrix(R,KZZp->get_ARing(),nrows,ncols);
     }
-#if 0
   if (R->ringID() == M2::ring_GFM2)
     {
       const M2::ConcreteRing<M2::ARingGFM2> *AGF = dynamic_cast<const M2::ConcreteRing<M2::ARingGFM2> *>(R);
@@ -61,81 +58,82 @@ MutableMatrix *MutableMatrix::zero_matrix(const Ring *R,
       if (dense)
 	{
 	  return MutableMat< DMat<M2::ARingGFM2> >
-	    ::zero_matrix(&AGF->ring(),nrows,ncols);
+	    ::zero_matrix(R,&AGF->ring(),nrows,ncols);
 	}
       else
 	return MutableMat< SMat<M2::ARingGFM2> >
-          ::zero_matrix(&AGF->ring(),nrows,ncols);
+          ::zero_matrix(R,&AGF->ring(),nrows,ncols);
     }
-#endif
   if (R == globalZZ)
     {
-#ifdef DEVELOPMENT
- #warning "change to NTL mat_ZZ"
-#endif
       if (dense)
 	{
 	  return MutableMat< DMat<CoefficientRingZZ_NTL> >
-	    ::zero_matrix(globalZZ,nrows,ncols);
+	    ::zero_matrix(globalZZ,globalZZ->get_ARing(),nrows,ncols);
 	}
       else
 	  return MutableMat< SMat<CoefficientRingZZ_NTL> >
-	    ::zero_matrix(globalZZ,nrows,ncols);
+	    ::zero_matrix(globalZZ,globalZZ->get_ARing(),nrows,ncols);
     }
   if (R->is_RRR())
     {
-      if (R->cast_to_RRR()->get_precision() <= 53)
+      const RRR * ARRR = R->cast_to_RRR();
+      ASSERT(ARRR != 0);
+      if (ARRR->get_precision() <= 53)
 	{
 	  if (dense)
 	    {
 	      return MutableMat< DMat<CoefficientRingRRR> >
-		::zero_matrix(R->cast_to_RRR(),nrows,ncols);
+		::zero_matrix(R,ARRR->get_ARing(),nrows,ncols);
 	    }
 	  else
 	    return MutableMat< SMat<CoefficientRingRRR> >
-	      ::zero_matrix(R->cast_to_RRR(),nrows,ncols);
+	      ::zero_matrix(R, ARRR->get_ARing(),nrows,ncols);
 	  
 	}
       // large precision after this
       if (dense)
 	{
 	  return MutableMat< DMat<CoefficientRingRRR> >
-	    ::zero_matrix(R->cast_to_RRR(),nrows,ncols);
+	    ::zero_matrix(R, ARRR->get_ARing(),nrows,ncols);
 	}
       else
 	return MutableMat< SMat<CoefficientRingRRR> >
-	  ::zero_matrix(R->cast_to_RRR(),nrows,ncols);
-    }
+	  ::zero_matrix(R, ARRR->get_ARing(),nrows,ncols);
+}
   if (R->is_CCC())
     {
-      if (R->cast_to_CCC()->get_precision() <= 53)
+      const CCC *ACCC = R->cast_to_CCC();
+      ASSERT(ACCC != 0);
+      if (ACCC->get_precision() <= 53)
 	{
 	  if (dense)
 	    {
 	      return MutableMat< DMat<CoefficientRingCCC> >
-		::zero_matrix(R->cast_to_CCC(),nrows,ncols);
+		::zero_matrix(R, ACCC->get_ARing(),nrows,ncols);
 	    }
 	  else
 	    return MutableMat< SMat<CoefficientRingCCC> >
-	      ::zero_matrix(R->cast_to_CCC(),nrows,ncols);
+	      ::zero_matrix(R, ACCC->get_ARing(),nrows,ncols);
 	}
       // large precision after this
       if (dense)
 	{
 	  return MutableMat< DMat<CoefficientRingCCC> >
-	    ::zero_matrix(R->cast_to_CCC(),nrows,ncols);
+	    ::zero_matrix(R, ACCC->get_ARing(),nrows,ncols);
 	}
       else
 	return MutableMat< SMat<CoefficientRingCCC> >
-	  ::zero_matrix(R->cast_to_CCC(),nrows,ncols);
+	  ::zero_matrix(R, ACCC->get_ARing(),nrows,ncols);
     }
   // In this case, we just use ring elem arithmetic
+  const CoefficientRingR *cR = new CoefficientRingR(R);
   if (dense)
     return MutableMat< DMat<CoefficientRingR> >
-            ::zero_matrix(R,nrows,ncols);
+      ::zero_matrix(R,cR,nrows,ncols);
   else
     return MutableMat< SMat<CoefficientRingR> >
-            ::zero_matrix(R,nrows,ncols);
+      ::zero_matrix(R,cR,nrows,ncols);
   const GF *KGF = R->cast_to_GF();
   if (KGF != 0)
     {

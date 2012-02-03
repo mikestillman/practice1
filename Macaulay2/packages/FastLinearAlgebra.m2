@@ -422,33 +422,6 @@ testGFArithmetic GaloisField := (F) -> (
 	       assert(elemsR#i ^ N == lift(elemsF#i ^ N, R)));
      )
 
-{*
-
-
--- power table
-for i from 0 to 7 list (
-  for j from -7 to 7 list (
-       -- in R:
-       if j < 0 and i == 0 then continue;       
-       ans := toString raw(elemsR#i ^ j);
-       ans2 := toString(elemsF#i ^ j);
-       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
-       ))
-
--- big power table: fails...
-for i from 0 to 7 list (
-  for p from  0 to 20 list (
-       -- in R:
-       j = p + 273128731287312310;
-       << "doing: " << i << " " << j << endl;
-       ans := toString raw(elemsR#i ^ j);
-       ans2 := toString(elemsF#i ^ j);
-       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
-       ))
-     
-     )
-
-*}
 beginDocumentation()
 
 
@@ -456,8 +429,6 @@ TEST ///
 needsPackage "FastLinearAlgebra"
 debug Core
 
-
- 
 
 nrTests = 100; -- may depend on cardinality, e.g. 1 % or so
 fieldHashTable = constructGivaroField( 37,1 );
@@ -1187,6 +1158,22 @@ Strategy=>"Givaro":
     have a new version of GF which takes an already constructed raw ring
      but otherwise does exactly what is done now.
 
+
+possible structure for mutable matrices:
+class DMat<RingType>  -- just like now
+class SMat<RingType>  -- just like now
+class MutableMatrix  (virtual calls to everything) -- just like now
+  class ConcreteMutableMatrix<MatType>
+
+question: how to create a new matrix, given a ring?
+answer#1: have, inside the Ring hierarchy.  This seems to be the cleanest solution
+  virtual MutableMatrix* mutableZeroMatrix(size_t nrows, size_t ncols, bool dense)
+answer#2:
+  MutableMatrix has a virtual call:
+  virtual MutableMatrix * mutableZeroMatrix(size_t nrows, size_t ncols)
+  this could be called via... THIS DOESN'T WORK SO WELL!!
+  MatrixFactory: abstract class
+    ConcreteMatrixFactory<RingType>::mutableZeroMatrix
 
 
 -- Local Variables:

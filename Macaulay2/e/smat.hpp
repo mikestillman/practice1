@@ -30,7 +30,7 @@ private:
 public:
   SMat():R(0), coeffR(0), nrows_(0), ncols_(0), columns_(0) {} // Makes a zero matrix
 
-  SMat(const RingType *R0, int nrows, int ncols); // Makes a zero matrix
+  SMat(const Ring *R0, const CoeffRing *R0, int nrows, int ncols); // Makes a zero matrix
 
   void grab(SMat *M);// swaps M and this.
 
@@ -40,7 +40,7 @@ public:
 
   int n_rows() const { return nrows_; }
   int n_cols() const { return ncols_; }
-  const RingType * get_ring() const { return R; }
+  const Ring * get_ring() const { return R; }
   const CoeffRing * get_CoeffRing() const { return coeffR; }
 
   //  void set_matrix(const SMat<CoeffRing> *mat0);
@@ -181,8 +181,8 @@ public:
   SMat * negate() const;
 
 private:
-  const RingType *R; // To interface to the outside world
-  CoeffRing * coeffR; // Same as R, optimized for speed.  R->get_CoeffRing()
+  const Ring *R; // To interface to the outside world
+  const CoeffRing * coeffR; // Same as R, optimized for speed.  R->get_CoeffRing()
   int nrows_;
   int ncols_;
   sparsevec **columns_; // array has length nrows*ncols

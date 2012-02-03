@@ -5,6 +5,8 @@
 
 #if defined(HAVE_FFLAS_FFPACK) && defined(HAVE_GIVARO)
 
+#include "ringmap.hpp"
+
 namespace M2 {
 
 //std::vector<GFqDom<long>::Residu_t> irreducible_11_2;
@@ -506,7 +508,11 @@ extern const M2_arrayint getPolynomialCoefficients(const PolynomialRing *R, cons
     
     return true;
   }
-  
+
+  void ARingGF::eval(const RingMap *map, const elem f, int first_var, ring_elem &result) const
+  {
+    result = map->get_ring()->power(map->elem(first_var), f);
+  }
 
 };
 

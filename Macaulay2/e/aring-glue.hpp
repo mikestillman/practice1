@@ -6,6 +6,7 @@
 #include "aring.hpp"
 #include "ring.hpp"
 
+#define COERCE_RING(RingType,R) dynamic_cast<const RingType *>(R)
 
 namespace M2 {
 /**
@@ -25,9 +26,6 @@ namespace M2 {
     virtual M2::RingID ringID() const { return RingType::ringID; }
 
     const RingType & ring() const { return *R; }
-
-    //  Z_mod * cast_to_Z_mod() { return this; }
-    //  const Z_mod * cast_to_Z_mod() const { return this; }
 
     virtual int coerce_to_int(ring_elem a) const
     {
@@ -304,11 +302,16 @@ namespace M2 {
       R->elem_text_out(o,a,p_one,p_plus,p_parens);
     }
 
+    // map : this = R --> S, f in R
+    // sending primelem --> map->elem(firstvar)
+    // return map(f) as a ring_elem in S
     virtual ring_elem eval(const RingMap *map, const ring_elem f, int first_var) const
     {
-      //TODO: implement
-      fprintf(stderr, "calling eval\n");
-      return 0;
+      ElementType a;
+      ring_elem result;
+      R->from_ring_elem(a, f);
+      R->eval(map, a, first_var, result);
+      return result;
     }
   };
 

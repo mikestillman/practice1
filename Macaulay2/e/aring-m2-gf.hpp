@@ -309,6 +309,10 @@ namespace M2 {
 
     bool lift(const Ring *Rg, const elem f, ring_elem &result) const;
 
+    // map : this --> target(map)
+    //       primelem --> map->elem(first_var)
+    // evaluate map(f)
+    void eval(const RingMap *map, const elem f, int first_var, ring_elem &result) const;
   };
 
 };

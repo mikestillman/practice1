@@ -8,6 +8,7 @@
 #include "ringelem.hpp"
 
 class Z_mod;
+class RingMap;
 
 namespace M2 {
 /**
@@ -240,6 +241,8 @@ namespace M2 {
     {
       result = rawRandomInt((int32_t)p);
     }
+
+    void eval(const RingMap *map, const elem f, int first_var, ring_elem &result) const;
   private:
     void initialize_tables();
     

@@ -20,6 +20,7 @@
 #include <givaro/givextension.h>     //multiple definition problem...   solvable by encapsulating (see linbox)? Also solvable with the namespace trick, but do not overuse that...
 
 #include "polyring.hpp"
+class RingMap;
 
 namespace M2 {
 
@@ -212,6 +213,11 @@ class ARingGF : RingInterface
     bool promote(const Ring *Rf, const ring_elem f, ElementType &result) const;
 
     bool lift(const Ring *Rg, const ElementType f, ring_elem &result) const;
+
+    // map : this --> target(map)
+    //       primelem --> map->elem(first_var)
+    // evaluate map(f)
+    void eval(const RingMap *map, const elem f, int first_var, ring_elem &result) const;
 
   };
 

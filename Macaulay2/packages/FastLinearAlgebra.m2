@@ -26,7 +26,8 @@ export {
     testNegate,
     testSubtract,
     testMultiply,
-    testAxioms,    
+    testAxioms,
+    testGFArithmetic,
     constructGivaroField,
     constructZZpFFPACK,
     constructMacaulayGF,
@@ -382,8 +383,72 @@ testField (MutableHashTable,ZZ) := (fieldHashTable,nrTests )->
     testAxioms(fieldHashTable, nrTests);
 );
 
+testGFArithmetic = method()
+testGFArithmetic GaloisField := (F) -> (
+     R := ambient F;
+     Q := F.order;
+     a := R_0;
+     b := F_0;
+     elemsR := prepend(0_R, for i from 1 to Q-1 list a^i);
+     elemsF := prepend(0_F, for i from 1 to Q-1 list b^i);
+     for i from 0 to Q-1 do assert(elemsR#i == lift(elemsF#i, R));
+     -- negation
+     for i from 0 to Q-1 do assert(- elemsR#i == lift(- elemsF#i, R));
+     -- addition table
+     for i from 0 to Q-1 do
+  	  for j from 0 to Q-1 do
+	       assert(elemsR#i + elemsR#j == lift(elemsF#i + elemsF#j, R));
+     -- subtraction table
+     for i from 0 to Q-1 do
+  	  for j from 0 to Q-1 do
+	       assert(elemsR#i - elemsR#j == lift(elemsF#i - elemsF#j, R));
+     -- multiplication table
+     for i from 0 to Q-1 do
+  	  for j from 0 to Q-1 do
+	       assert(elemsR#i * elemsR#j == lift(elemsF#i * elemsF#j, R));
+     -- division table
+     for i from 0 to Q-1 do
+  	  for j from 1 to Q-1 do
+	       assert(elemsR#i // elemsR#j == lift(elemsF#i // elemsF#j, R));
+     -- powers table
+     for i from 0 to Q-1 do 
+  	  for j from -Q to Q-1 do (
+	       if i == 0 and j <= 0 then continue;
+	       assert(elemsR#i ^ j == lift(elemsF#i ^ j, R)));
+     -- big powers table
+     for i from 0 to Q-1 do
+  	  for j from -Q to Q-1 do ( 
+	       N := j + 894723897542398472389;
+	       assert(elemsR#i ^ N == lift(elemsF#i ^ N, R)));
+     )
+
+{*
 
 
+-- power table
+for i from 0 to 7 list (
+  for j from -7 to 7 list (
+       -- in R:
+       if j < 0 and i == 0 then continue;       
+       ans := toString raw(elemsR#i ^ j);
+       ans2 := toString(elemsF#i ^ j);
+       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
+       ))
+
+-- big power table: fails...
+for i from 0 to 7 list (
+  for p from  0 to 20 list (
+       -- in R:
+       j = p + 273128731287312310;
+       << "doing: " << i << " " << j << endl;
+       ans := toString raw(elemsR#i ^ j);
+       ans2 := toString(elemsF#i ^ j);
+       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
+       ))
+     
+     )
+
+*}
 beginDocumentation()
 
 
@@ -816,81 +881,36 @@ eliminate(a, I)
 
 
 TEST /// -- Testing M2 ARing GF interface
-R = ambient GF(2,3)
-f = R_0
-debug Core
-F = rawARingGaloisField1 raw f
-b = F_0
-elemsR = prepend(0_R, for i from 1 to 7 list a^i)
-elemsF = prepend(0_F, for i from 1 to 7 list b^i)
+--restart
+--loadPackage "FastLinearAlgebra"
+A = GF(2,4)
+testGFArithmetic A
 
-for i from 0 to 7 list (toString raw elemsR#i == toString elemsF#i)
+B = GF(2,4, Strategy=>"New")
+testGFArithmetic B
 
--- negation
-for i from 0 to 7 list (
-       -- in R:
-       ans := toString raw(- elemsR#i);
-       ans2 := toString(- elemsF#i);
-       if ans != ans2 then << "error: " << i << " " << ans << " " << ans2 << endl;
-       )
+C = GF(2,4, Strategy=>"Givaro")
+testGFArithmetic C
 
--- addition table
-for i from 0 to 7 list (
-  for j from 0 to 7 list (
-       -- in R:
-       ans := toString raw(elemsR#i + elemsR#j);
-       ans2 := toString(elemsF#i + elemsF#j);
-       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
-       ))
+D = GF(2,4, Strategy=>"CompleteGivaro")
+testGFArithmetic D
 
--- subtraction
-for i from 0 to 7 list (
-  for j from 0 to 7 list (
-       -- in R:
-       ans := toString raw(elemsR#i - elemsR#j);
-       ans2 := toString(elemsF#i - elemsF#j);
-       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
-       ))
+///
 
--- multiplication
-for i from 0 to 7 list (
-  for j from 0 to 7 list (
-       -- in R:
-       ans := toString raw(elemsR#i * elemsR#j);
-       ans2 := toString(elemsF#i * elemsF#j);
-       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
-       ))
+TEST /// -- Testing M2 ARing GF interface
+--restart
+--loadPackage "FastLinearAlgebra"
+A = GF(3,3)
+testGFArithmetic A
 
--- division
-for i from 0 to 7 list (
-  for j from 0 to 7 list (
-       if elemsR#j == 0 then continue;
-       -- in R:
-       ans := toString raw(elemsR#i // elemsR#j);
-       ans2 := toString(elemsF#i // elemsF#j);
-       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
-       ))
+B = GF(3,3, Strategy=>"New")
+testGFArithmetic B
 
--- power table
-for i from 0 to 7 list (
-  for j from -7 to 7 list (
-       -- in R:
-       if j < 0 and i == 0 then continue;       
-       ans := toString raw(elemsR#i ^ j);
-       ans2 := toString(elemsF#i ^ j);
-       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
-       ))
+C = GF(3,3, Strategy=>"Givaro")
+testGFArithmetic C
 
--- big power table: fails...
-for i from 0 to 7 list (
-  for p from  0 to 20 list (
-       -- in R:
-       j = p + 273128731287312310;
-       << "doing: " << i << " " << j << endl;
-       ans := toString raw(elemsR#i ^ j);
-       ans2 := toString(elemsF#i ^ j);
-       if ans != ans2 then << "error: " << i << " " << j << " " << ans << " " << ans2 << endl;
-       ))
+D = GF(3,3, Strategy=>"CompleteGivaro")
+testGFArithmetic D
 
 ///
 

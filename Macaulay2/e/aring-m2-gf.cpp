@@ -6,6 +6,7 @@
 #include "relem.hpp"
 #include "polyring.hpp"
 #include "aring-m2-gf.hpp"
+#include "ringmap.hpp"
 
 #include "../system/supervisorinterface.h"
 #define SYSTEM_INTERRUPTED test_Field(THREADLOCAL(interrupts_interruptedFlag,struct atomic_field))
@@ -161,6 +162,11 @@ namespace M2 {
       result = mGF.ring().power(mGF.primitiveElement(), f);
     
     return true;
+  }
+
+  void ARingGFM2::eval(const RingMap *map, const elem f, int first_var, ring_elem &result) const
+  {
+    result = map->get_ring()->power(map->elem(first_var), f);
   }
   
   

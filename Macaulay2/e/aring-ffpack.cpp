@@ -5,6 +5,7 @@
 
 #if defined(HAVE_FFLAS_FFPACK)
 
+#include "ringmap.hpp"
 
 namespace M2 {
 
@@ -263,6 +264,13 @@ void ARingZZpFFPACK::set_from_int(ElementType &result, int a) const
     {
         ffpackRandomIterator.random(result);
     }
+
+  void ARingZZpFFPACK::eval(const RingMap *map, const elem f, int first_var, ring_elem &result) const
+  {
+    // translate f to 
+    int a = static_cast<int>(f);  //TODO: JAKOB: f is an element in this FFPACK ring.  How to get its integer value (an element in range [0, characteristic()-1) ?
+    result = map->get_ring()->from_int(a);
+  }
 
 };
 

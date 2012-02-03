@@ -2,6 +2,7 @@
 
 #include "aring-zzp.hpp"
 #include "aring-promoter.hpp"
+#include "ringmap.hpp"
 
 namespace M2 {
   int ARingZZp::findPrimitiveRoot(int P)
@@ -82,6 +83,13 @@ namespace M2 {
     else if (p_plus)
       o << '+';
     if (p_one || n != 1) o << n;
+  }
+
+  void ARingZZp::eval(const RingMap *map, const elem f, int first_var, ring_elem &result) const
+  {
+    // translate f to 
+    int a = exp_table[f];
+    result = map->get_ring()->from_int(a);
   }
 
 };

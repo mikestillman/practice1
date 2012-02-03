@@ -175,11 +175,14 @@ namespace M2 {
             void random(ElementType &result) const;
     /** @} */
 
-    bool promote(const Ring *S, const ring_elem f, ElementType &result) const
-    {
-      //TODO: write me.
-      return false;
-    }
+    bool promote(const Ring *Rf, const ring_elem f, elem &result) const;
+
+    bool lift(const Ring *Rg, const elem f, ring_elem &result) const;
+
+    // map : this --> target(map)
+    //       primelem --> map->elem(first_var)
+    // evaluate map(f)
+    void eval(const RingMap *map, const elem f, int first_var, ring_elem &result) const;
      
     static inline double getMaxModulus() 
     {

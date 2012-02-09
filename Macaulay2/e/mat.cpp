@@ -51,6 +51,7 @@ MutableMatrix *MutableMatrix::zero_matrix(const Ring *R,
         return MutableMat< SMat<M2::ARingZZp> >
           ::zero_matrix(R,KZZp->get_ARing(),nrows,ncols);
     }
+#if 0
   if (R->ringID() == M2::ring_GFM2)
     {
       const M2::ConcreteRing<M2::ARingGFM2> *AGF = dynamic_cast<const M2::ConcreteRing<M2::ARingGFM2> *>(R);
@@ -64,6 +65,7 @@ MutableMatrix *MutableMatrix::zero_matrix(const Ring *R,
 	return MutableMat< SMat<M2::ARingGFM2> >
           ::zero_matrix(R,&AGF->ring(),nrows,ncols);
     }
+#endif
   if (R == globalZZ)
     {
       if (dense)

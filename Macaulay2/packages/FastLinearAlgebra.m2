@@ -467,7 +467,7 @@ kk = ZZ/101
 A = mutableMatrix random(kk^2, kk^2)
 rank A
 
-kk = GF(2^4)
+kk = GF(2^4, Strategy=>"New")
 A = mutableMatrix random(kk^2, kk^2)
 rank A
 ///
@@ -1091,16 +1091,28 @@ rawARingGaloisFieldFromQuotient(raw B_0)
 -- TODO generated 26 Jan 2012
 --  Getting ZZ/p and GF ffpack and givaro and M2 routines all working at top level, and with dense/sparse matrices
 --    a. bugs in ffpack ZZ/p: basis(2,R) fails (R = polyring over ZZ/p).  Fix this?  MIKE
---    b. GF givaro: routine to get the defining polynomial coeffs (see M2_makearrayint in monordering.c). JAKOB
----   b1. M2 GF in the same framework (as ConcreteRing). MIKE
+--    b. DONE GF givaro: routine to get the defining polynomial coeffs (see M2_makearrayint in monordering.c). JAKOB
+---   b1. DONE M2 GF in the same framework (as ConcreteRing). MIKE
 --    c. promote/lift/eval beween these rings MIKE (or both of us, after a,b,d,e are done).
---    d. top level M2 function to create GF from Givaro. (needs (b).  MIKE).
+--    d. DONE top level M2 function to create GF from Givaro. (needs (b).  MIKE).
 --       this needs: the polynomial
---       another routine: create givaro GF ring using a specific poly (M2_arrayint as input) (JAKOB)
+--       DONE another routine: create givaro GF ring using a specific poly (M2_arrayint as input) (JAKOB)
 --    e. make a function called primitiveGenerator(ZZ/p), or primitiveGenerator(GF). (BOTH: Jakob for givaro and ffpack, Mike for M2)
 --       top level: each finite field should have routines: char, order, vdim??, generator. (MIKE)
+--       char kk, kk.order (order), kk.degree (dimension over ZZ/p), kk_0 is the generator
 --    f. more testing! (JAKOB, mike too)
-
+--
+--
+-- TODO generated 9 Feb 2012  (for next meeting, 20 Feb 2012)
+--    a. Jakob:
+--        finish GF and ffpack ZZ/p code, and test it.
+--        make sure that primitive element in GF code is either the variable, or we can obtain it.
+--        test these!
+--    b. Mike:
+--        get mutable matrices so they work with these new ZZ/p and GF rings.
+--        test these!
+--        talk to Dan: make sure that creation of rings at top level is the way it should be done.
+--    this will put us into place to write the linear algebra routines for these fields.
 
 steps:
 1. find f (but with Givaro: this also produces a raw ring

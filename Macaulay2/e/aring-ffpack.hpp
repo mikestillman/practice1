@@ -44,29 +44,29 @@ namespace M2 {
     //typedef  int32_t STT; /// attention: depends on UTT; currently manual update
 
     // @todo: problem, wenn typ von cHarakteristif 
-    ARingZZpFFPACK( UTT charac_);
+    ARingZZpFFPACK( UTT charac);
 
   private:
-    mutable  FieldType::RandIter     ffpackRandomIterator;
+    mutable  FieldType::RandIter     mFfpackRandomIterator;
 
-    const FieldType ffpackField;
+    const FieldType mFfpackField;
     
-    UTT charac;
-    UTT dimension; ///< same as extensionDegree
+    UTT mCharac;
+    UTT mDimension; ///< same as extensionDegree
     
-    ElementType generator;
+    ElementType mGenerator;
     //  int p1; // p-1
     // int minus_one;
     // int prim_root; // element we will use for our primitive root
     
   public:
     // ring informational
-    UTT characteristic() const { return charac; }
+    UTT characteristic() const { return mCharac; }
     
     /** @name IO
 	@{ 
     */
-    void text_out(buffer &o) const { o << "ZZpFPACK(" << charac << "," << dimension << ")"; }
+    void text_out(buffer &o) const { o << "ZZpFPACK(" << mCharac << "," << mDimension << ")"; }
 
     void elem_text_out(buffer &o, 
 		       const  ElementType a,
@@ -137,7 +137,7 @@ namespace M2 {
         
         ElementType computeGenerator ( ) const; 
 
-        void set_var(elem &result, int v) const         { result = generator; }
+        void set_var(elem &result, int v) const         { result = mGenerator; }
 
     /** @} */
 

@@ -14,8 +14,8 @@ namespace M2 {
 
     ARingGF::ARingGF(	 UTT charact_, 
                          UTT extensionDegree_)  :   
-      charac(charact_),
-      dimension(extensionDegree_),
+      mCharac(charact_),
+      mDimension(extensionDegree_),
       mOriginalRing(0),
       givaroField(FieldType(charact_, extensionDegree_)),
       givaroRandomIterator( FieldType::randIter(givaroField ))     
@@ -24,10 +24,10 @@ namespace M2 {
             /// @todo: remove debug code
             /// debug code:
             getModPolynomialCoeffs();
+            getGeneratorPolynomialCoeffs();
 
            /*
-             getModPolynomialCoeffs();
-            getGeneratorPolynomialCoeffs();
+          
             ARingGF *testGF = new ARingGF(charact_, getModPolynomialCoeffs() );
     
             std::cerr <<"random"<< std::endl;
@@ -46,12 +46,12 @@ namespace M2 {
     ARingGF::ARingGF(  UTT charact_, 
                        const M2_arrayint & modPolynomial,
                        const PolynomialRing &originalRing)  :   
-      charac(charact_),
-      dimension( M2arrayGetDegree(modPolynomial) ),
+      mCharac(charact_),
+      mDimension( M2arrayGetDegree(modPolynomial) ),
       mOriginalRing(&originalRing),
       mPrimitiveElement(originalRing.var(0)),
       mGeneratorExponent(1),
-      givaroField( FieldType( charact_,dimension, ARingGF::M2arrayToStdVec(charact_, modPolynomial) )),
+      givaroField( FieldType( charact_,mDimension, ARingGF::M2arrayToStdVec(charact_, modPolynomial) )),
       givaroRandomIterator( FieldType::randIter(givaroField ))      
     
     {
@@ -71,8 +71,49 @@ namespace M2 {
   
   const M2_arrayint ARingGF::findMinimalPolynomial(UTT charac, UTT dim)
   {
-    ARingGF tmp(charac,dim);
-    return tmp.getModPolynomialCoeffs();
+    //ARingGF tmp(charac,dim);
+    //return tmp.getModPolynomialCoeffs();
+
+   FieldType Zp(charac,1);
+                //         typedef CyclotomicTable<  GFqDom<TT>, Dense > PolDom;
+                //         PolDom Pdom( Zp, e );
+            typedef Givaro::Poly1FactorDom< FieldType::Self_t, Givaro::Dense > PolDom;
+            PolDom Pdom( Zp );
+            PolDom::Element F, G, H;
+
+                // F is irreducible of degree e over Zp
+                // G is a primitive polynomial for F
+                //         Pdom.random_prim_root(F,G, Degree(e));
+
+                // F is an irreducible factor of the
+                // (p^e-1) th cyclotomic polynomial
+                // G is a primitive polynomial for F : X
+                //         Pdom.getcyclo(F);
+                //         Pdom.init(G, Degree(1), Zp.one);
+
+                // F is irreducible of degree e over Zp
+                // with X as a primitive polynomial
+#ifndef GIVARO_RANDOM_IRREDUCTIBLE_PRIMITIVE_ROOT
+            Pdom.ixe_irreducible(F, Givaro::Degree((long)dim));
+                //         Pdom.init(G, Degree(1), Zp.one);
+                //         Pdom.assign(G, Degree(1), Zp.one);
+            Pdom.init(G, Givaro::Degree(1));
+#else
+            Pdom.random_irreducible(F, Givaro::Degree((long)dim));
+            Pdom.give_random_prim_root(G,F);
+#endif
+
+            Pdom.assign(H, G);
+
+            typedef Givaro::Poly1PadicDom< FieldType, Givaro::Dense > PadicDom;
+            PadicDom PAD(Pdom);
+
+            UTT generator, irreducible;
+
+            PAD.eval(generator, H);
+            PAD.eval(irreducible, F);
+        
+        return (representationToM2Array(irreducible, dim+1 ,charac) );
   }
 
     ARingGF::UTT ARingGF::M2arrayToGFRepresentation( ARingGF::UTT pCharac ,const  M2_arrayint & m2array ) 
@@ -104,10 +145,10 @@ namespace M2 {
 
     M2_arrayint     ARingGF::fieldElementToM2Array(ElementType el) const
     {
-        UTT  rep;
-        rep = this->givaroField.convert(rep,el);
-        std::cerr << "rep" << rep<< std::endl;
-        return elementRepresentationToM2Array(rep);
+        UTT  packedPolynomial;
+        packedPolynomial = this->givaroField.convert(packedPolynomial, el );
+        std::cerr << "packedPolynomial = " << packedPolynomial << std::endl;
+        return elementRepresentationToM2Array(packedPolynomial);
     }
 
     
@@ -163,8 +204,8 @@ namespace M2 {
     if (  rep==0)  o << "0";
     while (rep !=0)
     {
-        UTT  remainder = rep%charac;
-        rep=rep/charac;
+        UTT  remainder = rep%mCharac;
+        rep=rep/mCharac;
         if (exp >0 )
              o << " + ";
         o << remainder <<"*" << "X^" << exp;
@@ -172,7 +213,8 @@ namespace M2 {
     }
 }
 
-M2_arrayint ARingGF::representationToM2Array(UTT representation,  long coeffNum ) const
+
+M2_arrayint ARingGF::representationToM2Array(UTT representation,  long coeffNum, UTT charac ) 
 {
     std::cerr << "representationToM2Array:\n";
     M2_arrayint     polynomialCoeffs = M2_makearrayint(coeffNum);
@@ -195,7 +237,7 @@ M2_arrayint ARingGF::representationToM2Array(UTT representation,  long coeffNum 
         // end debug
         exp++;
     }
-
+    assert( representation ==0 );
     for ( ;exp < coeffNum ;exp ++)
     {
          assert(exp < coeffNum);
@@ -205,19 +247,24 @@ M2_arrayint ARingGF::representationToM2Array(UTT representation,  long coeffNum 
     return polynomialCoeffs;
 }
 
-M2_arrayint ARingGF::elementRepresentationToM2Array(UTT representation) const
+M2_arrayint ARingGF::representationToM2Array(UTT representation,  long coeffNum ) const
+{
+    return (representationToM2Array(representation,coeffNum,mCharac));
+}
+
+M2_arrayint ARingGF::elementRepresentationToM2Array(UTT polynomialRep) const
 {
      std::cerr << "representationToM2Array:\n";
     long coeffNum  ;
-    return representationToM2Array(representation, coeffNum = this->dimension );
+    return representationToM2Array(polynomialRep, coeffNum = this->mDimension );
 }
 
 
-M2_arrayint ARingGF::modPolynomialRepresentationToM2Array(UTT representation) const
+M2_arrayint ARingGF::modPolynomialRepresentationToM2Array(UTT polynomialRep) const
 {
     std::cerr << "modPolynomialRepresentationToM2Array:\n";
     long coeffNum  ;
-    return representationToM2Array(representation, coeffNum = this->dimension +1 );
+    return representationToM2Array(polynomialRep, coeffNum = this->mDimension +1 );
 }
 
 
@@ -226,7 +273,7 @@ M2_arrayint ARingGF::modPolynomialRepresentationToM2Array(UTT representation) co
 M2_arrayint ARingGF::getModPolynomialCoeffs() const
 {
     std::cerr << "getModPolynomialCoeffs\n";
-    long coeffNum=this->dimension + 1;
+    long coeffNum=this->mDimension + 1;
     M2_arrayint     modPolynomialCoeffs = M2_makearrayint(coeffNum);
     UTT             modPolynomialRepresentation = this->givaroField.irreducible();
     return modPolynomialRepresentationToM2Array( modPolynomialRepresentation );
@@ -236,13 +283,16 @@ M2_arrayint ARingGF::getModPolynomialCoeffs() const
 M2_arrayint ARingGF::getGeneratorPolynomialCoeffs() const
 {
     std::cerr << "getGeneratorPolynomialCoeffs\n";
-    long coeffNum = this->dimension + 1;
+    long coeffNum = this->mDimension + 1;
     M2_arrayint     generatorPolynomialCoeffs = M2_makearrayint(coeffNum);
-    ElementType gen;
-    givaroField.generator(gen);
-    UTT  generatorRepresentation;
-    generatorRepresentation = this->givaroField.convert(generatorRepresentation,gen);
-    return elementRepresentationToM2Array( generatorRepresentation ) ; 
+    ElementType genRep,packedGenPolynomial; ///todo: typ (gen) eigentlich UTT?
+    givaroField.generator(genRep);
+    packedGenPolynomial = givaroField.generator();
+    //assert(gen==genRep);
+    //UTT  generatorRepresentation;
+    //generatorRepresentation = this->givaroField.convert(generatorRepresentation,gen);
+    //return elementRepresentationToM2Array( generatorRepresentation ) ;
+    return elementRepresentationToM2Array( packedGenPolynomial ) ;    
 }
 
 
@@ -303,15 +353,15 @@ int ARingGF::get_repr(const ElementType f) const
 void ARingGF::set_from_int(ElementType &result, int a) const 
 {
     //std::cerr << "ARingGF::set_from_int" << std::endl;
-    a = a % charac; 
-    if (a < 0) a += charac;
+    a = a % mCharac; 
+    if (a < 0) a += mCharac;
     givaroField.init(result, a);
 }
 
     void ARingGF::set_from_mpz(ElementType &result, const mpz_ptr a) const 
     {
         //std::cerr << "set_from_mpz" << std::endl;
-        UTT b = static_cast< UTT>(mpz_fdiv_ui(a, charac));
+        UTT b = static_cast< UTT>(mpz_fdiv_ui(a, mCharac));
        // std::cerr << "b " << b << std::endl;
         givaroField.init(result,  b);
        // std::cerr << "result " << result << std::endl;

@@ -18,6 +18,12 @@
 #include <givaro/givpower.h>
 #include <givaro/givtimer.h>
 #include <givaro/givextension.h>     //multiple definition problem...   solvable by encapsulating (see linbox)? Also solvable with the namespace trick, but do not overuse that...
+#include <math.h>
+#include <givaro/givinteger.h>
+#include <givaro/givintnumtheo.h>
+#include <givaro/givpower.h>
+#include <givaro/givpoly1padic.h>
+
 
 #include "polyring.hpp"
 class RingMap;
@@ -36,19 +42,19 @@ class ARingGF : RingInterface
   public:
     static const RingID ringID = ring_GF;
 
-    typedef Givaro::GFqDom<long> FieldType;
-    typedef FieldType::Element ElementType;
-    typedef M2::ARingGF    ring_type ;
+    typedef Givaro::GFqDom<long>    FieldType;
+    typedef FieldType::Element      ElementType;
+    typedef M2::ARingGF             ring_type ;
   
-    typedef ElementType elem;
+    typedef ElementType     elem;
 
-    typedef  FieldType::Residu_t UTT; ///< types depends on FieldType definition!
-    typedef Signed_Trait<FieldType::Residu_t>::signed_type STT;///< types depends on FieldType definition!
+    typedef  FieldType::Residu_t     UTT; ///< types depends on FieldType definition!
+    typedef Signed_Trait<FieldType::Residu_t>::signed_type  STT;///< types depends on FieldType definition!
 
 
     ARingGF( UTT charac_,   UTT dimension_);
 
-  // returns a polynomial that Givaro would choose for this GF(charac^dim).
+  // returns a polynomial that Givaro would choose for this GF(mCharac^dim).
   // We hope that if the polynomial is F(t), that t is a generator of the
   // multiplicative group.  We need to check this.
   //TODO: check whether Givaro can handle F(t) with t not primitive.
@@ -62,27 +68,30 @@ class ARingGF : RingInterface
 
   private:
    
-    UTT charac;
-    UTT dimension; ///< same as extensionDegree
+    UTT     mCharac;
+    UTT     mDimension; ///< same as extensionDegree
 
-    const FieldType givaroField;
+    const FieldType     givaroField;
  
     mutable  FieldType::randIter     givaroRandomIterator;
 
-    const PolynomialRing* mOriginalRing;
-    const ring_elem mPrimitiveElement; // is an element of mOriginalRing
-    size_t mGeneratorExponent;  
+    const PolynomialRing*   mOriginalRing;
+    const ring_elem         mPrimitiveElement; // is an element of mOriginalRing
+
+    size_t      mGeneratorExponent;  
 
     //  int p1; // p-1
     // int minus_one;
     // int prim_root; // element we will use for our primitive root
 
 
-    M2_arrayint representationToM2Array(UTT representation,  long coeffNum ) const;
+    M2_arrayint     representationToM2Array(UTT representation,  long coeffNum ) const;
 
-    M2_arrayint modPolynomialRepresentationToM2Array(UTT representation) const;
-    M2_arrayint elementRepresentationToM2Array(UTT representation) const;
+    static M2_arrayint     representationToM2Array(UTT representation,  long coeffNum, UTT charac ) ;
 
+    M2_arrayint     modPolynomialRepresentationToM2Array(UTT representation) const;
+    M2_arrayint     elementRepresentationToM2Array(UTT representation) const;
+    
 
 
   public:
@@ -97,11 +106,11 @@ class ARingGF : RingInterface
 
   public:
     // ring informational
-   UTT   characteristic() const { return charac; }
+   UTT   characteristic() const { return mCharac; }
 
     /** @name IO
     @{ */
-            void text_out(buffer &o) const { o << "GF(" << charac << "," << dimension << ",Givaro)"; }
+            void text_out(buffer &o) const { o << "GF(" << mCharac << "," << mDimension << ",Givaro)"; }
 
             void elem_text_out(buffer &o, 
                                 const  ElementType a,

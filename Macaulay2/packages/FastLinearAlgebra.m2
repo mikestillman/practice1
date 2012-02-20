@@ -1122,10 +1122,10 @@ rawARingGaloisFieldFromQuotient(raw B_0)
 --    f. more testing! (JAKOB, mike too)
 --
 --
--- TODO generated 9 Feb 2012  (for next meeting, 20 Feb 2012)
+-- TODO generated 9 Feb 2012  (for next meeting, 20 Feb 2012)  ALSO for meeting on 1 Mar 2012.
 --    a. Jakob:
 --        finish GF and ffpack ZZ/p code, and test it.
---        make sure that primitive element in GF code is either the variable, or we can obtain it.
+--        make sure that primitive element in GF code is either the variable, or we can obtain it. ALMOST DONE
 --        test these!
 --    b. Mike:
 --        get mutable matrices so they work with these new ZZ/p and GF rings.
@@ -1136,9 +1136,25 @@ rawARingGaloisFieldFromQuotient(raw B_0)
 -- TODO generated 20. Feb 2012
 --      Jakob: ask givaro authors if there is a reason for their choice of the generator
 --      can we set the primitive element ourself ?
---      inside of aring-gf code 
+--      inside of aring-gf code: check that promote, lift, and eval are "correct".
 --      Mike:
---        check if the ringmap is using the primitive element 
+--        Problem: suppose phi : K = GF(p^n) --> R, for some ring R.
+--                 phi.map(0) is the image of either (1) x = K_0, or (2) the generator of the multiplicative group.  Which is it?
+--                 in m2/ringmap.m2 it seems that the value we are given in phi.map(0) is the image of the 
+--                   primitive element, so the current code is correct, IF IF IF the primitive element that M2 has matches the
+--                   implementation primitive element.
+--                 SEEMS OK in ARingGFM2 code, but we need to make sure it is OK in ARingGF code.  Then: fix logic in m2/galois.m2.
+
+R = GF(2,7)
+ambient R
+S = ZZ/2[x]/(x^7+x+1)
+A = GF(S, PrimitiveElement => x^2)
+B = ZZ/2[y]
+phi = map(B,A,{y})
+phi(x) -- y^128 !! Oh no!!  But mathematically this is OK.
+phi(x^2) 
+phi(x^7)
+phi = map(S,A,{S_0})
 
 steps:
 1. find f (but with Givaro: this also produces a raw ring

@@ -195,6 +195,20 @@ M2_arrayintOrNull rawARingGFPolynomial(const Ring *R)
   return A.getModPolynomialCoeffs();
 }
 
+
+const RingElement* rawARingGFGenerator(const Ring *R)
+{
+ const M2::ConcreteRing<M2::ARingGF> *RGF = dynamic_cast<const M2::ConcreteRing<M2::ARingGF> *>(R);
+  if (RGF == 0)
+    {
+      ERROR("expected a GaloisField");
+      return 0;
+    }
+  const M2::ARingGF &A = RGF->ring();
+  return RingElement::make_raw( R, A.getGenerator() );
+}
+
+
 M2_arrayintOrNull rawARingGFCoefficients(const RingElement *f)
 {
   const M2::ConcreteRing<M2::ARingGF> *RGF = dynamic_cast<const M2::ConcreteRing<M2::ARingGF> *>(f->get_ring());

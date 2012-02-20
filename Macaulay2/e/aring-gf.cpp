@@ -24,7 +24,7 @@ namespace M2 {
             /// @todo: remove debug code
             /// debug code:
             getModPolynomialCoeffs();
-            getGeneratorPolynomialCoeffs();
+            getGeneratorCoeffs();
 
            /*
           
@@ -280,9 +280,9 @@ M2_arrayint ARingGF::getModPolynomialCoeffs() const
 
 }
 
-M2_arrayint ARingGF::getGeneratorPolynomialCoeffs() const
+M2_arrayint ARingGF::getGeneratorCoeffs() const
 {
-    std::cerr << "getGeneratorPolynomialCoeffs\n";
+    std::cerr << "getGeneratorCoeffs\n";
     long coeffNum = this->mDimension + 1;
     M2_arrayint     generatorPolynomialCoeffs = M2_makearrayint(coeffNum);
     ElementType genRep,packedGenPolynomial; ///todo: typ (gen) eigentlich UTT?
@@ -293,6 +293,14 @@ M2_arrayint ARingGF::getGeneratorPolynomialCoeffs() const
     //generatorRepresentation = this->givaroField.convert(generatorRepresentation,gen);
     //return elementRepresentationToM2Array( generatorRepresentation ) ;
     return elementRepresentationToM2Array( packedGenPolynomial ) ;    
+}
+
+ring_elem  ARingGF::getGenerator() const
+{
+    ElementType packedGenPolynomial = givaroField.generator();  
+    ring_elem result;
+    to_ring_elem(result,packedGenPolynomial);
+    return result;
 }
 
 

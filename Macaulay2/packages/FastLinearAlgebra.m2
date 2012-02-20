@@ -429,7 +429,7 @@ TEST ///
 needsPackage "FastLinearAlgebra"
 debug Core
 
-
+ 
 nrTests = 100; -- may depend on cardinality, e.g. 1 % or so
 fieldHashTable = constructGivaroField( 37,1 );
 testField(fieldHashTable, nrTests);
@@ -461,6 +461,7 @@ testField(fieldHashTable, nrTests);
 
 
 TEST ///
+ 
 restart
 needsPackage "FastLinearAlgebra"
 kk = ZZ/101
@@ -470,49 +471,50 @@ rank A
 kk = GF(2^4, Strategy=>"New")
 A = mutableMatrix random(kk^2, kk^2)
 rank A
+ 
 ///
 
 TEST ///
-kk = ZZ/101
-A = random(kk^2, kk^4)
-B = random(kk^5, kk^2)
-M = mutableMatrix(B*A)
-N = nullSpace M
-assert((matrix M) * (matrix N) == 0)
-N = nullSpace(M, RightSide=>false)
-assert((matrix N) * (matrix M) == 0)
+    kk = ZZ/101
+    A = random(kk^2, kk^4)
+    B = random(kk^5, kk^2)
+    M = mutableMatrix(B*A)
+    N = nullSpace M
+    assert((matrix M) * (matrix N) == 0)
+    N = nullSpace(M, RightSide=>false)
+    assert((matrix N) * (matrix M) == 0)
 ///
 
 TEST ///
-kk = ZZ/101
-A = random(kk^23, kk^400)
-B = random(kk^500, kk^23)
-M = mutableMatrix(B*A);
-N = nullSpace M;
-assert(numRows N == numColumns M)
-assert(numColumns N == numColumns M - 23)
-assert((matrix M) * (matrix N) == 0)
-
-time N = nullSpace(M, RightSide=>false);
-assert(numRows N == numRows M - 23)
-assert(numColumns N == numRows M)
-assert((matrix N) * (matrix M) == 0)
+    kk = ZZ/101
+    A = random(kk^23, kk^400)
+    B = random(kk^500, kk^23)
+    M = mutableMatrix(B*A);
+    N = nullSpace M;
+    assert(numRows N == numColumns M)
+    assert(numColumns N == numColumns M - 23)
+    assert((matrix M) * (matrix N) == 0)
+    
+    time N = nullSpace(M, RightSide=>false);
+    assert(numRows N == numRows M - 23)
+    assert(numColumns N == numRows M)
+    assert((matrix N) * (matrix M) == 0)
 ///
 
 TEST ///
-kk = ZZ/101
-A = random(kk^23, kk^1000);
-B = random(kk^1000, kk^23);
-M = mutableMatrix(B*A);
-N = nullSpace M;
-assert(numRows N == numColumns M)
-assert(numColumns N == numColumns M - 23)
-assert((matrix M) * (matrix N) == 0)
-
-time N = nullSpace(M, RightSide=>false);
-assert(numRows N == numRows M - 23)
-assert(numColumns N == numRows M)
-assert((matrix N) * (matrix M) == 0)
+    kk = ZZ/101
+    A = random(kk^23, kk^1000);
+    B = random(kk^1000, kk^23);
+    M = mutableMatrix(B*A);
+    N = nullSpace M;
+    assert(numRows N == numColumns M)
+    assert(numColumns N == numColumns M - 23)
+    assert((matrix M) * (matrix N) == 0)
+    
+    time N = nullSpace(M, RightSide=>false);
+    assert(numRows N == numRows M - 23)
+    assert(numColumns N == numRows M)
+    assert((matrix N) * (matrix M) == 0)
 ///
 
 TEST ///
@@ -850,6 +852,23 @@ eliminate(a, I)
 
 ///
 
+TEST ///
+
+debug Core
+R = rawARingGaloisField(2,7)
+rawARingGFPolynomial R
+gen= rawARingGFGenerator R
+S = ZZ/2[x]/(x^7 + x^3 + 1)
+T = rawARingGaloisFieldFromQuotient(raw S_0)
+gen= rawARingGFGenerator T
+
+S = GF(3,4)
+R = ambient S
+T = rawARingGaloisFieldFromQuotient(raw R_0)
+gen= rawARingGFGenerator T
+
+///
+
 
 TEST /// -- Testing M2 ARing GF interface
 --restart
@@ -891,7 +910,7 @@ loadPackage "FastLinearAlgebra"
 
 R = ZZ/5[b]
 G = (b^(5^4)-b) // (b^(5^2)-b)
-Gfacs = factorize G  -- 150 factors
+Gfacs = factor  G  -- 150 factors
 apply(Gfacs, fac -> (
 	  f := fac#1;
 	  S := R/f;
@@ -913,7 +932,7 @@ findGalois(5,4)
 findGalois(5,3)
 findGalois(5,2)
 findGalois(5,1)
-findGalois(5^7, Variable=>getSymbol "c")
+findGalois(5,5^7, Variable=>getSymbol "c")
 
 debug Core
 rawARingGaloisField(5,2)
@@ -1069,8 +1088,8 @@ rawARingGaloisFieldFromQuotient(raw B_0)
 --         to instantiate them with DMat, SMat.
 --
 -- TODO notes 19 Jan 2012
---    a. get latest changes of Jakob working (Givaro problem Jakob TODO)
---    b. merge in trunk changes (Mike TODO)
+--    a. get latest changes of Jakob working (Givaro problem Jakob DONE)
+--    b. merge in trunk changes (Mike DONE)
 --    c. DONE possibly: merge out changes back to the trunk, delete the branch, and create a new branch. (ask Dan for read/write privs for Jakob on new branch)
 --    d. put x-mutablemat routines (fast linear algebra) into dmat.  Organize dispatch in x-mutablemat.
 --    e. tests: for matrices/elements for all of our new ring types (ffpack ZZ/p, givaro GF, ...)
@@ -1113,6 +1132,13 @@ rawARingGaloisFieldFromQuotient(raw B_0)
 --        test these!
 --        talk to Dan: make sure that creation of rings at top level is the way it should be done.
 --    this will put us into place to write the linear algebra routines for these fields.
+--
+-- TODO generated 20. Feb 2012
+--      Jakob: ask givaro authors if there is a reason for their choice of the generator
+--      can we set the primitive element ourself ?
+--      inside of aring-gf code 
+--      Mike:
+--        check if the ringmap is using the primitive element 
 
 steps:
 1. find f (but with Givaro: this also produces a raw ring

@@ -751,6 +751,13 @@ export rawARingGFPolynomial(e:Expr):Expr := (
      else WrongArg("a raw ring"));
 setupfun("rawARingGFPolynomial",rawARingGFPolynomial);
 
+export rawARingGFGenerator(e:Expr):Expr := (
+     when e
+     is R:RawRingCell do toExpr( Ccode(RawRingElementOrNull, "rawARingGFGenerator(", R.p, ")" ) )
+     else WrongArg("a raw ring"));
+setupfun("rawARingGFGenerator",rawARingGFGenerator);
+
+
 export rawARingGFCoefficients(e:Expr):Expr := (
      when e
      is a:RawRingElementCell do toExpr( Ccode(RawArrayIntOrNull, "rawARingGFCoefficients(", a.p, ")" ) )

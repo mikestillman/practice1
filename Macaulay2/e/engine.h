@@ -195,6 +195,10 @@ extern "C" {
      ring over ZZ/p.  This function returns {f0, f1, ..., f_(d-1)},
      where each entry is an integer */
 
+  const RingElement*  rawARingGFGenerator(const Ring *R);
+  /* given an ARingGF, return the  the generator of the multiplicative group.
+    */
+
   /**************************************************/
   /**** Ring routines *******************************/
   /**************************************************/

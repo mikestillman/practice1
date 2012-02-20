@@ -30,7 +30,7 @@ private:
 public:
   SMat():R(0), coeffR(0), nrows_(0), ncols_(0), columns_(0) {} // Makes a zero matrix
 
-  SMat(const Ring *R0, const CoeffRing *R0, int nrows, int ncols); // Makes a zero matrix
+  SMat(const Ring *R0, const CoeffRing * coeffR0, int nrows, int ncols); // Makes a zero matrix
 
   void grab(SMat *M);// swaps M and this.
 

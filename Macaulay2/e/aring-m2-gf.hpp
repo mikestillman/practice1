@@ -73,6 +73,9 @@ namespace M2 {
 
   class ARingGFM2 : public RingInterface
   {
+
+    
+
   public:
     static const RingID ringID = ring_GFM2;
     typedef ConcreteRing<ARingGFM2> ring_type;

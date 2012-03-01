@@ -13,7 +13,22 @@
 // #define HAVE_FFLAS_FFPACK 1 
 // #define HAVE_GIVARO 1
 
-#if defined(HAVE_FFLAS_FFPACK) && defined(HAVE_GIVARO)
+#if not defined(HAVE_FFLAS_FFPACK)  
+namespace M2 {
+
+class ARingZZpFFPACK : public DummyRing
+  {
+     public:
+        static const RingID ringID = ring_FFPACK;
+
+       
+        typedef M2::ARingZZpFFPACK             ring_type ;
+
+        ARingZZpFFPACK( int charac_ ) {};
+  };
+
+};
+#else
 #include <fflas-ffpack/field/modular-balanced.h>
 #include <givaro/givgfq.h>
 

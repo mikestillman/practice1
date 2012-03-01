@@ -13,7 +13,35 @@
 // #define HAVE_FFLAS_FFPACK 1 
 // #define HAVE_GIVARO 1
 
-#if defined(HAVE_FFLAS_FFPACK) && defined(HAVE_GIVARO)
+#include "polyring.hpp"
+class RingMap;
+
+
+
+#if not   defined(HAVE_GIVARO)
+
+#include "aring-m2-gf.hpp"
+
+namespace M2 {
+
+   
+   class ARingGF : public DummyRing
+   //class ARingGF : public ARingGFM2
+   {
+    public:
+        static const RingID ringID = ring_GF;
+
+        typedef M2::ARingGF             ring_type ;
+     
+        ARingGF( int charac_,   int dimension_)  {};
+        ARingGF( int charac_,  
+           const M2_arrayint & modPolynomial, 
+           const PolynomialRing &originalR
+           )  {}
+   };
+};
+
+#else
 #include <givaro/givgfq.h>
 #include <givaro/givpower.h>
 #include <givaro/givtimer.h>
@@ -25,8 +53,7 @@
 #include <givaro/givpoly1padic.h>
 
 
-#include "polyring.hpp"
-class RingMap;
+
 
 namespace M2 {
 

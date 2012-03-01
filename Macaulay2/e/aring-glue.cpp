@@ -97,7 +97,7 @@ namespace M2 {
 
   template class ConcreteRing< ARingGFM2 >;
 
-#if defined(HAVE_FFLAS_FFPACK) && defined(HAVE_GIVARO)
+//#if defined(HAVE_FFLAS_FFPACK) && defined(HAVE_GIVARO)
 
 
   template<>
@@ -129,13 +129,13 @@ namespace M2 {
   //explicit instantiation
  template class ConcreteRing< ARingGF >;
  
-#endif
-#if defined(HAVE_FFLAS_FFPACK)  
+//#endif
+//#if defined(HAVE_FFLAS_FFPACK)  
 
   //explicit instantiation
  
  template class ConcreteRing< ARingZZpFFPACK >;
-#endif
+//#endif
 
 
   ///////////////////////////

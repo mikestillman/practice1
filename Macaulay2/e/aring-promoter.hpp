@@ -32,6 +32,15 @@ namespace M2 {
     }
   private:
     static bool promote(const ARingZZp &R, 
+                 const ARingZZp &S, 
+                 const ARingZZp::ElementType &fR, 
+                 ARingZZp::ElementType &fS)
+    {
+      return false;
+    }
+
+#if defined(HAVE_GIVARO)
+    static bool promote(const ARingZZp &R, 
                  const ARingGF &S, 
                  const ARingZZp::ElementType &fR, 
                  ARingGF::ElementType &fS)
@@ -40,14 +49,6 @@ namespace M2 {
     }
     
     static bool promote(const ARingZZp &R, 
-                 const ARingZZp &S, 
-                 const ARingZZp::ElementType &fR, 
-                 ARingZZp::ElementType &fS)
-    {
-      return false;
-    }
-    
-    static bool promote(const ARingZZp &R, 
                  const ARingZZpFFPACK &S, 
                  const ARingZZp::ElementType &fR, 
                  ARingZZpFFPACK::ElementType &fS)
@@ -102,6 +103,7 @@ namespace M2 {
     {
       return false;
     }
+#endif
   };
 };
 

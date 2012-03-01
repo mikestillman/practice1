@@ -1144,6 +1144,28 @@ rawARingGaloisFieldFromQuotient(raw B_0)
 --                   primitive element, so the current code is correct, IF IF IF the primitive element that M2 has matches the
 --                   implementation primitive element.
 --                 SEEMS OK in ARingGFM2 code, but we need to make sure it is OK in ARingGF code.  Then: fix logic in m2/galois.m2.
+-- TODO made 1 Mar 2012
+--      Jakob: ask givaro authors if there is a reason for their choice of the generator
+--        can we set the primitive element ourself ?
+--        (2)Does givaro, ffpack, linbox have initialized variables which occur before main()?
+--        (3) make sure all givaro, ffpack uses are enclosed by #ifdef...
+--      Mike:
+--        get M2 on our branch compiled: gcc 4.2.1: with givaro,  and also without givaro.  Merge in the changes from the trunk
+--          same with gcc 4.6.2.
+--      Jakob:
+--        finish GF and ffpack ZZ/p code, and test it.
+--        make sure that primitive element in GF code is either the variable, or we can obtain it. ALMOST DONE
+--        test these!
+--      Mike:
+--        get mutable matrices so they work with these new ZZ/p and GF rings.
+--        test these!
+--         a. possibly make zero_matrix a member function for Ring.
+--         b. MutableMat functions do not create new matrices (except for zero_matrix), so we have
+--            functions like:  X += Y, X += Y*Z, submatrix of Y into X.
+--         c. MutableMat matrices have two ring pointers: one is a generic "const Ring*", the other depends on the template.
+--            I don't really like having two ring pointers in our objects, but it makes creation of new rings simpler.
+--            But maybe this is not necessary.  Need to think about it.
+--         d. (Jakob and Mike): finally get to write the linear algebra routines.
 
 R = GF(2,7)
 ambient R

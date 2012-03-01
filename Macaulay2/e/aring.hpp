@@ -57,11 +57,9 @@ namespace M2 {
 class DummyRing : RingInterface
   {
  public:
-      
 
         typedef int    FieldType;
         typedef int      ElementType;
-     
     
         typedef ElementType     elem;
 
@@ -97,17 +95,17 @@ class DummyRing : RingInterface
                                 bool p_plus, 
                                 bool p_parens) const {};
 
-       virtual   void init_set(elem &result, elem a) const { result = a; }
+        virtual   void init_set(elem &result, elem a) const { result = a; }
 
-       virtual  void set(elem &result, elem a) const { result = a; }
+        virtual  void set(elem &result, elem a) const { result = a; }
 
         virtual void set_from_int(elem &result, int a) const { result=a;}
 
-         virtual  void init(elem &result) const    { result = 0; }
+        virtual  void init(elem &result) const    { result = 0; }
 
         virtual  void set_from_mpz(elem &result,const mpz_ptr a) const {result=0;}
 
-       virtual void set_from_mpq(elem &result,const mpq_ptr a) const {result=0;}
+        virtual void set_from_mpq(elem &result,const mpq_ptr a) const {result=0;}
 
         virtual void set_var(elem &result, int v) const         { result = 1; }
 
@@ -123,9 +121,9 @@ class DummyRing : RingInterface
         virtual void copy(elem &result,const elem a) const  {result=a;}
 
 
-      virtual void negate(elem &result,const elem a) const  {};;
+        virtual void negate(elem &result,const elem a) const  {};;
 
-       virtual void invert(elem &result,const elem a) const  {};;
+        virtual void invert(elem &result,const elem a) const  {};;
 
         virtual void add(elem &result, const elem a,const elem b) const  {};;
 

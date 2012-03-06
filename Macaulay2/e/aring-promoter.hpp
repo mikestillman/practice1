@@ -39,7 +39,7 @@ namespace M2 {
       return false;
     }
 
-#if defined(HAVE_GIVARO)
+//#if defined(HAVE_GIVARO)
     static bool promote(const ARingZZp &R, 
                  const ARingGF &S, 
                  const ARingZZp::ElementType &fR, 
@@ -103,7 +103,7 @@ namespace M2 {
     {
       return false;
     }
-#endif
+//#endif
   };
 };
 

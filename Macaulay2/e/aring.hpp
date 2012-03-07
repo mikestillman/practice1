@@ -54,7 +54,7 @@ namespace M2 {
 */
   class RingInterface {}; ///< inherit from this if the class is to be used as a template parameter for ConcreteRing
 
-class DummyRing : RingInterface
+class DummyRing : public RingInterface
   {
  public:
 
@@ -63,88 +63,86 @@ class DummyRing : RingInterface
     
         typedef ElementType     elem;
 
-        virtual int characteristic()  const  {return 0; }
+        int characteristic()  const  {return 0; }
 
 
-        virtual  int get_int(elem f) const {return 0;}
-        virtual  int get_repr(elem f) const {return 0;}
-        virtual  M2_arrayint getModPolynomialCoeffs() const {return 0;}
-        virtual  M2_arrayint getGeneratorCoeffs() const {return 0;}
+        int get_int(elem f) const {return 0;}
+        int get_repr(elem f) const {return 0;}
+        M2_arrayint getModPolynomialCoeffs() const {return 0;}
+        M2_arrayint getGeneratorCoeffs() const {return 0;}
         
-        virtual  ring_elem   getGenerator() const {return 0;}
+        ring_elem   getGenerator() const {return 0;}
     
     
-        virtual  M2_arrayint fieldElementToM2Array(ElementType el) const {return 0; }
+        M2_arrayint fieldElementToM2Array(ElementType el) const {return 0; }
     
-        virtual  void to_ring_elem(ring_elem &result, const ElementType &a) const    {       }
+        void to_ring_elem(ring_elem &result, const ElementType &a) const    {       }
         
-        virtual  void from_ring_elem(ElementType &result, const ring_elem &a) const {       }
+        void from_ring_elem(ElementType &result, const ring_elem &a) const {       }
 
-        virtual  bool promote(const Ring *Rf, const ring_elem f, ElementType &result) const {return false;}
+        bool promote(const Ring *Rf, const ring_elem f, ElementType &result) const {return false;}
     
-        virtual  bool lift(const Ring *Rg, const ElementType f, ring_elem &result) const {return false;}
+        bool lift(const Ring *Rg, const ElementType f, ring_elem &result) const {return false;}
 
     
-        virtual  void eval(const RingMap *map, const elem f, int first_var, ring_elem &result) const { }
+        void eval(const RingMap *map, const elem f, int first_var, ring_elem &result) const { }
 
-        virtual  void text_out(buffer &o) const { o << "GF(dummy)"; }
+        void text_out(buffer &o) const { o << "GF(dummy)"; }
 
-        virtual      void elem_text_out(buffer &o, 
-                                const  ElementType a,
-                                bool p_one, 
-                                bool p_plus, 
-                                bool p_parens) const {};
+        void elem_text_out(buffer &o, 
+                           const  ElementType a,
+                           bool p_one, 
+                           bool p_plus, 
+                           bool p_parens) const {};
 
-        virtual   void init_set(elem &result, elem a) const { result = a; }
+        void init_set(elem &result, elem a) const { result = a; }
 
-        virtual  void set(elem &result, elem a) const { result = a; }
+        void set(elem &result, elem a) const { result = a; }
 
-        virtual void set_from_int(elem &result, int a) const { result=a;}
+        void set_from_int(elem &result, int a) const { result=a;}
 
-        virtual  void init(elem &result) const    { result = 0; }
+        void init(elem &result) const    { result = 0; }
 
-        virtual  void set_from_mpz(elem &result,const mpz_ptr a) const {result=0;}
+        void set_from_mpz(elem &result,const mpz_ptr a) const {result=0;}
 
-        virtual void set_from_mpq(elem &result,const mpq_ptr a) const {result=0;}
+        void set_from_mpq(elem &result,const mpq_ptr a) const {result=0;}
 
-        virtual void set_var(elem &result, int v) const         { result = 1; }
+        void set_var(elem &result, int v) const         { result = 1; }
 
-        virtual bool is_unit(const ElementType f) const  {return false;}
-        virtual bool is_zero(const ElementType f) const  {return true;}
-        virtual bool is_equal(const ElementType f,const ElementType g) const     {return false;}
-        virtual int compare_elems(const ElementType f,const ElementType g) const  {return 1;}
+        bool is_unit(const ElementType f) const  {return false;}
+        bool is_zero(const ElementType f) const  {return true;}
+        bool is_equal(const ElementType f,const ElementType g) const     {return false;}
+        int compare_elems(const ElementType f,const ElementType g) const  {return 1;}
 
-        virtual void clear(elem &result) const  {result=0;}
+        void clear(elem &result) const  {result=0;}
 
-        virtual void set_zero(elem &result) const   {result=0;}
+        void set_zero(elem &result) const   {result=0;}
 
-        virtual void copy(elem &result,const elem a) const  {result=a;}
+        void copy(elem &result,const elem a) const  {result=a;}
 
+        void negate(elem &result,const elem a) const  {};;
 
-        virtual void negate(elem &result,const elem a) const  {};;
+        void invert(elem &result,const elem a) const  {};;
 
-        virtual void invert(elem &result,const elem a) const  {};;
+        void add(elem &result, const elem a,const elem b) const  {};;
 
-        virtual void add(elem &result, const elem a,const elem b) const  {};;
+        void subtract(ElementType &result,const  ElementType a,const  ElementType b) const  {};;
 
-        virtual void subtract(ElementType &result,const  ElementType a,const  ElementType b) const  {};;
+        void subtract_multiple(elem &result,const  elem a,const  elem b) const  {};;
 
-        virtual void subtract_multiple(elem &result,const  elem a,const  elem b) const  {};;
-
-        virtual void mult(elem &result,const  elem a,const  elem b) const  {};;
+        void mult(elem &result,const  elem a,const  elem b) const  {};;
 
          ///@brief test doc
-        virtual  void divide(elem &result,const  elem a,const  elem b) const  {};;
+        void divide(elem &result,const  elem a,const  elem b) const  {};;
 
-        virtual void power(elem &result,const  elem a,const  int n) const  {};;
+        void power(elem &result,const  elem a,const  int n) const  {};;
 
-        virtual void power_mpz(elem &result,const  elem a,const  mpz_ptr n) const  {};;
+        void power_mpz(elem &result,const  elem a,const  mpz_ptr n) const  {};;
 
-        virtual void syzygy(const ElementType a, const ElementType b,
+        void syzygy(const ElementType a, const ElementType b,
                     ElementType &x, ElementType &y) const  {};;
 
-        virtual void random(ElementType &result) const {result=0;}
-
+        void random(ElementType &result) const {result=0;}
 
   };
 

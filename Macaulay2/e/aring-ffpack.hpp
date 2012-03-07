@@ -30,6 +30,7 @@ class ARingZZpFFPACK : public DummyRing
 };
 #else
 #include <fflas-ffpack/field/modular-balanced.h>
+#include "fflas-ffpack/ffpack/ffpack.h"
 #include <givaro/givgfq.h>
 
 namespace M2 {
@@ -40,7 +41,7 @@ namespace M2 {
      @brief wrapper for the  FFPACK::ModularBalanced<double>   field implementation
   */
   
-  class ARingZZpFFPACK : RingInterface
+  class ARingZZpFFPACK : public RingInterface
   {
   public:
     static const RingID ringID = ring_FFPACK;
@@ -77,6 +78,9 @@ namespace M2 {
   public:
     // ring informational
     UTT characteristic() const { return mCharac; }
+
+    // 
+    const FieldType field() const { return mFfpackField; }
     
     /** @name IO
 	@{ 

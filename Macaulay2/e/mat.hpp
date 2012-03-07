@@ -261,6 +261,9 @@ public:
   virtual bool least_squares(const MutableMatrix *b,
                              MutableMatrix *x,
                              bool assume_full_rank) const = 0;
+
+  /// Fast linear algebra routines (well, fast for some rings)
+  virtual size_t rank() const = 0;
 };
 
 ///////////////////////////////////////////////////
@@ -272,7 +275,7 @@ class MutableMat : public MutableMatrix
 {
   typedef Mat MatType;
   typedef typename Mat::CoeffRing CoeffRing;
-  typedef typename CoeffRing::ring_type RingType;
+  //  typedef typename CoeffRing::ring_type RingType;
   typedef typename CoeffRing::elem elem;
   Mat mat;
   // This class wraps the operations for Mat to make a MutableMatrix
@@ -728,6 +731,12 @@ public:
   virtual bool least_squares(const MutableMatrix *b,
                              MutableMatrix *x,
                              bool assume_full_rank) const;
+
+
+  virtual size_t rank() const 
+  {
+    return mat.rank();
+  }
 };
 
 

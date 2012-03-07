@@ -63,7 +63,7 @@ namespace M2 {
     @brief wrapper for the  Givaro::GFqDom<>  galois field implementation
 */
 /// @todo: think about deriving from RingInterface AND from Ring
-class ARingGF : RingInterface
+class ARingGF : public RingInterface
 {
 
   public:

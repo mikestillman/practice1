@@ -32,7 +32,7 @@ namespace M2 {
 
   class ARing;
 
-  class RingInterfaceExample : RingInterface
+  class RingInterfaceExample : public RingInterface
   {
   public:
     static const RingID ringId = ring_example;

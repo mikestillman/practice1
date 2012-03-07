@@ -12,6 +12,7 @@
 #include "dmat-LU.hpp"
 
 #include "aring-zzp.hpp"
+#include "aring-ffpack.hpp"
 #include "aring-m2-gf.hpp"
 #include "aring-glue.hpp"
 
@@ -50,6 +51,18 @@ MutableMatrix *MutableMatrix::zero_matrix(const Ring *R,
       else
         return MutableMat< SMat<M2::ARingZZp> >
           ::zero_matrix(R,KZZp->get_ARing(),nrows,ncols);
+    }
+  if (R->ringID() == M2::ring_FFPACK)
+    {
+      const M2::ConcreteRing<M2::ARingZZpFFPACK> *ffpackRing = 
+        dynamic_cast< const M2::ConcreteRing<M2::ARingZZpFFPACK> * >(R);
+      ASSERT(ffpackRing != 0);
+      if (dense)
+        return MutableMat< DMat<M2::ARingZZpFFPACK> >
+          ::zero_matrix(R,&ffpackRing->ring(),nrows,ncols);
+      else
+        return MutableMat< SMat<M2::ARingZZpFFPACK> >
+          ::zero_matrix(R,&ffpackRing->ring(),nrows,ncols);
     }
 #if 0
   if (R->ringID() == M2::ring_GFM2)
@@ -136,10 +149,6 @@ MutableMatrix *MutableMatrix::zero_matrix(const Ring *R,
   else
     return MutableMat< SMat<CoefficientRingR> >
       ::zero_matrix(R,cR,nrows,ncols);
-  const GF *KGF = R->cast_to_GF();
-  if (KGF != 0)
-    {
-    }
   ERROR("mutable matrices over this ring are not yet implemented");
   return 0;
 }
@@ -634,6 +643,9 @@ template class MutableMat< SMat<CoefficientRingRRR> >;
 template class MutableMat< SMat<CoefficientRingCCC> >;
 template class MutableMat< SMat<CoefficientRingZZ_NTL> >;
 template class MutableMat< SMat<CoefficientRingR> >;
+
+template class MutableMat< DMat<M2::ARingZZpFFPACK> >;
+template class MutableMat< SMat<M2::ARingZZpFFPACK> >;
 
 #if 0
 template class MutableMat< DMat<M2::ARingGFM2> >;

@@ -13,6 +13,7 @@
 #include <iostream>
 
 #include "aring-zzp.hpp"
+#include "aring-ffpack.hpp"
 
 template<typename CoeffRing>
 DMat<CoeffRing>::DMat(const Ring *R0, const CoeffRing *coeffR0, int nrows, int ncols)
@@ -788,6 +789,28 @@ template <> void DMat<CoefficientRingCCC>::fill_from_lapack_array(double *lapack
     }
 }
 
+
+template<typename CoeffRing>
+size_t DMat<CoeffRing>::rank() const
+{
+  ERROR("not implemented for this ring yet");
+  return -1;
+}
+
+template<>
+size_t DMat<M2::ARingZZpFFPACK>::rank() const
+{
+  size_t result = FFPACK::Rank(ring().field(), 
+                               n_rows(), 
+                               n_cols(),
+                               get_array(), 
+                               n_cols());
+  return result;
+}
+
+/* Insert n_to_add rows directly BEFORE row i. */
+
+
 /* template <> void DMat<CoefficientRingCCC>::fill_from_mpack_array(mpreal *mparray)
 {
   long len = n_rows() * n_cols();
@@ -803,9 +826,11 @@ template <> void DMat<CoefficientRingCCC>::fill_from_lapack_array(double *lapack
 } */
 
 
+
 //#include "aring-gf.hpp"
 template class DMat<CoefficientRingZZ_NTL>;
 template class DMat<M2::ARingZZp>;
+template class DMat<M2::ARingZZpFFPACK>;
 //template class DMat<M2::ARingGF>;
 template class DMat<CoefficientRingRRR>;
 template class DMat<CoefficientRingCCC>;

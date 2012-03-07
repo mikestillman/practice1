@@ -957,8 +957,18 @@ M2_arrayint columnEchelonForm(SMat<CoeffRing> *A)
   return 0;
 }
 
+template<typename CoeffRing>
+size_t SMat<CoeffRing>::rank() const
+{
+  //TODO:MES: write these rank functions!!
+  ERROR("not implemented for this ring yet");
+  return -1;
+}
+
+#include "aring-ffpack.hpp"
 template class SMat<CoefficientRingZZ_NTL>;
 template class SMat<M2::ARingZZp>;
+template class SMat<M2::ARingZZpFFPACK>;
 template class SMat<CoefficientRingRRR>;
 template class SMat<CoefficientRingCCC>;
 template class SMat<CoefficientRingR>;

@@ -1104,8 +1104,14 @@ size_t FFPackRankGF(const GF *kk, MutableMatrix *M)
   return result;
 }
 
+size_t rawMutableMatrixRank(MutableMatrix *M)
+{
+  return M->rank();
+}
+
 size_t rawFFPackRank(MutableMatrix *M)
 {
+  return rawMutableMatrixRank(M);
   const Ring *R = M->get_ring();
   const Z_mod *kk = R->cast_to_Z_mod();
   if (kk != 0) return FFPackRankZZp(kk, M);

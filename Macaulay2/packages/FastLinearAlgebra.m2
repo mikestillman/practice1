@@ -644,6 +644,15 @@ det D
 restart
 loadPackage "FastLinearAlgebra"
 kk = ZZp (ideal 19)
+M = mutableMatrix(kk, 10, 10)
+for i from 0 to 9 do for j from 0 to 9 do M_(i,j) = random kk
+M
+rank M 
+
+M_(0,3) = 2_kk
+M
+random(kk^3, kk^4) -- BUG
+mutableMatrix oo
 3_kk  -- printing is wrong here
 matrix{{3_kk}}
 matrix {for i from 0 to 30 list i_kk}
@@ -1148,7 +1157,7 @@ rawARingGaloisFieldFromQuotient(raw B_0)
 --      Jakob: ask givaro authors if there is a reason for their choice of the generator
 --        can we set the primitive element ourself ?
 --        (2)Does givaro, ffpack, linbox have initialized variables which occur before main()?
---        (3) make sure all givaro, ffpack uses are enclosed by #ifdef...
+--        (3) make sure all givaro, ffpack uses are enclosed by #ifdef... DONE (Jakob)
 --      Mike:
 --        get M2 on our branch compiled: gcc 4.2.1: with givaro,  and also without givaro.  Merge in the changes from the trunk
 --          same with gcc 4.6.2.

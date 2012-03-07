@@ -17,7 +17,7 @@ class SMat : public our_new_delete
 public:
   typedef ACoeffRing CoeffRing;
   typedef typename CoeffRing::elem elem;
-  typedef typename CoeffRing::ring_type RingType;
+  //typedef typename CoeffRing::ring_type RingType;
 
 private:
   struct sparsevec : public our_new_delete
@@ -180,6 +180,7 @@ public:
 
   SMat * negate() const;
 
+  size_t rank() const;
 private:
   const Ring *R; // To interface to the outside world
   const CoeffRing * coeffR; // Same as R, optimized for speed.  R->get_CoeffRing()

@@ -27,6 +27,17 @@ namespace M2 {
 
     const RingType & ring() const { return *R; }
 
+#if 0
+    /// Create either a dense or sparse MutableMatrix of the given size
+    virtual MutableMatrix * makeMutableMatrix(size_t nrows, size_t ncols, bool dense) const
+    {
+      return R->makeMutableMatrix(this, nrows, ncols, dense);
+    }
+#endif
+
+    ////////////////////////////
+    // Functions on elements ///
+    ////////////////////////////
     virtual int coerce_to_int(ring_elem a) const
     {
       //TODO: implement or remove

@@ -30,7 +30,7 @@ class ARingZZpFFPACK : public DummyRing
 };
 #else
 #include <fflas-ffpack/field/modular-balanced.h>
-#include "fflas-ffpack/ffpack/ffpack.h"
+#include <fflas-ffpack/ffpack/ffpack.h>
 #include <givaro/givgfq.h>
 
 namespace M2 {

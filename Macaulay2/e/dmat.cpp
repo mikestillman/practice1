@@ -800,12 +800,17 @@ size_t DMat<CoeffRing>::rank() const
 template<>
 size_t DMat<M2::ARingZZpFFPACK>::rank() const
 {
+#ifndef HAVE_FFPACK
+assert(false);
+
+#else
   size_t result = FFPACK::Rank(ring().field(), 
                                n_rows(), 
                                n_cols(),
                                get_array(), 
                                n_cols());
   return result;
+#endif
 }
 
 /* Insert n_to_add rows directly BEFORE row i. */

@@ -8,13 +8,15 @@
 #include "matrix-con.hpp"
 #include "matrix.hpp"
 
-#include "lapack.hpp"
-#include "dmat-LU.hpp"
-
 #include "aring-zzp.hpp"
 #include "aring-ffpack.hpp"
 #include "aring-m2-gf.hpp"
 #include "aring-glue.hpp"
+
+#include "lapack.hpp"
+#include "dmat-LU.hpp"
+
+
 
 template<typename MatT> 
 MatT * MutableMatrix::coerce()

@@ -143,6 +143,8 @@ class DummyRing : public RingInterface
                     ElementType &x, ElementType &y) const  {};;
 
         void random(ElementType &result) const {result=0;}
+        
+        void swap(ElementType &a, ElementType &b) const {assert(false); };
 
   };
 

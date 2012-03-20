@@ -800,9 +800,10 @@ size_t DMat<CoeffRing>::rank() const
 template<>
 size_t DMat<M2::ARingZZpFFPACK>::rank() const
 {
-#ifndef HAVE_FFPACK
-assert(false);
-
+  std::cout << "Calling FFPACK::Rank" << std::endl;
+#ifndef HAVE_FFLAS_FFPACK
+  assert(false);
+  return 0;
 #else
   size_t result = FFPACK::Rank(ring().field(), 
                                n_rows(), 

@@ -968,6 +968,19 @@ B_0
 rawARingGaloisFieldFromQuotient(raw B_0)
 ///
 
+TEST /// 
+-- Test of rank
+restart
+loadPackage "FastLinearAlgebra"
+kk = ZZp (ideal 19)
+M = mutableMatrix(kk, 10, 10, Dense=>true)
+for i from 0 to 9 do for j from 0 to 9 do M_(i,j) = random kk
+matrix M
+rank M 
+det matrix M
+
+///
+
 -- TODO:
 --   top level M2 package (this file): calls the rawFFPack routines
 --   interface.dd:  glue functions to call engine functions

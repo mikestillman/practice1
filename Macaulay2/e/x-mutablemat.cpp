@@ -1106,6 +1106,7 @@ size_t FFPackRankGF(const GF *kk, MutableMatrix *M)
 
 size_t rawMutableMatrixRank(MutableMatrix *M)
 {
+  std::cout << "Calling rank" << std::endl;
   return M->rank();
 }
 

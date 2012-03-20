@@ -983,7 +983,8 @@ det matrix M
 M1 = matrix for i from 0 to 8 list for j from 0 to 4 list random kk
 M2 = matrix for i from 0 to 4 list for j from 0 to 7 list random kk
 M = M1 * M2
-rank mutableMatrix M
+mutableMatrix M
+assert(5 == rank mutableMatrix M)  -- WRONG!!
 ///
 
 -- TODO:

@@ -972,19 +972,26 @@ TEST ///
 -- Test of rank
 -- JAKOB: can you look at the FFPACK rank call in e/dmat.cpp, and see what is wrong?
 restart
+mat = {{1, -8, -8, 8, -5, 7, -5, 1}, 
+     {9, 3, -7, -3, -5, 2, 6, -7}, 
+     {5, -7, -9, -2, 0, 8, -2, 4}, 
+     {4, 0, -5, 4, -4, 4, -2, 5}, 
+     {3, 0, -1, 5, 8, -6, 4, 4}, 
+     {-7, 8, -7, -2, 9, 4, 4, 5}, 
+     {0, 9, -6, -3, 7, -3, -4, -5}, 
+     {-8, 1, 6, -2, 5, 6, -9, 7}, 
+     {-5, -5, 0, -6, -2, -5, -5, -6}}
 loadPackage "FastLinearAlgebra"
 kk = ZZp (ideal 19)
-M = mutableMatrix(kk, 10, 10, Dense=>true)
-for i from 0 to 9 do for j from 0 to 9 do M_(i,j) = random kk
-matrix M
-rank M 
-det matrix M
 
-M1 = matrix for i from 0 to 8 list for j from 0 to 4 list random kk
-M2 = matrix for i from 0 to 4 list for j from 0 to 7 list random kk
-M = M1 * M2
+M = matrix(kk, mat)
 mutableMatrix M
 assert(5 == rank mutableMatrix M)  -- WRONG!!
+
+R = ZZ/19
+MR = matrix(R, mat)
+assert(5 == rank MR)
+syz MR
 ///
 
 -- TODO:

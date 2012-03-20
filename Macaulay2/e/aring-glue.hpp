@@ -6,6 +6,8 @@
 #include "aring.hpp"
 #include "ring.hpp"
 
+static const bool displayArithmeticCalls = false;
+
 #define COERCE_RING(RingType,R) dynamic_cast<const RingType *>(R)
 
 namespace M2 {
@@ -49,7 +51,7 @@ namespace M2 {
 
     virtual ring_elem from_int(int n) const
     {
-      fprintf(stderr, "calling from_int\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling from_int\n");
       ring_elem result;
       ElementType a;
       R->init(a);
@@ -60,7 +62,7 @@ namespace M2 {
 
     virtual ring_elem from_int(mpz_ptr n) const
     {
-      fprintf(stderr, "calling from_int(mpz)\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling from_int(mpz)\n");
       ring_elem result;
       ElementType a;
       R->init(a);
@@ -70,7 +72,7 @@ namespace M2 {
     }
     virtual ring_elem from_rational(mpq_ptr q) const
     {
-      fprintf(stderr, "calling from_rational\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling from_rational\n");
       ring_elem result;
       ElementType a;
       R->init(a);
@@ -81,7 +83,7 @@ namespace M2 {
 
     virtual ring_elem var(int v) const
     {
-      fprintf(stderr, "calling var\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling var\n");
       ring_elem result;
       ElementType a;
       R->init(a);
@@ -120,13 +122,13 @@ namespace M2 {
     virtual bool lift(const Ring *S, const ring_elem f, ring_elem &result) const
     {
       //TODO: implement
-      fprintf(stderr, "calling lift\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling lift\n");
       return false;
     }
 
     virtual bool is_unit(const ring_elem f) const
     {
-      fprintf(stderr, "calling is_unit\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling is_unit\n");
       ElementType a;
       R->from_ring_elem(a, f);
       return R->is_unit(a);
@@ -134,7 +136,7 @@ namespace M2 {
 
     virtual bool is_zero(const ring_elem f) const
     {
-      fprintf(stderr, "calling is_zero\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling is_zero\n");
       ElementType a;
       R->from_ring_elem(a, f);
       return R->is_zero(a);
@@ -142,7 +144,7 @@ namespace M2 {
 
     virtual bool is_equal(const ring_elem f, const ring_elem g) const
     {
-      fprintf(stderr, "calling is_equal\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling is_equal\n");
       ElementType a, b;
       R->from_ring_elem(a, f);
       R->from_ring_elem(b,g);
@@ -151,7 +153,7 @@ namespace M2 {
 
     virtual int compare_elems(const ring_elem f, const ring_elem g) const
     {
-      fprintf(stderr, "calling compare_elems\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling compare_elems\n");
       ElementType a, b;
       R->from_ring_elem(a, f);
       R->from_ring_elem(b,g);
@@ -160,7 +162,7 @@ namespace M2 {
 
     virtual ring_elem copy(const ring_elem f) const
     {
-      fprintf(stderr, "calling copy\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling copy\n");
       ElementType a,b;
       ring_elem result;
       R->init(b);
@@ -172,13 +174,13 @@ namespace M2 {
 
     virtual void remove(ring_elem &f) const
     {
-      fprintf(stderr, "calling remove\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling remove\n");
       /* currently, do nothing... */
     }
 
     virtual ring_elem negate(const ring_elem f) const
     {
-      fprintf(stderr, "calling negate\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling negate\n");
       ElementType a,b;
       ring_elem result;
       R->init(b);
@@ -190,7 +192,7 @@ namespace M2 {
 
     virtual ring_elem add(const ring_elem f, const ring_elem g) const
     {
-      fprintf(stderr, "calling add\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling add\n");
       ElementType a, b, c;
       ring_elem result;
       R->init(c);
@@ -203,7 +205,7 @@ namespace M2 {
 
     virtual ring_elem subtract(const ring_elem f, const ring_elem g) const
     {
-      fprintf(stderr, "calling subtract\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling subtract\n");
       ElementType a, b, c;
       ring_elem result;
       R->init(c);
@@ -216,7 +218,7 @@ namespace M2 {
 
     virtual ring_elem mult(const ring_elem f, const ring_elem g) const
     {
-      fprintf(stderr, "calling mult\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling mult\n");
       ElementType a, b, c;
       ring_elem result;
       R->init(c);
@@ -229,7 +231,7 @@ namespace M2 {
 
     virtual ring_elem power(const ring_elem f, mpz_t n) const
     {
-      fprintf(stderr, "calling power mpz\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling power mpz\n");
       ElementType a,b;
       ring_elem result;
       R->init(b);
@@ -241,7 +243,7 @@ namespace M2 {
 
     virtual ring_elem power(const ring_elem f, int n) const
     {
-      fprintf(stderr, "calling power int\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling power int\n");
       ElementType a,b;
       ring_elem result;
       R->init(b);
@@ -253,7 +255,7 @@ namespace M2 {
 
     virtual ring_elem invert(const ring_elem f) const
     {
-      fprintf(stderr, "calling invert\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling invert\n");
       ElementType a,b;
       ring_elem result;
       R->init(b);
@@ -265,7 +267,7 @@ namespace M2 {
 
     virtual ring_elem divide(const ring_elem f, const ring_elem g) const
     {
-      fprintf(stderr, "calling divide\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling divide\n");
       ElementType a, b, c;
       ring_elem result;
       R->init(c);
@@ -279,7 +281,7 @@ namespace M2 {
     virtual void syzygy(const ring_elem f, const ring_elem g,
                         ring_elem &x, ring_elem &y) const
     {
-      fprintf(stderr, "calling syzygy\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling syzygy\n");
       ElementType a, b, xe, ye;
       R->init(xe);
       R->init(ye);
@@ -292,7 +294,7 @@ namespace M2 {
 
     virtual ring_elem random() const
     {
-      fprintf(stderr, "calling random\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling random\n");
       ring_elem result;
       ElementType a;
       R->init(a);
@@ -307,7 +309,7 @@ namespace M2 {
                                bool p_plus=false,
                                bool p_parens=false) const
     {
-      fprintf(stderr, "calling elem_text_out\n");
+      if (displayArithmeticCalls) fprintf(stderr, "calling elem_text_out\n");
       ElementType a;
       R->from_ring_elem(a, f);
       R->elem_text_out(o,a,p_one,p_plus,p_parens);

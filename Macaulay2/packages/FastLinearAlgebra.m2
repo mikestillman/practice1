@@ -970,6 +970,7 @@ rawARingGaloisFieldFromQuotient(raw B_0)
 
 TEST /// 
 -- Test of rank
+-- JAKOB: can you look at the FFPACK rank call in e/dmat.cpp, and see what is wrong?
 restart
 loadPackage "FastLinearAlgebra"
 kk = ZZp (ideal 19)

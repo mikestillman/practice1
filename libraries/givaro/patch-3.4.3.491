@@ -9,4 +9,57 @@ diff -rupN givaro-3.4.3.491//src/kernel/zpz/givextension.h givaro-3.4.3.491.copy
 +template<> inline unsigned long Exponent_Trait(const GFqDom<long>& F) {
      return F.exponent();
  }
+
+diff -rupN givaro-3.4.3.491//src/kernel/system/givconfig.h givaro-3.4.3.491.copy//src/kernel/system/givconfig.h
+--- givaro-3.4.3.491//src/kernel/system/givconfig.h	2011-05-24 17:32:04.000000000 +0200
++++ givaro-3.4.3.491.copy//src/kernel/system/givconfig.h	2012-03-21 17:59:47.000000000 +0100
+@@ -80,49 +80,41 @@
+ #define __STDC_LIMIT_MACROS
+ #include <stdint.h>
+ #ifndef INT64_MAX
+-#pragma message "#warning somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
+ #include <limits>
+ #define INT64_MAX std::numeric_limits<int64_t>::max()
+ #endif
  
+ #ifndef UINT64_MAX
+-#pragma message "#warning somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
+ #include <limits>
+ #define UINT64_MAX std::numeric_limits<uint64_t>::max()
+ #endif
+ 
+ #ifndef INT32_MAX
+-#pragma message "#warning somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
+ #include <limits>
+ #define INT32_MAX std::numeric_limits<int32_t>::max()
+ #endif
+ 
+ #ifndef UINT32_MAX
+-#pragma message "#warning somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
+ #include <limits>
+ #define UINT32_MAX std::numeric_limits<uint32_t>::max()
+ #endif
+ 
+ #ifndef INT16_MAX
+-#pragma message "#warning somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
+ #include <limits>
+ #define INT16_MAX std::numeric_limits<int16_t>::max()
+ #endif
+ 
+ #ifndef UINT16_MAX
+-#pragma message "#warning somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
+ #include <limits>
+ #define UINT16_MAX std::numeric_limits<uint16_t>::max()
+ #endif
+ 
+ #ifndef INT8_MAX
+-#pragma message "#warning somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
+ #include <limits>
+ #define INT8_MAX std::numeric_limits<int8_t>::max()
+ #endif
+ 
+ #ifndef UINT8_MAX
+-#pragma message "#warning somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
+ #include <limits>
+ #define UINT8_MAX std::numeric_limits<uint8_t>::max()
+ #endif

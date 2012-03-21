@@ -98,7 +98,9 @@ determinant MutableMatrix := opts -> (M) -> (
 	  )
      )
 
-rank MutableMatrix := (M) -> (
+fastRank= method();
+
+fastRank MutableMatrix := (M) -> (
      R := ring M;
      if isPrimeField R and char R > 0 then (
 	  new ZZ from rawFFPackRank raw M
@@ -972,6 +974,7 @@ TEST ///
 -- Test of rank
 -- JAKOB: can you look at the FFPACK rank call in e/dmat.cpp, and see what is wrong?
 restart
+
 mat = {{1, -8, -8, 8, -5, 7, -5, 1}, 
      {9, 3, -7, -3, -5, 2, 6, -7}, 
      {5, -7, -9, -2, 0, 8, -2, 4}, 
@@ -982,11 +985,22 @@ mat = {{1, -8, -8, 8, -5, 7, -5, 1},
      {-8, 1, 6, -2, 5, 6, -9, 7}, 
      {-5, -5, 0, -6, -2, -5, -5, -6}}
 loadPackage "FastLinearAlgebra"
+debug Core
+debug FastLinearAlgebra
 kk = ZZp (ideal 19)
 
 M = matrix(kk, mat)
-mutableMatrix M
-assert(5 == rank mutableMatrix M)  -- WRONG!!
+mm = mutableMatrix M
+
+rawFFPackRank raw mm
+fastRank mm
+
+kk= ZZ/19
+M = matrix(kk, mat)
+mm = mutableMatrix M
+rawFFPackRank raw mm
+fastRank mm
+assert(5 == rank mm)  -- WRONG!!
 
 R = ZZ/19
 MR = matrix(R, mat)

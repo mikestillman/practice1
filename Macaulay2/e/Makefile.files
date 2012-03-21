@@ -22,7 +22,6 @@ INTERFACE = \
 	gb-test1 \
 	finalize \
 	NAG \
-	points \
 	overflow \
 	memory-status \
 	exceptions \

@@ -1,6 +1,94 @@
 --- /media/var_scratch/kroeker/M2branch/BUILD/FastLinearAlgebra/libraries/fflas_ffpack/tmp/fflas-ffpack-1.4.2.169/utils/debug.h	2011-05-24 18:16:40.000000000 +0200
 +++ fflas-ffpack-1.4.2.169/utils/debug.h	2011-10-21 11:30:05.000000000 +0200
-@@ -105,7 +105,7 @@
+@@ -38,53 +38,79 @@
+ 
+ 
+ #ifdef __FFLAFLAS_HAVE_STDINT_H
++#ifndef __STDC_LIMIT_MACROS
+ #define __STDC_LIMIT_MACROS
++#endif
+ #include <stdint.h>
+ 
+ #ifndef INT64_MAX
+-#warning "somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#ifndef __STDC_LIMIT_MACROS_WARNING
++#define __STDC_LIMIT_MACROS_WARNING
++#warning "somebody previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#endif
+ #include <limits>
+ #define INT64_MAX std::numeric_limits<int64_t>::max()
+ #endif
+ 
+ #ifndef UINT64_MAX
+-#warning "somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#ifndef __STDC_LIMIT_MACROS_WARNING
++#define __STDC_LIMIT_MACROS_WARNING
++#warning "somebody previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#endif
+ #include <limits>
+ #define UINT64_MAX std::numeric_limits<uint64_t>::max()
+ #endif
+ 
+ #ifndef INT32_MAX
+-#warning "somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#ifndef __STDC_LIMIT_MACROS_WARNING
++#define __STDC_LIMIT_MACROS_WARNING
++#warning "somebody previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#endif
+ #include <limits>
+ #define INT32_MAX std::numeric_limits<int32_t>::max()
+ #endif
+ 
+ #ifndef UINT32_MAX
+-#warning "somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#ifndef __STDC_LIMIT_MACROS_WARNING
++#define __STDC_LIMIT_MACROS_WARNING
++#warning "somebody previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#endif
+ #include <limits>
+ #define UINT32_MAX std::numeric_limits<uint32_t>::max()
+ #endif
+ 
+ #ifndef INT16_MAX
+-#warning "somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#ifndef __STDC_LIMIT_MACROS_WARNING
++#define __STDC_LIMIT_MACROS_WARNING
++#warning "somebody previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#endif
+ #include <limits>
+ #define INT16_MAX std::numeric_limits<int16_t>::max()
+ #endif
+ 
+ #ifndef UINT16_MAX
+-#warning "somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#ifndef __STDC_LIMIT_MACROS_WARNING
++#define __STDC_LIMIT_MACROS_WARNING
++#warning "somebody previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#endif
+ #include <limits>
+ #define UINT16_MAX std::numeric_limits<uint16_t>::max()
+ #endif
+ 
+ #ifndef INT8_MAX
+-#warning "somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#ifndef __STDC_LIMIT_MACROS_WARNING
++#define __STDC_LIMIT_MACROS_WARNING
++#warning "somebody previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#endif
+ #include <limits>
+ #define INT8_MAX std::numeric_limits<int8_t>::max()
+ #endif
+ 
+ #ifndef UINT8_MAX
+-#warning "somebody nasty previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#ifndef __STDC_LIMIT_MACROS_WARNING
++#define __STDC_LIMIT_MACROS_WARNING
++#warning "somebody previously included <stdint.h> without __STDC_LIMIT_MACROS :)"
++#endif
+ #include <limits>
+ #define UINT8_MAX std::numeric_limits<uint8_t>::max()
+ #endif
+@@ -105,7 +131,7 @@ throw FFPACK::Failure (__func__, __FILE_
  
  namespace FFPACK {
  
@@ -9,7 +97,7 @@
  	/*!  A precondtion failed.
  	 * @ingroup util
  	 * The \c throw mechanism is usually used here as in
-@@ -117,7 +117,7 @@
+@@ -117,7 +143,7 @@ namespace FFPACK {
  	 */
  	class Failure {//: public LinboxError BB: otherwise,  error.h:39 segfaults
  	protected:
@@ -18,7 +106,7 @@
  
  	public:
  		/*! @internal
-@@ -210,7 +210,9 @@
+@@ -210,7 +236,9 @@ namespace FFPACK {
  
  #endif
  

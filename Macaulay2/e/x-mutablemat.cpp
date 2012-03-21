@@ -1075,14 +1075,21 @@ RingElement *rawFFPackDeterminant(MutableMatrix *M)
 
 size_t FFPackRankZZp(const Z_mod *kk, MutableMatrix *M)
 {
+    std::cout << "Calling FFPackRankZZp" << std::endl;
+
   typedef FFPACK::ModularBalanced<double> FieldType;
   typedef FieldType::Element ElementType;
-  FieldType F(kk->charac());
+   
+    std::cout << "kk->charac() : " << kk->charac() << std::endl;
+  FieldType F( kk->charac() );
 
   ElementType *N = toFFPackMatrix(kk, F, M);
 
   size_t nr = M->n_rows();
   size_t nc = M->n_cols();
+  std::cout << "M->n_rows() : " << M->n_rows() << std::endl;
+  std::cout << "M->n_cols() : " << M->n_cols() << std::endl;
+
   size_t result = FFPACK::Rank(F, nr, nc, N, nc);
   deletearray(N);
   return result;
@@ -1106,12 +1113,14 @@ size_t FFPackRankGF(const GF *kk, MutableMatrix *M)
 
 size_t rawMutableMatrixRank(MutableMatrix *M)
 {
-  std::cout << "Calling rank" << std::endl;
+  std::cout << "Calling rawMutableMatrixRank" << std::endl;
+  //return rawFFPackRank(M);
   return M->rank();
 }
 
 size_t rawFFPackRank(MutableMatrix *M)
 {
+  std::cout << "Calling rawFFPackRank" << std::endl;
   return rawMutableMatrixRank(M);
   const Ring *R = M->get_ring();
   const Z_mod *kk = R->cast_to_Z_mod();

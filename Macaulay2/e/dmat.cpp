@@ -346,7 +346,7 @@ void DMat<CoeffRing>::dot_product(int i, int j, elem &result) const
 }
 
 template<typename CoeffRing>
-void DMat<CoeffRing>::copy_elems(long n_to_copy, elem *target, int target_stride, elem *source, int stride)
+void DMat<CoeffRing>::copy_elems(long n_to_copy, elem *target, int target_stride, const elem *source, int stride) const
 {
   for (long i=0; i<n_to_copy; i++)
     {
@@ -805,11 +805,33 @@ size_t DMat<M2::ARingZZpFFPACK>::rank() const
   assert(false);
   return 0;
 #else
-  size_t result = FFPACK::Rank(ring().field(), 
-                               n_rows(), 
-                               n_cols(),
-                               get_array(), 
-                               n_cols());
+  M2::ARingZZpFFPACK::ElementType *N = newarray(M2::ARingZZpFFPACK::ElementType, n_rows() * n_cols() );
+  /* 
+    debug
+  // std::cout << "characteristic : " << ring().field().characteristic() << std::endl;
+  M2::ARingZZpFFPACK::ElementType *inN = N;
+  for (size_t i = 0; i<n_rows(); i++)
+    for (size_t j = 0; j<n_cols(); j++)
+      {
+        M2::ARingZZpFFPACK::ElementType a;
+        get_entry(i,j,a);      
+       // double d = b;
+       //std::cerr << "a " << a << std::endl;
+       // ring().field().init(*inN++, a);
+        ring().field().init(*inN, a);        
+        std::cerr << "a " << a << " *inN "<< (*inN) << std::endl;
+        inN++;
+      }
+       size_t result = FFPACK::Rank(ring().field(), n_rows(), n_cols(),  N,  n_cols() );
+    */
+    /// @jakob: replace with memcopy or something fast.
+    /// @jakob: potention problem: (  n_rows()*n_cols() ) - overflow for big matrices 
+    copy_elems( n_rows()*n_cols(), N, 1, get_array(), 1); 
+  //size_t result = FFPACK::Rank(ring().field(), n_rows(), n_cols(),  N,  n_cols() );
+  // 1. consider: matrix data (N) is modified.
+  // 2. FFPACK expects row-wise stored matrices while dmat stores them column-wise => switch n_rows and n_cols -parameters!
+  size_t result = FFPACK::Rank(ring().field(), n_cols(), n_rows(),  N,  n_rows() );
+   
   return result;
 #endif
 }

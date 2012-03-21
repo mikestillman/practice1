@@ -44,6 +44,8 @@ public:
   void set_matrix(const DMat<CoeffRing> *mat0);
   void initialize(int nrows, int ncols, elem *array);
   void resize(int nrows, int ncols);
+
+  ///@todo potential trouble if array is modivied by the caller... either return copy  or introduce a second non-const function .
   elem * get_array() const { return array_; } // Used for lapack type routines
 
   double *get_lapack_array() const; // redefined by RR,CC
@@ -205,7 +207,7 @@ private:
                 // columns stored one after another
 
 
-  void copy_elems(long n_to_copy, elem *target, int target_stride, elem *source, int stride);
+  void copy_elems(long n_to_copy, elem *target, int target_stride, const elem *source, int stride) const;
 };
 
 #endif

@@ -109,7 +109,7 @@ namespace M2 {
 
       void to_ring_elem(ring_elem &result, const ElementType &a) const
       {
-        result.int_val = a;
+        result.int_val = static_cast<int>(a);
       }
     
       void from_ring_elem(ElementType &result, const ring_elem &a) const

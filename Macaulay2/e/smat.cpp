@@ -1,6 +1,7 @@
 // Copyright 2005  Michael E. Stillman
 
 #include "coeffrings.hpp"
+#include "coeffrings-zz.hpp"
 #include "ZZp.hpp"
 #include "smat.hpp"
 #include "mat.hpp"
@@ -962,7 +963,7 @@ size_t SMat<CoeffRing>::rank() const
 {
   //TODO:MES: write these rank functions!!
   ERROR("not implemented for this ring yet");
-  return -1;
+  return static_cast<size_t>(-1);
 }
 
 #include "aring-ffpack.hpp"

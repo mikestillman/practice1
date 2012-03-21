@@ -1,13 +1,11 @@
 // Copyright 2005  Michael E. Stillman
 
-#include "dmat.hpp"
-#include "smat.hpp"
-#include "mat.hpp"
 #include "mutablemat.hpp"
 
-#include "coeffrings.hpp"
-#include "coeffrings-zz.hpp"
+#include "dmat.hpp"
+#include "smat.hpp"
 
+#include "coeffrings.hpp"
 #include "matrix-con.hpp"
 #include "matrix.hpp"
 
@@ -18,8 +16,6 @@
 
 #include "lapack.hpp"
 #include "dmat-LU.hpp"
-
-
 
 template<typename MatT> 
 MatT * MutableMatrix::coerce()

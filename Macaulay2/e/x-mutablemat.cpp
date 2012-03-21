@@ -7,6 +7,7 @@
 #include "GF.hpp"
 
 #include "coeffrings.hpp"
+#include "coeffrings-zz.hpp"
 #include "mat.hpp"
 #include "fractionfreeLU.hpp"
 #include "LLL.hpp"

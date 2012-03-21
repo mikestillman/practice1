@@ -1,6 +1,7 @@
 // Copyright 2005  Michael E. Stillman
 
 #include "coeffrings.hpp"
+#include "coeffrings-zz.hpp"
 #include "ZZp.hpp"
 #include "aring-gf.hpp"
 #include "dmat.hpp"
@@ -794,7 +795,7 @@ template<typename CoeffRing>
 size_t DMat<CoeffRing>::rank() const
 {
   ERROR("not implemented for this ring yet");
-  return -1;
+  return static_cast<size_t>(-1);
 }
 
 template<>
@@ -831,7 +832,7 @@ size_t DMat<M2::ARingZZpFFPACK>::rank() const
   // 1. consider: matrix data (N) is modified.
   // 2. FFPACK expects row-wise stored matrices while dmat stores them column-wise => switch n_rows and n_cols -parameters!
   size_t result = FFPACK::Rank(ring().field(), n_cols(), n_rows(),  N,  n_rows() );
-   
+  deletearray(N);
   return result;
 #endif
 }

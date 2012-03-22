@@ -62,6 +62,7 @@ namespace M2 {
     // @todo: problem, wenn typ von cHarakteristif 
     ARingZZpFFPACK( UTT charac);
 
+    MutableMatrix* makeMutableMatrix(const Ring* R, size_t nrows, size_t ncols, bool dense) const;
   private:
     const FieldType mFfpackField;
     mutable  FieldType::RandIter     mFfpackRandomIterator;

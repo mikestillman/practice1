@@ -99,6 +99,10 @@ namespace M2 {
 
     void text_out(buffer &o) const;
 
+    MutableMatrix* makeMutableMatrix(const Ring* R, 
+                                     size_t nrows, 
+                                     size_t ncols, 
+                                     bool dense) const;
   private:
     GaloisFieldTable mGF;
 

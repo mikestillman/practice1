@@ -4,6 +4,7 @@
 #include "coeffrings-zz.hpp"
 #include "ZZp.hpp"
 #include "aring-gf.hpp"
+#include "aring-m2-gf.hpp"
 #include "dmat.hpp"
 #include "mat.hpp"
 #include "mpfr.h"
@@ -860,11 +861,13 @@ size_t DMat<M2::ARingZZpFFPACK>::rank() const
 template class DMat<CoefficientRingZZ_NTL>;
 template class DMat<M2::ARingZZp>;
 template class DMat<M2::ARingZZpFFPACK>;
-//template class DMat<M2::ARingGF>;
+
 template class DMat<CoefficientRingRRR>;
 template class DMat<CoefficientRingCCC>;
 template class DMat<CoefficientRingR>;
 
+template class DMat<M2::ARingGF>;
+template class DMat<M2::ARingGFM2>;
 
 // Local Variables:
 // compile-command: "make -C $M2BUILDDIR/Macaulay2/e "

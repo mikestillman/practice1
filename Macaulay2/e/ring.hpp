@@ -41,7 +41,7 @@ class buffer;
 class SumCollector;
 
 class ARing;
-
+class MutableMatrix;
 /**
     @ingroup rings
 
@@ -199,6 +199,7 @@ public:
   virtual CCC * cast_to_CCC() { return 0; }
   virtual const CCC * cast_to_CCC() const { return 0; }
 
+  virtual MutableMatrix* makeMutableMatrix(size_t nrows, size_t ncols, bool dense) const { return 0; }
 
   virtual FreeModule *make_FreeModule() const;
   virtual FreeModule *make_Schreyer_FreeModule() const;

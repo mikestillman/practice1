@@ -93,6 +93,11 @@ class ARingGF : public RingInterface
            //TODO: other information too?
            );
 
+  MutableMatrix* makeMutableMatrix(const Ring* R, 
+                                   size_t nrows, 
+                                   size_t ncols, 
+                                   bool dense) const;
+
   private:
    
     UTT     mCharac;

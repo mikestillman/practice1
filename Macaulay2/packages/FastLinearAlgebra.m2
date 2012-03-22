@@ -1031,9 +1031,9 @@ time (A+A);
 restart
 loadPackage "FastLinearAlgebra"
 kk = ZZ/101
---kk = ZZp (ideal 101)
+kk = ZZp (ideal 101)
 --random(kk^3, kk^4) -- FAILS
-N = 800
+N = 5
 m = mutableMatrix(kk, N, N)
 time for i from 0 to N-1 do for j from 0 to N-1 do m_(i,j) = random kk
 time M = matrix m;

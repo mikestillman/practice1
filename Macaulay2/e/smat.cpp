@@ -7,6 +7,8 @@
 #include "mat.hpp"
 
 #include "aring-zzp.hpp"
+#include "aring-gf.hpp"
+#include "aring-m2-gf.hpp"
 
 //////////////////////////
 // sparsevec operations //
@@ -970,6 +972,9 @@ size_t SMat<CoeffRing>::rank() const
 template class SMat<CoefficientRingZZ_NTL>;
 template class SMat<M2::ARingZZp>;
 template class SMat<M2::ARingZZpFFPACK>;
+template class SMat<M2::ARingGF>;
+template class SMat<M2::ARingGFM2>;
+
 template class SMat<CoefficientRingRRR>;
 template class SMat<CoefficientRingCCC>;
 template class SMat<CoefficientRingR>;

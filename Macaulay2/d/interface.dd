@@ -994,6 +994,13 @@ export rawIsZero(e:Expr):Expr := (
      );
 setupfun("rawIsZero",rawIsZero);
 
+export rawMutableMatrixIsDense(e:Expr):Expr := (
+     when e
+     is x:RawMutableMatrixCell do toExpr( Ccode( bool, "rawMutableMatrixIsDense(", x.p, ")" ))
+     else WrongArg("a mutable matrix")
+     );
+setupfun("rawMutableMatrixIsDense",rawMutableMatrixIsDense);
+
 export rawToInteger(e:Expr):Expr := (
      when e
      is x:RawRingElementCell do toExpr( 

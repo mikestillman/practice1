@@ -248,7 +248,21 @@ testMutableMatrices(GF 4)
 kk = ZZp (ideal 32003)
 testMutableMatrices kk
 
+
+-- Question: how do we get 
+kk = GF (1073742851, 1, Strategy=>"Givaro")
+testMutableMatrices kk
+
+kk = GF (1049599, 1, Strategy=>"CompleteGivaro")
+testMutableMatrices kk
+
 kk = GF(2,4,Strategy=>"New")
+testMutableMatrices kk
+
+kk = GF(2,4,Strategy=>"Givaro")
+testMutableMatrices kk
+
+kk = GF(2,4,Strategy=>"CompleteGivaro")
 testMutableMatrices kk
 
 kk = GF(2,12,Strategy=>"New")

@@ -1235,6 +1235,11 @@ extern "C" {
   /* Return the dot product of columns c1 and c2 of the matrix M.  If either c1 or c2 is
      out of range, 0 is returned. */
 
+  /**
+     Is the matrix implemented as a contiguous array of elements?
+   */
+  M2_bool rawMutableMatrixIsDense(const MutableMatrix *M);
+
   M2_bool IM2_MutableMatrix_is_zero(const MutableMatrix *M); /* drg: connected rawIsZero, OK */
 
   M2_bool IM2_MutableMatrix_is_equal(const MutableMatrix *M,

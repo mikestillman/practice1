@@ -427,6 +427,11 @@ M2_bool IM2_MutableMatrix_is_equal(const MutableMatrix *M,
   return M->is_equal(N);
 }
 
+M2_bool rawMutableMatrixIsDense(const MutableMatrix *M)
+{
+  return M->is_dense();
+}
+
 MutableMatrix * IM2_MutableMatrix_copy(MutableMatrix *M, M2_bool prefer_dense)
 {
   return M->copy(prefer_dense);

@@ -997,7 +997,7 @@ setupfun("rawIsZero",rawIsZero);
 export rawMutableMatrixIsDense(e:Expr):Expr := (
      when e
      is x:RawMutableMatrixCell do toExpr( Ccode( bool, "rawMutableMatrixIsDense(", x.p, ")" ))
-     else WrongArg("a mutable matrix")
+     else WrongArg("a raw mutable matrix")
      );
 setupfun("rawMutableMatrixIsDense",rawMutableMatrixIsDense);
 

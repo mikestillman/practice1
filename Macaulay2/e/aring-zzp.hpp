@@ -34,11 +34,6 @@ namespace M2 {
 
     ARingZZp(size_t prime);
 
-    MutableMatrix* makeMutableMatrix(const Ring* R, 
-                                     size_t nrows, 
-                                     size_t ncols, 
-                                     bool dense) const;
-
     // ring informational
     size_t characteristic() const { return charac; }
 

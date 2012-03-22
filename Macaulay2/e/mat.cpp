@@ -639,23 +639,22 @@ template <> bool MutableMat< DMat<CoefficientRingCCC> >::least_squares(const Mut
     }
 }
 
-#if 0
 template<class RingType>
-MutableMatrix* M2::makeMutableMatrix(const Ring* Rgeneral,
-                                     const RingType* R,
-                                     size_t nrows,
-                                     size_t ncols,
-                                     bool dense)
+MutableMatrix* M2::makeMutableZeroMatrix(const Ring* Rgeneral,
+                                         const RingType* R,
+                                         size_t nrows,
+                                         size_t ncols,
+                                         bool dense)
 {
   if (dense)
     return MutableMat< DMat<RingType> >
-      ::zero_matrix(Rgeneral,R,this,nrows,ncols);
+      ::zero_matrix(Rgeneral,R,nrows,ncols);
 
   return MutableMat< SMat<RingType> >
-    ::zero_matrix(Rgeneral,R,this,nrows,ncols);
+    ::zero_matrix(Rgeneral,R,nrows,ncols);
 }
-#endif
 
+#if 0
 MutableMatrix *M2::ARingZZpFFPACK::makeMutableMatrix(const Ring* R, size_t nrows, size_t ncols, bool dense) const
 {
   if (dense)
@@ -695,6 +694,28 @@ MutableMatrix *M2::ARingGFM2::makeMutableMatrix(const Ring* R, size_t nrows, siz
   return MutableMat< SMat<M2::ARingGFM2> >
     ::zero_matrix(R,this,nrows,ncols);
 }
+#endif
+
+template MutableMatrix* M2::makeMutableZeroMatrix<M2::ARingZZp>(const Ring* Rgeneral,
+                                                 const M2::ARingZZp* R,
+                                                 size_t nrows,
+                                                 size_t ncols,
+                                                 bool dense);
+template MutableMatrix* M2::makeMutableZeroMatrix<M2::ARingZZpFFPACK>(const Ring* Rgeneral,
+                                                 const M2::ARingZZpFFPACK* R,
+                                                 size_t nrows,
+                                                 size_t ncols,
+                                                 bool dense);
+template MutableMatrix* M2::makeMutableZeroMatrix<M2::ARingGF>(const Ring* Rgeneral,
+                                                 const M2::ARingGF* R,
+                                                 size_t nrows,
+                                                 size_t ncols,
+                                                 bool dense);
+template MutableMatrix* M2::makeMutableZeroMatrix<M2::ARingGFM2>(const Ring* Rgeneral,
+                                                 const M2::ARingGFM2* R,
+                                                 size_t nrows,
+                                                 size_t ncols,
+                                                 bool dense);
 
 template class MutableMat< DMat<M2::ARingZZp> >;
 template class MutableMat< DMat<CoefficientRingRRR> >;

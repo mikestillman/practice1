@@ -50,10 +50,9 @@ namespace M2 {
       mDimension( M2arrayGetDegree(modPolynomial) ),
       mOriginalRing(&originalRing),
       mPrimitiveElement(originalRing.var(0)),
-      mGeneratorExponent(1),
       givaroField( FieldType( charact_,mDimension, ARingGF::M2arrayToStdVec(charact_, modPolynomial) )),
-      givaroRandomIterator( FieldType::randIter(givaroField ))      
-    
+      givaroRandomIterator( FieldType::randIter(givaroField )),
+      mGeneratorExponent(1)
     {
             /// @jakob: find out if the irreducible polynomial is checked in givaro.     
             UTT localdegree = M2arrayGetDegree(modPolynomial);

@@ -11,10 +11,11 @@ namespace M2 {
 
 
 
-  ARingZZpFFPACK::ARingZZpFFPACK(	 UTT charact_ )  :   mCharac(charact_),
-                                        mDimension(1),
+  ARingZZpFFPACK::ARingZZpFFPACK(	 UTT charact_ )  :   
                                         mFfpackField( FieldType((double)charact_) ),
                                         mFfpackRandomIterator(mFfpackField),
+                                        mCharac(charact_),
+                                        mDimension(1),
                                         mGenerator(computeGenerator())
   {
     assert( FieldType::getMaxModulus()>=mCharac );
@@ -97,7 +98,7 @@ int ARingZZpFFPACK::get_int(const ElementType f) const
 int ARingZZpFFPACK::get_repr(const ElementType f) const 
 {
     std::cerr << "ARingZZpFFPACK::get_repr" << std::endl;
-    return f; 
+    return static_cast<int>(f); 
 }
 
     // 'init', 'init_set' functions

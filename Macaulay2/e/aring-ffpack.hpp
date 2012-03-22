@@ -63,9 +63,8 @@ namespace M2 {
     ARingZZpFFPACK( UTT charac);
 
   private:
-    mutable  FieldType::RandIter     mFfpackRandomIterator;
-
     const FieldType mFfpackField;
+    mutable  FieldType::RandIter     mFfpackRandomIterator;
     
     UTT mCharac;
     UTT mDimension; ///< same as extensionDegree

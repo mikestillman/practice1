@@ -902,9 +902,6 @@ gmp_RRorNull rawMutableMatrixNorm(gmp_RR p, const MutableMatrix *M)
 
 void tryout_givaro()
 {
-
-  Givaro::GFqDom<long>::Residu_t prime,exponent;
-
   std::vector<Givaro::GFqDom<long>::Residu_t> irreducible_11_2;
   irreducible_11_2.resize(3,1);
   irreducible_11_2[0]=6; // 6
@@ -913,14 +910,12 @@ void tryout_givaro()
 
   Givaro::GFqDom<long> gfqField( 11, 2, irreducible_11_2);
 
-
   Givaro::GFqDom<long>::Residu_t p = 3;
   Givaro::GFqDom<long>::Residu_t e = 4;
   Givaro::GFqDom<long> GFq(3, 4);
   Givaro::GFqDom<long> PrimeField(p,1);
   std::cout << "Working in GF(" << p << '^' << e << ')' << std::endl;
   std::cout << "Elements are polynomials in X modulo " << p << std::endl;
-
 }
 
 
@@ -1132,7 +1127,7 @@ size_t rawFFPackRank(MutableMatrix *M)
     else
       {
         ERROR("expected finite prime field");
-        return -1;
+        return static_cast<size_t>(-1);
       }
   }
 }

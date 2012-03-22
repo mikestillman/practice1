@@ -1008,6 +1008,40 @@ assert(5 == rank MR)
 syz MR
 ///
 
+/// -- rawFFLU, is this active??
+kk = QQ
+M = random(QQ^5, QQ^3)
+debug Core
+mm = mutableMatrix M
+rawFFLU raw mm  -- doesn't look fraction free!!
+
+kk = ZZ/101
+A = mutableMatrix random(kk^10, kk^15)
+B = mutableMatrix random(kk^10, kk^1)
+x = mutableMatrix(kk, 15, 1)
+debug Core
+rawSolve(raw A, raw B, raw x)
+x1 = matrix x
+(matrix A)*x1 == matrix B
+
+time A = random(kk^300, kk^300);
+time (A*A);
+time (A+A);
+
+restart
+loadPackage "FastLinearAlgebra"
+kk = ZZ/101
+--kk = ZZp (ideal 101)
+--random(kk^3, kk^4) -- FAILS
+N = 800
+m = mutableMatrix(kk, N, N)
+time for i from 0 to N-1 do for j from 0 to N-1 do m_(i,j) = random kk
+time M = matrix m;
+time(ans1 = m * m);
+time(ans2 = M * M);
+assert(ans2 == matrix ans1)
+
+///
 -- TODO:
 --   top level M2 package (this file): calls the rawFFPack routines
 --   interface.dd:  glue functions to call engine functions

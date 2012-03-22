@@ -119,7 +119,7 @@ namespace M2 {
     }
 
   public:
-    int get_repr(elem f) const { /*TODO: WRITE WRITE ;*/ }
+    int get_repr(elem f) const { /*TODO: WRITE WRITE ;*/ assert(false); return 0; }
 
     void to_ring_elem(ring_elem &result, const ElementType &a) const
     {

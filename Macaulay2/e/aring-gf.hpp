@@ -98,12 +98,12 @@ class ARingGF : public RingInterface
     UTT     mCharac;
     UTT     mDimension; ///< same as extensionDegree
 
+    const PolynomialRing*   mOriginalRing;
+    const ring_elem         mPrimitiveElement; // is an element of mOriginalRing
+
     const FieldType     givaroField;
  
     mutable  FieldType::randIter     givaroRandomIterator;
-
-    const PolynomialRing*   mOriginalRing;
-    const ring_elem         mPrimitiveElement; // is an element of mOriginalRing
 
     size_t      mGeneratorExponent;  
 

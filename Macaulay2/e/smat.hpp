@@ -181,6 +181,8 @@ public:
   SMat * negate() const;
 
   size_t rank() const;
+
+  void determinant(elem &result) const;
 private:
   const Ring *R; // To interface to the outside world
   const CoeffRing * coeffR; // Same as R, optimized for speed.  R->get_CoeffRing()

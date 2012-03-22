@@ -894,6 +894,15 @@ gmp_RRorNull rawMutableMatrixNorm(gmp_RR p, const MutableMatrix *M)
 #endif
 }
 
+//////////////////////////////////
+// Fast linear algebra routines //
+//////////////////////////////////
+
+const RingElement* rawDeterminant(MutableMatrix *M)
+{
+  return M->determinant();
+}
+
 #if defined(HAVE_FFLAS_FFPACK) && defined(HAVE_GIVARO)
 //#if 0
 #include "fflas-ffpack/field/modular-positive.h"

@@ -1269,6 +1269,9 @@ extern "C" {
   /* Using row and column operations, use unit pivots to reduce the matrix */
   /* A return value of false means that the computation was interrupted */
 
+  const RingElement* rawDeterminant(MutableMatrix *M);
+  /* connected to rawDeterminant */
+
   RingElement *rawFFPackDeterminant(MutableMatrix *M);
   /* connected to rawFFPackDeterminant, MES */
   /* requires: M should be a square matrix over a prime finite field */

@@ -23,7 +23,7 @@ class DMat : public our_new_delete
 public:
   typedef ACoeffRing CoeffRing;
   typedef typename CoeffRing::elem elem;
-  //  typedef typename CoeffRing::ring_type RingType;
+  typedef elem ElementType; // same as elem.  Will possibly remove 'elem' later.
 
   DMat():R(0), coeffR(0), nrows_(0), ncols_(0), array_(0) {} // Makes a zero matrix
 
@@ -198,6 +198,9 @@ public:
   DMat * negate() const;
 
   size_t rank() const;
+
+  void determinant(elem &result) const;
+
 private:
   const Ring *R; // To interface to the outside world
   const CoeffRing * coeffR; // Same as R, optimized for speed.  R->get_CoeffRing()

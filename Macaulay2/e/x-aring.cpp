@@ -95,6 +95,11 @@ const Ring /* or null */ *rawARingGaloisField(int prime, int dimension)
           M2::ARingZZpFFPACK *A = new M2::ARingZZpFFPACK(prime);
           return M2::ConcreteRing<M2::ARingZZpFFPACK>::create(A);
         }
+	if (dimension==1)
+	  {
+	    ERROR("maximum modulus = %f\n", M2::ARingZZpFFPACK::getMaxModulus());
+	    return 0;
+	  }
         M2::ARingGF *A = new M2::ARingGF(prime,dimension);
         return M2::ConcreteRing<M2::ARingGF>::create(A);
 #else

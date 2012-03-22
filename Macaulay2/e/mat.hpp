@@ -227,6 +227,8 @@ public:
 
   /// Fast linear algebra routines (well, fast for some rings)
   virtual size_t rank() const = 0;
+
+  virtual const RingElement* determinant() const = 0;
 };
 
 #endif

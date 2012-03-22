@@ -208,11 +208,22 @@ testops4 = (R) -> (
   assert(m1 == m2);
   )
 
+debug FastLinearAlgebra
+
+testrank = (R) -> (
+     << "testrank..." << endl;
+     m1 := random(R^5, R^11);
+     m2 := random(R^11, R^6);
+     m := mutableMatrix(m1 * m2);
+     assert(5 == fastRank m) -- this can fail every now and then.
+     )
+
 testMutableMatrices = (R) -> (
      testops R; 
      testops2 R; 
      testops3 R; 
      testops4 R;
+     testrank R;
      << "tests passed for " << describe R << endl;
      )
 
@@ -243,21 +254,28 @@ testMutableMatrices(ZZ/101)
 testMutableMatrices(ZZ/2)
 testMutableMatrices(GF 4)
 
+(67108819, 67108837, 67108859, 67108879, 67108913, 67108919, 67108933, 67108957, 67108961, 67108981)
 
-
-kk = ZZp (ideal 32003)
+kk = ZZp 67108819
 testMutableMatrices kk
 
+kk = ZZp 67108981
+
+kk = ZZp 32003
+testMutableMatrices kk
+
+kk = ZZp 1049599
+kk = ZZp 1073742851
 
 -- Question: how do we get 
-kk = GF (1073742851, 1, Strategy=>"Givaro")
-testMutableMatrices kk
+--kk = GF (1073742851, 1, Strategy=>"Givaro")
+--testMutableMatrices kk
 
-kk = GF (1049599, 1, Strategy=>"CompleteGivaro")
-testMutableMatrices kk
+--kk = GF (1049599, 1, Strategy=>"CompleteGivaro")
+--testMutableMatrices kk
 
 kk = GF(2,4,Strategy=>"New")
-testMutableMatrices kk
+testMutableMatrices kk -- fails, since rank is not yet defined for this type of ring
 
 kk = GF(2,4,Strategy=>"Givaro")
 testMutableMatrices kk

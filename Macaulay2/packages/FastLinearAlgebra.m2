@@ -21,6 +21,7 @@ newPackage(
 export {
    ARing,
    ZZp,
+   powerMod,
    testDivide,
     testAdd,
     testNegate,
@@ -53,7 +54,24 @@ debug Core
 
 savedZZpQuotients := new MutableHashTable
 
+powerMod = method()
+powerMod(ZZ,ZZ,ZZ) := (a,b,c) -> error "ha ha: not done yet!"
+
+-- THIS FUNCTION IS NOT FUNCTIONAL!!
+-- reason: we need a function: powerMod(a, b, c) is a^b mod c.
+-- write powerMod
+isGenerator = (n,P) -> (
+     -- n is an integer in the range 2..P-1
+     -- P is a prime number
+     -- returns true if n is a generator of the group of units of ZZ/P
+     if P === 2 then n == 1
+     else (
+       n >= 2 and n <= P-1 and (
+	    all(factor (P-1), v -> 1 != powerMod(n, (P-1)//v#0, P))))
+  )
+
 ZZp = method(Options=> {ARing => true})
+ZZp ZZ := opts -> (n) -> ZZp(ideal n, opts)
 ZZp Ideal := opts -> (I) -> (
      gensI := generators I;
      if ring gensI =!= ZZ then error "expected an ideal of ZZ";
@@ -93,9 +111,7 @@ isPrimeField Ring := (R) -> (
 
 determinant MutableMatrix := opts -> (M) -> (
      R := ring M;
-     if isPrimeField R and char R > 0 then (
-	  new R from rawFFPackDeterminant raw M
-	  )
+     new R from rawDeterminant raw M
      )
 
 fastRank= method();
@@ -1029,17 +1045,45 @@ time (A*A);
 time (A+A);
 
 restart
-loadPackage "FastLinearAlgebra"
-kk = ZZ/101
-kk = ZZp (ideal 101)
---random(kk^3, kk^4) -- FAILS
+-- XXXXXXXXXXXXXX
+restart
+debug loadPackage "FastLinearAlgebra"
+--kk = ZZ/101
+kk = ZZp 101
+kk = GF(2,4,Strategy=>"Givaro")
+random(kk^3, kk^4)
 N = 5
 m = mutableMatrix(kk, N, N)
+m = mutableMatrix random(kk^100, kk^100);
+fastRank m
 time for i from 0 to N-1 do for j from 0 to N-1 do m_(i,j) = random kk
 time M = matrix m;
 time(ans1 = m * m);
 time(ans2 = M * M);
 assert(ans2 == matrix ans1)
+
+kk = GF(2,4,Strategy=>"Givaro")
+M = mutableMatrix random(kk^3, kk^4)
+debug FastLinearAlgebra
+fastRank M
+
+restart
+debug loadPackage "FastLinearAlgebra"
+debug Core
+--kk = ZZp 1049599
+kk = ZZp 101
+N = 500
+M = random(kk^N, kk^N);
+time det M
+m = mutableMatrix M;
+time determinant m
+
+kk = GF(3,4,Strategy=>"Givaro")
+N = 10
+M = random(kk^N, kk^N);
+time det M
+m = mutableMatrix M;
+time determinant m
 
 ///
 -- TODO:
@@ -1249,7 +1293,16 @@ assert(ans2 == matrix ans1)
 --            I don't really like having two ring pointers in our objects, but it makes creation of new rings simpler.
 --            But maybe this is not necessary.  Need to think about it.
 --         d. (Jakob and Mike): finally get to write the linear algebra routines.
-
+--
+-- TODO 22 Mar 2012
+--     Jakob: why is the bound for modulus in ffpack about 67 million?  is it really?
+--            compute the generator in a faster manner, perhaps change interface to rawARing... to take a generator.
+--            debug GF determinant.  Seems not to be working.
+--     Mike: write powerMod
+--     in FastLinearAlgebra.m2: add in benchmarks for rank, determinant, ...
+--     in EngineTests.m2: test rank, determinant, ...
+--     Mike: get rank, determinant working with other ring types
+--
 R = GF(2,7)
 ambient R
 S = ZZ/2[x]/(x^7+x+1)

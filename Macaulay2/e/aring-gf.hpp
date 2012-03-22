@@ -93,6 +93,8 @@ class ARingGF : public RingInterface
            //TODO: other information too?
            );
 
+  const FieldType field() const {return givaroField;}
+
   private:
    
     UTT     mCharac;

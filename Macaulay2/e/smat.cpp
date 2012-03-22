@@ -968,6 +968,13 @@ size_t SMat<CoeffRing>::rank() const
   return static_cast<size_t>(-1);
 }
 
+template<typename CoeffRing>
+void SMat<CoeffRing>::determinant(elem &result) const
+{
+  //TODO:MES: write these determinant functions!!
+  ERROR("not implemented for this ring yet");
+}
+
 #include "aring-ffpack.hpp"
 template class SMat<CoefficientRingZZ_NTL>;
 template class SMat<M2::ARingZZp>;

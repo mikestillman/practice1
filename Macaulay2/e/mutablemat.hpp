@@ -469,6 +469,15 @@ public:
   {
     return mat.rank();
   }
+
+  virtual const RingElement* determinant() const 
+  {
+    ring_elem det;
+    elem a;
+    mat.determinant(a);
+    mat.get_CoeffRing()->to_ring_elem(det, a);
+    return RingElement::make_raw(mat.get_ring(), det);
+  }
 };
 
 #endif

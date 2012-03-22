@@ -2709,6 +2709,13 @@ setupfun("rawMutableMatrixFillRandom",rawMutableMatrixFillRandom);
 ----------------------------
 -- ffpack interface routines
 
+export rawDeterminant(e:Expr):Expr := (
+     when e
+     is m:RawMutableMatrixCell
+     do toExpr(Ccode(RawRingElementOrNull, "rawDeterminant(", m.p, ")" ))
+     else WrongArgMutableMatrix());
+setupfun("rawDeterminant",rawDeterminant);
+
 export rawFFPackDeterminant(e:Expr):Expr := (
      when e
      is m:RawMutableMatrixCell

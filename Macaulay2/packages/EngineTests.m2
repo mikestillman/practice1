@@ -6,6 +6,7 @@ newPackage(
                   Email => "", 
                   HomePage => ""}},
         Headline => "a test suite for the Macaulay2 engine",
+	PackageExports => {"FastLinearAlgebra"},
         DebuggingMode => true
         )
 
@@ -51,11 +52,11 @@ ringOpsZZp = (p) -> (
 	    -- check that i+j mod p == i_kk + j_kk
 	    a := mutableMatrix(kk,1,1); a_(0,0) = i_kk;
 	    b := mutableMatrix(kk,1,1); b_(0,0) = i_kk;
-	    
 	    )
      )
 
 testops = (R) -> (
+  << "testops..." << endl;
   m := mutableMatrix(map(R^5,R^6, (i,j) -> 100*i+j), Dense=>false);
   assert(numRows m == 5);
   assert(numColumns m == 6);
@@ -113,6 +114,7 @@ testops = (R) -> (
 debug Core
 testops2 = (R) -> (
   --
+  << "testops2..." << endl;  
   m := mutableMatrix(map(R^5,R^6, (i,j) -> 100*i+j), Dense=>false);
   rawInsertColumns(raw m,1,2);
   m1 := matrix m;
@@ -147,6 +149,7 @@ testops2 = (R) -> (
   )
 
 testops3 = (R) -> (
+  << "testops3..." << endl;
   -- rawMatrixColumnOperation2, rawMatrixRowOperation2, rawSortColumns2, rawColumnDotProduct
   m := mutableMatrix(map(R^5,R^6, (i,j) -> 100*i+j), Dense=>false);
   rawMatrixColumnOperation2(raw m, 1, 2, raw promote(1,R), 
@@ -191,6 +194,7 @@ testops3 = (R) -> (
   )
 
 testops4 = (R) -> (
+  << "testops4..." << endl;
   m := mutableMatrix(map(R^5,R^6, (i,j) -> 100*i+j), Dense=>false);
   m1 := matrix columnPermute(m,1,{2,0,1});
   m = mutableMatrix(map(R^5,R^6, (i,j) -> 100*i+j), Dense=>true);
@@ -204,7 +208,13 @@ testops4 = (R) -> (
   assert(m1 == m2);
   )
 
-testMutableMatrices = (R) -> (testops R; testops2 R; testops3 R; testops4 R)
+testMutableMatrices = (R) -> (
+     testops R; 
+     testops2 R; 
+     testops3 R; 
+     testops4 R;
+     << "tests passed for " << describe R << endl;
+     )
 
 TEST ///
 rings = {ZZ, ZZ/101, ZZ/2, GF(4), GF(25), QQ, QQ[x,y], frac(QQ[x,y]), RR_53, RR_100, CC_53, CC_100}
@@ -235,3 +245,14 @@ testMutableMatrices(GF 4)
 
 
 
+kk = ZZp (ideal 32003)
+testMutableMatrices kk
+
+kk = GF(2,4,Strategy=>"New")
+testMutableMatrices kk
+
+kk = GF(2,12,Strategy=>"New")
+testMutableMatrices kk
+
+kk = GF(5,12,Strategy=>"New")
+testMutableMatrices kk

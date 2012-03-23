@@ -226,9 +226,51 @@ public:
                              bool assume_full_rank) const = 0;
 
   /// Fast linear algebra routines (well, fast for some rings)
-  virtual size_t rank() const = 0;
 
-  virtual const RingElement* determinant() const = 0;
+  virtual size_t rank() const { return static_cast<size_t>(-1); }
+
+  virtual const RingElement* determinant() const { return NULL; }
+
+  // Find the inverse matrix.  If the matrix is not square, or 
+  // the ring is one in which th matrix cannot be inverted,
+  // then NULL is returned, and an error message is set.
+  virtual MutableMatrix* invert() const { return 0; }
+
+  // Returns an array of increasing integers {n_1, n_2, ...}
+  // such that if M is the matrix with rows (resp columns, if row_profile is false)
+  // then rank(M_{0..n_i-1}) + 1 = rank(M_{0..n_i}).
+  // NULL is returned, and an error is set, if this function is not available
+  // for the given choice of ring and dense/sparseness.
+  virtual M2_arrayintOrNull rankProfile(bool row_profile) const { return 0; }
+  
+  // Find a spanning set for the null space.  If M = this,
+  // and right_side is true, return a matrix whose rows span {x |  xM = 0},
+  // otherwise return a matrix whose columns span {x | Mx = 0}
+  virtual MutableMatrix* nullSpace(M2_bool right_side) const { return 0; }
+
+  // Return a matrix whose rows or columns solve either Ax = B (right_side=true)
+  // or xA = B (right_side=false).  The first argument returned is false
+  // in this case.
+  std::pair<bool, MutableMatrix*> solve(MutableMatrix* B, 
+                                        M2_bool right_side) const { return std::pair<bool, MutableMatrix*>(0,NULL); }
+
+  /** C=this,A,B should be mutable matrices over the same ring, and a,b
+     elements of this ring. AND of the same density type.
+     C = b*C + a * op(A)*op(B),
+     where op(A) = A or transpose(A), depending on transposeA
+     where op(B) = B or transpose(B), depending on transposeB
+  */
+  MutableMatrix* /* or null */ rawLinAlgAddMultipleTo(MutableMatrix* A,
+                                                      MutableMatrix* B,
+                                                      M2_bool transposeA,
+                                                      M2_bool transposeB,
+                                                      const RingElement* a,
+                                                      const RingElement* b) const
+  {
+    ERROR("not yet implemented");
+    return 0;
+  }
+
 };
 
 #endif

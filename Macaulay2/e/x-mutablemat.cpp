@@ -898,11 +898,74 @@ gmp_RRorNull rawMutableMatrixNorm(gmp_RR p, const MutableMatrix *M)
 // Fast linear algebra routines //
 //////////////////////////////////
 
-const RingElement* rawDeterminant(MutableMatrix *M)
+// how many of each need to be written:
+// FastLinearAlgebra
+// DONE interface.dd, actually done.  But should rename these functions
+//   rawFFPackRank
+//   rawFFPackDeterminant
+//   rawFFPackInvert
+//   rawFFPackRankProfile
+//   rawFFPackNullSpace
+//   rawFFPackSolve
+//   rawFFPackAddMultipleTo
+// DONE engine.h
+// DONE x-mutablemat.cpp
+// DONE MutableMatrix (not addMultipleTo)
+// MutableMat<X>
+// DMat<X>  -- one for each X, and one that is the "default"
+// SMat<X> -- one for each X and one that is the "default"
+
+size_t rawLinAlgRank(MutableMatrix* M)
 {
-  return M->determinant();
+  return M->rank();
 }
 
+const RingElement* rawLinAlgDeterminant(MutableMatrix* A)
+{
+  return A->determinant();
+}
+
+MutableMatrix* rawLinAlgInvert(MutableMatrix* A)
+{
+  return A->invert();
+}
+
+M2_arrayintOrNull rawLinAlgRankProfile(MutableMatrix* A, M2_bool row_profile)
+{
+  return A->rankProfile(row_profile);
+}
+
+MutableMatrix* rawLinAlgNullSpace(MutableMatrix* A, M2_bool right_side)
+{
+  return A->nullSpace(right_side);
+}
+
+MutableMatrix* rawLinAlgSolve(MutableMatrix* A, 
+                         MutableMatrix* B,
+                         M2_bool right_side)
+{
+  //TODO: return type doesn't distinguish between error, and no solution.
+  std::pair<bool, MutableMatrix*> result = A->solve(B, right_side);
+  if (result.first)
+    return result.second;
+  return 0;
+}
+
+MutableMatrix* /* or null */ rawLinAlgAddMultipleTo(MutableMatrix* C,
+                                                    MutableMatrix* A,
+                                                    MutableMatrix* B,
+                                                    M2_bool transposeA,
+                                                    M2_bool transposeB,
+                                                    const RingElement* a,
+                                                    const RingElement* b)
+{
+  ERROR("not yet implemented");
+  return 0;
+}
+
+//////////////////////////////////
+// Older code we used to figure things out.  Will be removed
+//////////////////////////////////
 #if defined(HAVE_FFLAS_FFPACK) && defined(HAVE_GIVARO)
 //#if 0
 #include "fflas-ffpack/field/modular-positive.h"
@@ -1121,17 +1184,11 @@ size_t FFPackRankGF(const GF *kk, MutableMatrix *M)
   return result;
 }
 
-size_t rawMutableMatrixRank(MutableMatrix *M)
-{
-  std::cout << "Calling rawMutableMatrixRank" << std::endl;
-  //return rawFFPackRank(M);
-  return M->rank();
-}
 
 size_t rawFFPackRank(MutableMatrix *M)
 {
   std::cout << "Calling rawFFPackRank" << std::endl;
-  return rawMutableMatrixRank(M);
+  return rawLinAlgRank(M);
   const Ring *R = M->get_ring();
   const Z_mod *kk = R->cast_to_Z_mod();
   if (kk != 0) return FFPackRankZZp(kk, M);

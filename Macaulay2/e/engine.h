@@ -1269,8 +1269,37 @@ extern "C" {
   /* Using row and column operations, use unit pivots to reduce the matrix */
   /* A return value of false means that the computation was interrupted */
 
-  const RingElement* rawDeterminant(MutableMatrix *M);
-  /* connected to rawDeterminant */
+  size_t rawLinAlgRank(MutableMatrix* M);
+
+  /** requires: M should be a square matrix.  
+      If not, or if the ring has not implemented this routine,
+      then -1 is returned (and an error message is given).
+   */
+  const RingElement* rawLinAlgDeterminant(MutableMatrix* A);
+
+  MutableMatrix* rawLinAlgInvert(MutableMatrix* A);
+
+  M2_arrayintOrNull rawLinAlgRankProfile(MutableMatrix* A, M2_bool row_profile);
+
+  MutableMatrix* rawLinAlgNullSpace(MutableMatrix* A, M2_bool right_side);
+
+  MutableMatrix* rawLinAlgSolve(MutableMatrix* A, 
+                                MutableMatrix* B,
+                                M2_bool right_side);
+
+  /** A,B,C should be mutable matrices over the same ring, and a,b
+     elements of this ring.
+     C = b*C + a * op(A)*op(B),
+     where op(A) = A or transpose(A), depending on transposeA
+     where op(B) = B or transpose(B), depending on transposeB
+  */
+  MutableMatrix* /* or null */ rawLinAlgAddMultipleTo(MutableMatrix* C,
+                                                      MutableMatrix* A,
+                                                      MutableMatrix* B,
+                                                      M2_bool transposeA,
+                                                      M2_bool transposeB,
+                                                      const RingElement* a,
+                                                      const RingElement* b);
 
   RingElement *rawFFPackDeterminant(MutableMatrix *M);
   /* connected to rawFFPackDeterminant, MES */

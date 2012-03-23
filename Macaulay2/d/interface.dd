@@ -2706,16 +2706,103 @@ export rawMutableMatrixFillRandom(e:Expr):Expr := (
      else WrongNumArgs(2));
 setupfun("rawMutableMatrixFillRandom",rawMutableMatrixFillRandom);
 
-----------------------------
--- ffpack interface routines
-
-export rawDeterminant(e:Expr):Expr := (
+----------------------------------
+-- fast linear algebra routines --
+----------------------------------
+export rawLinAlgDeterminant(e:Expr):Expr := (
      when e
      is m:RawMutableMatrixCell
-     do toExpr(Ccode(RawRingElementOrNull, "rawDeterminant(", m.p, ")" ))
+     do toExpr(Ccode(RawRingElementOrNull, "rawLinAlgDeterminant(", m.p, ")" ))
      else WrongArgMutableMatrix());
-setupfun("rawDeterminant",rawDeterminant);
+setupfun("rawLinAlgDeterminant",rawLinAlgDeterminant);
 
+export rawLinAlgRank(e:Expr):Expr := (
+     when e
+     is m:RawMutableMatrixCell
+     do toExpr(Ccode(int, "rawLinAlgRank(", m.p, ")" ))
+     else WrongArgMutableMatrix());
+setupfun("rawLinAlgRank",rawLinAlgRank);
+
+export rawLinAlgNullSpace(e:Expr):Expr := (
+     when e is s:Sequence do
+     if length(s) != 2 then WrongNumArgs(2) else
+     when s.0 is M:RawMutableMatrixCell do
+     if !isBoolean(s.1) then WrongArgBoolean(1) else toExpr(
+	  Ccode(RawMutableMatrixOrNull, "rawLinAlgNullSpace(", 
+	       M.p, ",", 
+	       toBoolean(s.1),
+	       ")"))
+     else WrongArgMutableMatrix(1)
+     else WrongNumArgs(2));
+setupfun("rawLinAlgNullSpace", rawLinAlgNullSpace);
+
+export rawLinAlgSolve(e:Expr):Expr := (
+     when e is s:Sequence do
+     if length(s) != 3 then WrongNumArgs(3) else
+     when s.0 is M:RawMutableMatrixCell do
+     when s.1 is N:RawMutableMatrixCell do
+     if !isBoolean(s.2) then WrongArgBoolean(2) else toExpr(
+	  Ccode(RawMutableMatrixOrNull, "rawLinAlgSolve(", 
+	       M.p, ",", 
+	       N.p, ",", 
+	       toBoolean(s.2),
+	       ")"))
+     else WrongArgMutableMatrix(1)
+     else WrongArgMutableMatrix(2)
+     else WrongNumArgs(3));
+setupfun("rawLinAlgSolve", rawLinAlgSolve);
+
+export rawLinAlgInvert(e:Expr):Expr := (
+     when e
+     is m:RawMutableMatrixCell
+     do toExpr(Ccode(RawMutableMatrixOrNull, "rawLinAlgInvert(", m.p, ")" ))
+     else WrongArgMutableMatrix());
+setupfun("rawLinAlgInvert",rawLinAlgInvert);
+
+export rawLinAlgAddMultipleTo(e:Expr):Expr := (
+     when e is s:Sequence do
+     if length(s) != 7 then WrongNumArgs(7) else
+     when s.0 is C:RawMutableMatrixCell do
+     when s.1 is A:RawMutableMatrixCell do
+     when s.2 is B:RawMutableMatrixCell do
+     when s.5 is a:RawRingElementCell do
+     when s.6 is b:RawRingElementCell do
+     if !isBoolean(s.3) then WrongArgBoolean(4)
+     else if !isBoolean(s.4) then WrongArgBoolean(5) 
+     else toExpr(
+	  Ccode(RawMutableMatrixOrNull, "rawLinAlgAddMultipleTo(", 
+	       C.p, ",", 
+	       A.p, ",", 
+	       B.p, ",", 
+	       toBoolean(s.3), ",",
+	       toBoolean(s.4), ",",
+	       a.p, ",", 
+	       b.p,
+	       ")"))
+     else WrongArg(7,"a raw ring element")
+     else WrongArg(6,"a raw ring element")
+     else WrongArgMutableMatrix(3)
+     else WrongArgMutableMatrix(2)
+     else WrongArgMutableMatrix(1)
+     else WrongNumArgs(7));
+setupfun("rawLinAlgAddMultipleTo", rawLinAlgAddMultipleTo);
+
+export rawLinAlgRankProfile(e:Expr):Expr := (
+     when e is s:Sequence do
+     if length(s) != 2 then WrongNumArgs(2) else
+     when s.0 is M:RawMutableMatrixCell do
+     if !isBoolean(s.1) then WrongArgBoolean(1) else toExpr(
+	  Ccode(RawArrayIntOrNull, "rawLinAlgRankProfile(", 
+	       M.p, ",", 
+	       toBoolean(s.1),
+	       ")"))
+     else WrongArgMutableMatrix(1)
+     else WrongNumArgs(2));
+setupfun("rawLinAlgRankProfile", rawLinAlgRankProfile);
+
+----------------------------
+-- ffpack interface routines
+-----------------------------
 export rawFFPackDeterminant(e:Expr):Expr := (
      when e
      is m:RawMutableMatrixCell

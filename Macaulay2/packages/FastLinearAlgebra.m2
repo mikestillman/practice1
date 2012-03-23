@@ -22,6 +22,7 @@ export {
    ARing,
    ZZp,
    powerMod,
+   	
    testDivide,
     testAdd,
     testNegate,
@@ -34,6 +35,7 @@ export {
     constructMacaulayGF,
     constructMacaulayZZp,
     testField,
+
      RightSide,
      nullSpace,
      invert,
@@ -1080,12 +1082,19 @@ time det M
 m = mutableMatrix M;
 time determinant m
 time rank m
+invert m
 kk = GF(3,4,Strategy=>"Givaro")
 N = 10
 M = random(kk^N, kk^N);
 time det M
 m = mutableMatrix M;
 time determinant m
+time minv = invert m;
+(matrix minv) * M 
+
+M1 = M_{0} | M_{1} | M_{0} + 2*M_{1} | M_{2} | M_{2} | M_{3}
+rowRankProfile mutableMatrix M1  -- WRONG
+columnRankProfile mutableMatrix M1  -- WRONG
 
 ///
 -- TODO:

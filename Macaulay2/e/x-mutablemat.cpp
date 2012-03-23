@@ -899,7 +899,7 @@ gmp_RRorNull rawMutableMatrixNorm(gmp_RR p, const MutableMatrix *M)
 //////////////////////////////////
 
 // how many of each need to be written:
-// FastLinearAlgebra
+// DONE FastLinearAlgebra
 // DONE interface.dd, actually done.  But should rename these functions
 //   rawFFPackRank
 //   rawFFPackDeterminant
@@ -912,8 +912,8 @@ gmp_RRorNull rawMutableMatrixNorm(gmp_RR p, const MutableMatrix *M)
 // DONE x-mutablemat.cpp
 // DONE MutableMatrix (not addMultipleTo)
 // MutableMat<X> -- has actual code to call the routines in DMat, SMat
-// DMat<X>  -- one for each X, and one that is the "default"
-// SMat<X> -- one for each X and one that is the "default"
+// DMat<X>  -- one for each X, and one that is the "default" (default: DONE)
+// SMat<X> -- one for each X and one that is the "default" (default: DONE)
 
 size_t rawLinAlgRank(MutableMatrix* M)
 {

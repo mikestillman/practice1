@@ -945,6 +945,102 @@ void DMat<M2::ARingGF>::determinant(elem &result) const
 #endif
 }
 
+template<>
+bool DMat<M2::ARingZZpFFPACK>::invert(DMat<M2::ARingZZpFFPACK> &inverse) const
+{
+  ASSERT(n_rows() == n_cols());
+  ElementType* N = newarray(ElementType, n_rows() * n_cols());
+  copy_elems(n_rows()*n_cols(), N, 1, get_array(), 1); 
+
+  size_t n = n_rows(); // same as n_cols()
+
+  int nullspacedim;
+  FFPACK::Invert2(ring().field(), n, N, n, inverse.get_array(), n, nullspacedim);
+
+  deletearray(N);
+  return true;
+}
+
+template<>
+M2_arrayintOrNull DMat<M2::ARingZZpFFPACK>::rankProfile(bool row_profile) const
+{
+  ElementType* N = newarray(ElementType, n_rows() * n_cols());
+  copy_elems(n_rows()*n_cols(), N, 1, get_array(), 1); 
+
+  size_t * prof;
+
+  size_t rk;
+  if (row_profile)
+    rk = FFPACK::RowRankProfile(ring().field(),
+                                n_rows(),n_cols(),
+                                N,n_cols(),
+                                prof);
+  else
+    rk = FFPACK::ColumnRankProfile(ring().field(),
+                                n_rows(),n_cols(),
+                                N,n_cols(),
+                                prof);
+
+  M2_arrayint profile = M2_makearrayint(rk);
+  for (size_t i=0; i<rk; i++)
+    profile->array[i] = prof[i];
+
+  delete [] prof;
+
+  deletearray(N);
+  return profile;
+}
+
+template<>
+bool DMat<M2::ARingZZpFFPACK>::solve(DMat<M2::ARingZZpFFPACK> &X, const DMat<M2::ARingZZpFFPACK> &B, bool right_size)
+{
+#if 0
+  size_t a_rows = n_rows();
+  size_t a_cols = n_cols();
+
+  size_t b_rows = B.n_rows();
+  size_t b_cols = B.n_cols();
+
+  ElementType* Aarray = newarray(ElementType, n_rows() * n_cols());
+  copy_elems(n_rows()*n_cols(), Aarray, 1, get_array(), 1); 
+
+  ElementType* Barray = newarray(ElementType, n_rows() * n_cols());
+  B.copy_elems(n_rows()*n_cols(), Barray, 1, B.get_array(), 1); 
+
+  // preallocate the space for the solutions:
+  size_t x_rows = (right_side ? a_cols : b_rows);
+  size_t x_cols = (right_side ? b_cols : a_rows);
+  size_t n_eqns = (right_side ? b_cols : b_rows);
+
+  ElementType *ffpackX = newarray_clear(ElementType, x_rows * x_cols);
+
+  int info; // >0 if the system is inconsistent, ==0 means success
+
+  FFPACK::fgesv(F,
+                (right_side ? FFLAS::FflasLeft : FFLAS::FflasRight), //
+                a_rows, a_cols,
+                (right_side ? b_cols : b_rows),
+                ffpackA,
+                a_cols, // leading dim of A
+                ffpackX, x_cols,
+                ffpackB, b_cols,
+                &info);
+
+  if (info > 0)
+    {
+      // the system is inconsistent
+      ERROR("the system is inconsistent");
+      return 0;
+    }
+
+  MutableMatrix *X = fromFFPackMatrix(kk, F, ffpackX, x_rows, x_cols);
+  delete [] ffpackX;
+  return X;
+#endif
+  return false;
+}
+
+
 /* Insert n_to_add rows directly BEFORE row i. */
 
 

@@ -911,7 +911,7 @@ gmp_RRorNull rawMutableMatrixNorm(gmp_RR p, const MutableMatrix *M)
 // DONE engine.h
 // DONE x-mutablemat.cpp
 // DONE MutableMatrix (not addMultipleTo)
-// MutableMat<X>
+// MutableMat<X> -- has actual code to call the routines in DMat, SMat
 // DMat<X>  -- one for each X, and one that is the "default"
 // SMat<X> -- one for each X and one that is the "default"
 

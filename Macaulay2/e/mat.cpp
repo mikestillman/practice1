@@ -655,6 +655,75 @@ MutableMatrix* M2::makeMutableZeroMatrix(const Ring* Rgeneral,
     ::zero_matrix(Rgeneral,R,nrows,ncols);
 }
 
+/////////////////////////////////////////
+/// Fast Linear Algebra Routines ////////
+/////////////////////////////////////////
+
+template <typename T>
+size_t MutableMat<T>::rank() const 
+{
+  return mat.rank();
+}
+
+template <typename T>
+const RingElement* MutableMat<T>::determinant() const 
+{
+  ring_elem det;
+  elem a;
+  mat.determinant(a);
+  mat.get_CoeffRing()->to_ring_elem(det, a);
+  return RingElement::make_raw(mat.get_ring(), det);
+}
+
+template <typename T>
+MutableMatrix* MutableMat<T>::invert() const
+{
+  MutableMat<T>*  result = makeZeroMatrix(n_rows(), n_cols());
+  bool val = mat.invert(result->mat);
+  if (!val)
+    {
+      delete result;
+      return 0;
+    }
+  return result;
+}
+
+template <typename T>
+M2_arrayintOrNull MutableMat<T>::rankProfile(bool row_profile) const
+{
+  return mat.rankProfile(row_profile);
+}
+  
+template <typename T>
+MutableMatrix* MutableMat<T>::nullSpace(M2_bool right_side) const
+{
+  ERROR("not implemented for this ring type/ sparsity setting");
+  return 0;
+}
+
+template <typename T>
+std::pair<bool, MutableMatrix*> MutableMat<T>::solve(MutableMatrix* B, 
+                                                     M2_bool right_side) const 
+{ 
+  ERROR("not implemented for this ring type/ sparsity setting");
+  return std::pair<bool, MutableMatrix*>(0,NULL); 
+}
+
+
+template <typename T>
+MutableMatrix* MutableMat<T>::addMultipleTo(MutableMatrix* A,
+                                            MutableMatrix* B,
+                                            M2_bool transposeA,
+                                            M2_bool transposeB,
+                                            const RingElement* a,
+                                            const RingElement* b) const
+{
+  ERROR("not implemented for this ring type/ sparsity setting");
+  return 0;
+}
+
+
+/////////////////////////////////////////
 #if 0
 MutableMatrix *M2::ARingZZpFFPACK::makeMutableMatrix(const Ring* R, size_t nrows, size_t ncols, bool dense) const
 {

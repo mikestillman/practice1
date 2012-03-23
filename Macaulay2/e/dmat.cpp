@@ -27,6 +27,16 @@ DMat<CoeffRing>::DMat(const Ring *R0, const CoeffRing *coeffR0, int nrows, int n
   initialize(nrows,ncols,0);
 }
 
+template<typename CoeffRing>
+DMat<CoeffRing>::DMat(const DMat<CoeffRing> &m, size_t nrows, size_t ncols)
+  : R(m.R),
+    coeffR(m.coeffR),
+    nrows_(nrows),
+    ncols_(ncols)
+{
+  initialize(nrows,ncols,0);
+}
+
 #if 0
 //TODO: MES: remove if above works fine.
 template <> DMat<CoefficientRingR>::DMat(const Ring *R0, const CoefficientRingR *coeffR, int nrows, int ncols)
@@ -791,6 +801,9 @@ template <> void DMat<CoefficientRingCCC>::fill_from_lapack_array(double *lapack
     }
 }
 
+///////////////////////////////////
+/// Fast linear algebra routines //
+///////////////////////////////////
 
 template<typename CoeffRing>
 size_t DMat<CoeffRing>::rank() const
@@ -801,6 +814,50 @@ size_t DMat<CoeffRing>::rank() const
 
 template<typename CoeffRing>
 void DMat<CoeffRing>::determinant(elem &result) const
+{
+  //TODO:MES: write these determinant functions!!
+  ERROR("not implemented for this ring yet");
+}
+
+template<typename CoeffRing>
+bool DMat<CoeffRing>::invert(DMat<CoeffRing> &inverse) const
+{
+  //TODO:MES: write these determinant functions!!
+  ERROR("not implemented for this ring yet");
+  return false;
+}
+
+template<typename CoeffRing>
+M2_arrayintOrNull DMat<CoeffRing>::rankProfile(bool row_profile) const
+{
+  //TODO:MES: write these determinant functions!!
+  ERROR("not implemented for this ring yet");
+  return 0;
+}
+
+template<typename CoeffRing>
+void DMat<CoeffRing>::nullSpace(DMat<CoeffRing> &nullspace, M2_bool right_side) const
+{
+  //TODO:MES: write these determinant functions!!
+  ERROR("not implemented for this ring yet");
+}
+
+template<typename CoeffRing>
+bool DMat<CoeffRing>::solve(DMat<CoeffRing> &X, const DMat<CoeffRing> &B, bool right_size)
+{
+  //TODO:MES: write these determinant functions!!
+  ERROR("not implemented for this ring yet");
+  return false;
+}
+
+template<typename CoeffRing>
+void DMat<CoeffRing>::addMultipleTo(DMat<CoeffRing> &C,
+                                    DMat<CoeffRing> &A,
+                                    DMat<CoeffRing> &B,
+                                    bool transposeA,
+                                    bool transposeB,
+                                    ring_elem a,
+                                    ring_elem b) const
 {
   //TODO:MES: write these determinant functions!!
   ERROR("not implemented for this ring yet");

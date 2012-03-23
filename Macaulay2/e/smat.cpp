@@ -960,10 +960,15 @@ M2_arrayint columnEchelonForm(SMat<CoeffRing> *A)
   return 0;
 }
 
+
+
+///////////////////////////////////
+/// Fast linear algebra routines //
+///////////////////////////////////
+
 template<typename CoeffRing>
 size_t SMat<CoeffRing>::rank() const
 {
-  //TODO:MES: write these rank functions!!
   ERROR("not implemented for this ring yet");
   return static_cast<size_t>(-1);
 }
@@ -974,6 +979,38 @@ void SMat<CoeffRing>::determinant(elem &result) const
   //TODO:MES: write these determinant functions!!
   ERROR("not implemented for this ring yet");
 }
+
+template<typename CoeffRing>
+bool SMat<CoeffRing>::invert(SMat<CoeffRing> &inverse) const
+{
+  //TODO:MES: write these determinant functions!!
+  ERROR("not implemented for this ring yet");
+  return false;
+}
+
+template<typename CoeffRing>
+M2_arrayintOrNull SMat<CoeffRing>::rankProfile(bool row_profile) const
+{
+  //TODO:MES: write these determinant functions!!
+  ERROR("not implemented for this ring yet");
+  return 0;
+}
+
+template<typename CoeffRing>
+void SMat<CoeffRing>::nullSpace(SMat<CoeffRing> &nullspace, M2_bool right_side) const
+{
+  //TODO:MES: write these determinant functions!!
+  ERROR("not implemented for this ring yet");
+}
+
+template<typename CoeffRing>
+bool SMat<CoeffRing>::solve(SMat<CoeffRing> &X, const SMat<CoeffRing> &B, bool right_size)
+{
+  //TODO:MES: write these determinant functions!!
+  ERROR("not implemented for this ring yet");
+  return false;
+}
+
 
 #include "aring-ffpack.hpp"
 template class SMat<CoefficientRingZZ_NTL>;

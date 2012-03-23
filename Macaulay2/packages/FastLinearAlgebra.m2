@@ -1074,12 +1074,12 @@ debug loadPackage "FastLinearAlgebra"
 debug Core
 --kk = ZZp 1049599
 kk = ZZp 101
-N = 500
+N = 5
 M = random(kk^N, kk^N);
 time det M
 m = mutableMatrix M;
 time determinant m
-
+time rank m
 kk = GF(3,4,Strategy=>"Givaro")
 N = 10
 M = random(kk^N, kk^N);

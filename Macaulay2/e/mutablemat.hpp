@@ -49,7 +49,14 @@ class MutableMat : public MutableMatrix
 
   MutableMat(const Ring *R, const CoeffRing *coeffR, int nrows, int ncols)
     : mat(R,coeffR,nrows,ncols) {}
+
+  MutableMat(Mat &m) : mat(m) {}
+
 public:
+  // Make a zero matrix, using the same ring and density taken from 'mat'.
+  MutableMat* makeZeroMatrix(size_t nrows, size_t ncols) const {
+    return zero_matrix(mat.get_ring(), &mat.ring(), nrows, ncols);
+  }
 
   Mat * get_Mat() { return &mat; }
   const Mat * get_Mat() const { return &mat; }
@@ -465,19 +472,47 @@ public:
                              bool assume_full_rank) const;
 
 
-  virtual size_t rank() const 
-  {
-    return mat.rank();
-  }
+  /// Fast linear algebra routines (well, fast for some rings)
 
-  virtual const RingElement* determinant() const 
-  {
-    ring_elem det;
-    elem a;
-    mat.determinant(a);
-    mat.get_CoeffRing()->to_ring_elem(det, a);
-    return RingElement::make_raw(mat.get_ring(), det);
-  }
+  virtual size_t rank() const;
+
+  virtual const RingElement* determinant() const;
+
+  // Find the inverse matrix.  If the matrix is not square, or 
+  // the ring is one in which th matrix cannot be inverted,
+  // then NULL is returned, and an error message is set.
+  virtual MutableMatrix* invert() const;
+
+  // Returns an array of increasing integers {n_1, n_2, ...}
+  // such that if M is the matrix with rows (resp columns, if row_profile is false)
+  // then rank(M_{0..n_i-1}) + 1 = rank(M_{0..n_i}).
+  // NULL is returned, and an error is set, if this function is not available
+  // for the given choice of ring and dense/sparseness.
+  virtual M2_arrayintOrNull rankProfile(bool row_profile) const;
+  
+  // Find a spanning set for the null space.  If M = this,
+  // and right_side is true, return a matrix whose rows span {x |  xM = 0},
+  // otherwise return a matrix whose columns span {x | Mx = 0}
+  virtual MutableMatrix* nullSpace(M2_bool right_side) const;
+
+  // Return a matrix whose rows or columns solve either Ax = B (right_side=true)
+  // or xA = B (right_side=false).  The first argument returned is false
+  // in this case.
+  std::pair<bool, MutableMatrix*> solve(MutableMatrix* B, 
+                                        M2_bool right_side) const;
+
+  /** C=this,A,B should be mutable matrices over the same ring, and a,b
+     elements of this ring. AND of the same density type.
+     C = b*C + a * op(A)*op(B),
+     where op(A) = A or transpose(A), depending on transposeA
+     where op(B) = B or transpose(B), depending on transposeB
+  */
+  MutableMatrix* /* or null */ addMultipleTo(MutableMatrix* A,
+                                             MutableMatrix* B,
+                                             M2_bool transposeA,
+                                             M2_bool transposeB,
+                                             const RingElement* a,
+                                             const RingElement* b) const;
 };
 
 #endif

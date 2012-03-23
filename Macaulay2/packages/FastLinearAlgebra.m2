@@ -111,8 +111,60 @@ isPrimeField Ring := (R) -> (
 
 determinant MutableMatrix := opts -> (M) -> (
      R := ring M;
-     new R from rawDeterminant raw M
+     new R from rawLinAlgDeterminant raw M
      )
+
+rank MutableMatrix := (M) -> rawLinAlgRank raw M
+
+nullSpace = method(Options => {RightSide=>true})
+nullSpace(MutableMatrix) := opts -> (M) -> (
+     R := ring M;
+     map(R, rawLinAlgNullSpace(raw M, opts.RightSide))
+     )
+
+solveLinear = method(Options => options nullSpace)
+solveLinear(MutableMatrix, MutableMatrix) := opts -> (A,B) -> (
+     -- solve A*X = B, or solve X*A = B
+     R := ring A;
+     if ring A =!= ring B then error "expected same base rings";
+     map(R,rawLinAlgSolve(raw A,raw B,opts.RightSide))
+     )
+
+invert = method()
+invert MutableMatrix := (A) -> (
+     R := ring A;
+     if numRows A =!= numColumns A then error "expected square matrix";
+     map(R,rawLinAlgInvert(raw A))
+     )
+
+addMultipleTo = method(Options => {
+	  TransposeA => false, 
+	  TransposeB => false, 
+	  Alpha => null, 
+	  Beta => null})
+
+addMultipleTo(MutableMatrix,MutableMatrix,MutableMatrix) := opts -> (C,A,B) -> (
+     R := ring C;
+     if ring A =!= ring C or ring B =!= ring C then 
+       error "expected matrices over the same ring";
+     a := if opts.Alpha === null then 1_R else opts.Alpha;
+     b := if opts.Beta === null then 1_R else opts.Beta;
+     rawLinAlgAddMultipleTo(raw C, raw A, raw B,
+	  opts.TransposeA, 
+	  opts.TransposeB, 
+	  raw a, raw b);
+     C)
+
+MutableMatrix * MutableMatrix := (A,B) -> (
+     C := mutableMatrix(ring A, numRows A, numColumns B, Dense=>true);
+     addMultipleTo(C,A,B)
+     )
+
+rowRankProfile = method()
+rowRankProfile MutableMatrix := (A) -> rawLinAlgRankProfile(raw A, true)
+
+columnRankProfile = method()
+columnRankProfile MutableMatrix := (A) -> rawLinAlgRankProfile(raw A, false)
 
 fastRank= method();
 
@@ -123,60 +175,10 @@ fastRank MutableMatrix := (M) -> (
 	  )
      )
 
-nullSpace = method(Options => {RightSide=>true})
-nullSpace(MutableMatrix) := opts -> (M) -> (
-     R := ring M;
-     if isPrimeField R and char R > 0 then (
-     	  map(R,rawFFPackNullSpace(raw M,opts.RightSide))
-     ))
 
-solveLinear = method(Options => options nullSpace)
-solveLinear(MutableMatrix, MutableMatrix) := opts -> (A,B) -> (
-     -- solve A*X = B, or solve X*A = B
-     R := ring A;
-     if ring A =!= ring B then error "expected same base rings";
-     if isPrimeField R and char R > 0 then (
-     	  map(R,rawFFPackSolve(raw A,raw B,opts.RightSide))
-     ))
 
-invert = method()
-invert MutableMatrix := (A) -> (
-     R := ring A;
-     if isPrimeField R and char R > 0 then (
-     	  map(R,rawFFPackInvert(raw A)))
-     else 
-     	  error "invert only implemented for mutable matrices over prime finite fields"
-     )
 
-addMultipleTo = method(Options => {TransposeA => false, TransposeB => false, Alpha => null, Beta => null})
-addMultipleTo(MutableMatrix,MutableMatrix,MutableMatrix) := opts -> (C,A,B) -> (
-     R := ring C;
-     if ring A =!= ring C or ring B =!= ring C then error "expected matrices over the same ring";
-     if isPrimeField R and char R > 0 then (
-	  a := if opts.Alpha === null then 1_R else opts.Alpha;
-	  b := if opts.Beta === null then 1_R else opts.Beta;
-     	  rawFFPackAddMultipleTo(raw C, raw A, raw B,opts.TransposeA, opts.TransposeB, raw a, raw b);
-	  C)
-     )
 
-MutableMatrix * MutableMatrix := (A,B) -> (
-     C := mutableMatrix(ring A, numRows A, numColumns B, Dense=>true);
-     addMultipleTo(C,A,B)
-     )
-
-rowRankProfile = method()
-rowRankProfile MutableMatrix := (A) -> (
-     R := ring A;
-     if isPrimeField R and char R > 0 then (
-     	  rawFFPackRowRankProfile A
-     ))
-
-columnRankProfile = method()
-columnRankProfile MutableMatrix := (A) -> (
-     R := ring A;
-     if isPrimeField R and char R > 0 then (
-     	  rawFFPackColumnRankProfile A
-     ))
 
 ------------tests
 

@@ -260,12 +260,12 @@ public:
      where op(A) = A or transpose(A), depending on transposeA
      where op(B) = B or transpose(B), depending on transposeB
   */
-  MutableMatrix* /* or null */ rawLinAlgAddMultipleTo(MutableMatrix* A,
-                                                      MutableMatrix* B,
-                                                      M2_bool transposeA,
-                                                      M2_bool transposeB,
-                                                      const RingElement* a,
-                                                      const RingElement* b) const
+  MutableMatrix* /* or null */ addMultipleTo(MutableMatrix* A,
+                                             MutableMatrix* B,
+                                             M2_bool transposeA,
+                                             M2_bool transposeB,
+                                             const RingElement* a,
+                                             const RingElement* b) const
   {
     ERROR("not yet implemented");
     return 0;

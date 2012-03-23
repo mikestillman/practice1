@@ -959,8 +959,7 @@ MutableMatrix* /* or null */ rawLinAlgAddMultipleTo(MutableMatrix* C,
                                                     const RingElement* a,
                                                     const RingElement* b)
 {
-  ERROR("not yet implemented");
-  return 0;
+  return C->addMultipleTo(A,B,transposeA,transposeB,a,b);
 }
 
 //////////////////////////////////

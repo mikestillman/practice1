@@ -207,11 +207,11 @@ public:
   // Find a spanning set for the null space.  If M = this,
   // and right_side is true, return a matrix whose rows span {x |  xM = 0},
   // otherwise return a matrix whose columns span {x | Mx = 0}
-  void nullSpace(SMat<ACoeffRing> &nullspace, M2_bool right_side) const;
+  void nullSpace(SMat<ACoeffRing> &nullspace, bool right_side) const;
 
   // X is set to  a matrix whose rows or columns solve either AX = B (right_side=true)
   // or XA = B (right_side=false). If no solutions are found, false is returned.
-  bool solve(SMat<ACoeffRing> &X, const SMat<ACoeffRing> &B, bool right_size);
+  bool solveLinear(SMat<ACoeffRing> &X, const SMat<ACoeffRing> &B, bool right_side) const;
 
   /** C=this,A,B should be mutable matrices over the same ring, and a,b
      elements of this ring. AND of the same density type.
@@ -220,8 +220,8 @@ public:
      where op(B) = B or transpose(B), depending on transposeB
   */
   void addMultipleTo(SMat<ACoeffRing> &C,
-                     SMat<ACoeffRing> &A,
-                     SMat<ACoeffRing> &B,
+                     const SMat<ACoeffRing> &A,
+                     const SMat<ACoeffRing> &B,
                      bool transposeA,
                      bool transposeB,
                      ring_elem a,

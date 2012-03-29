@@ -944,10 +944,12 @@ MutableMatrix* rawLinAlgSolve(MutableMatrix* A,
                          MutableMatrix* B,
                          M2_bool right_side)
 {
+  std::cerr << "calling rawLinAlgSolve" << std::endl;
   //TODO: return type doesn't distinguish between error, and no solution.
-  std::pair<bool, MutableMatrix*> result = A->solve(B, right_side);
+  std::pair<bool, MutableMatrix*> result = A->solveLinear(B, right_side);
   if (result.first)
     return result.second;
+  ERROR("got a zero -- why??");
   return 0;
 }
 

@@ -32,10 +32,12 @@ inline bool error_row_bound(int r, int nrows)
 template<typename Mat>
 class MutableMat : public MutableMatrix
 {
+public:
   typedef Mat MatType;
   typedef typename Mat::CoeffRing CoeffRing;
-  //  typedef typename CoeffRing::ring_type RingType;
   typedef typename CoeffRing::elem elem;
+
+private:
   Mat mat;
   // This class wraps the operations for Mat to make a MutableMatrix
 
@@ -493,13 +495,13 @@ public:
   // Find a spanning set for the null space.  If M = this,
   // and right_side is true, return a matrix whose rows span {x |  xM = 0},
   // otherwise return a matrix whose columns span {x | Mx = 0}
-  virtual MutableMatrix* nullSpace(M2_bool right_side) const;
+  virtual MutableMatrix* nullSpace(bool right_side) const;
 
   // Return a matrix whose rows or columns solve either Ax = B (right_side=true)
   // or xA = B (right_side=false).  The first argument returned is false
   // in this case.
-  std::pair<bool, MutableMatrix*> solve(MutableMatrix* B, 
-                                        M2_bool right_side) const;
+  std::pair<bool, MutableMatrix*> solveLinear(MutableMatrix* B, 
+                                              bool right_side) const;
 
   /** C=this,A,B should be mutable matrices over the same ring, and a,b
      elements of this ring. AND of the same density type.
@@ -509,8 +511,8 @@ public:
   */
   MutableMatrix* /* or null */ addMultipleTo(MutableMatrix* A,
                                              MutableMatrix* B,
-                                             M2_bool transposeA,
-                                             M2_bool transposeB,
+                                             bool transposeA,
+                                             bool transposeB,
                                              const RingElement* a,
                                              const RingElement* b) const;
 };

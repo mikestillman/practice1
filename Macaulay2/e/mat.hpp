@@ -246,13 +246,15 @@ public:
   // Find a spanning set for the null space.  If M = this,
   // and right_side is true, return a matrix whose rows span {x |  xM = 0},
   // otherwise return a matrix whose columns span {x | Mx = 0}
-  virtual MutableMatrix* nullSpace(M2_bool right_side) const { return 0; }
+  virtual MutableMatrix* nullSpace(bool right_side) const { return 0; }
 
   // Return a matrix whose rows or columns solve either Ax = B (right_side=true)
   // or xA = B (right_side=false).  The first argument returned is false
   // in this case.
-  std::pair<bool, MutableMatrix*> solve(MutableMatrix* B, 
-                                        M2_bool right_side) const { return std::pair<bool, MutableMatrix*>(0,NULL); }
+  virtual std::pair<bool, MutableMatrix*> solveLinear(MutableMatrix* B, 
+                                                      bool right_side) const { 
+    return std::pair<bool, MutableMatrix*>(0,NULL); 
+  }
 
   /** C=this,A,B should be mutable matrices over the same ring, and a,b
      elements of this ring. AND of the same density type.
@@ -260,10 +262,10 @@ public:
      where op(A) = A or transpose(A), depending on transposeA
      where op(B) = B or transpose(B), depending on transposeB
   */
-  MutableMatrix* /* or null */ addMultipleTo(MutableMatrix* A,
+  virtual MutableMatrix* /* or null */ addMultipleTo(MutableMatrix* A,
                                              MutableMatrix* B,
-                                             M2_bool transposeA,
-                                             M2_bool transposeB,
+                                             bool transposeA,
+                                             bool transposeB,
                                              const RingElement* a,
                                              const RingElement* b) const
   {

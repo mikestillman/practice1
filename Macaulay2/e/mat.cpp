@@ -695,26 +695,28 @@ M2_arrayintOrNull MutableMat<T>::rankProfile(bool row_profile) const
 }
   
 template <typename T>
-MutableMatrix* MutableMat<T>::nullSpace(M2_bool right_side) const
+MutableMatrix* MutableMat<T>::nullSpace(bool right_side) const
 {
-  ERROR("not implemented for this ring type/ sparsity setting");
-  return 0;
+  MutableMat<T>* ker = makeZeroMatrix(0,0);
+  mat.nullSpace(ker->mat, right_side);
+  return ker;
 }
 
 template <typename T>
-std::pair<bool, MutableMatrix*> MutableMat<T>::solve(MutableMatrix* B, 
-                                                     M2_bool right_side) const 
+std::pair<bool, MutableMatrix*> MutableMat<T>::solveLinear(MutableMatrix* B, 
+                                                           bool right_side) const 
 { 
-  ERROR("not implemented for this ring type/ sparsity setting");
-  return std::pair<bool, MutableMatrix*>(0,NULL); 
+  MutableMat<T>* B1 = B->cast_to_MutableMat<T>();
+  MutableMat<T>* solns = makeZeroMatrix(0,0);
+  bool retval = mat.solveLinear(solns->mat, B1->mat, right_side);
+  return std::pair<bool, MutableMatrix*>(retval, solns);
 }
-
 
 template <typename T>
 MutableMatrix* MutableMat<T>::addMultipleTo(MutableMatrix* A,
                                             MutableMatrix* B,
-                                            M2_bool transposeA,
-                                            M2_bool transposeB,
+                                            bool transposeA,
+                                            bool transposeB,
                                             const RingElement* a,
                                             const RingElement* b) const
 {

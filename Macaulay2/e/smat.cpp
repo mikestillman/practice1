@@ -997,18 +997,31 @@ M2_arrayintOrNull SMat<CoeffRing>::rankProfile(bool row_profile) const
 }
 
 template<typename CoeffRing>
-void SMat<CoeffRing>::nullSpace(SMat<CoeffRing> &nullspace, M2_bool right_side) const
+void SMat<CoeffRing>::nullSpace(SMat<CoeffRing> &nullspace, bool right_side) const
 {
   //TODO:MES: write these determinant functions!!
   ERROR("not implemented for this ring yet");
 }
 
 template<typename CoeffRing>
-bool SMat<CoeffRing>::solve(SMat<CoeffRing> &X, const SMat<CoeffRing> &B, bool right_size)
+bool SMat<CoeffRing>::solveLinear(SMat<CoeffRing> &X, const SMat<CoeffRing> &B, bool right_side) const
 {
   //TODO:MES: write these determinant functions!!
   ERROR("not implemented for this ring yet");
   return false;
+}
+
+template<typename CoeffRing>
+void SMat<CoeffRing>::addMultipleTo(SMat<CoeffRing> &C,
+                                    const SMat<CoeffRing> &A,
+                                    const SMat<CoeffRing> &B,
+                                    bool transposeA,
+                                    bool transposeB,
+                                    ring_elem a,
+                                    ring_elem b) const
+{
+  //TODO:MES: write these determinant functions!!
+  ERROR("not implemented for this ring yet");
 }
 
 

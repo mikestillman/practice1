@@ -111,12 +111,25 @@ isPrimeField Ring := (R) -> (
      true
      )
 
+rank MutableMatrix := (M) -> rawLinAlgRank raw M
+
 determinant MutableMatrix := opts -> (M) -> (
      R := ring M;
      new R from rawLinAlgDeterminant raw M
      )
 
-rank MutableMatrix := (M) -> rawLinAlgRank raw M
+invert = method()
+invert MutableMatrix := (A) -> (
+     R := ring A;
+     if numRows A =!= numColumns A then error "expected square matrix";
+     map(R,rawLinAlgInvert(raw A))
+     )
+
+rowRankProfile = method()
+rowRankProfile MutableMatrix := (A) -> rawLinAlgRankProfile(raw A, true)
+
+columnRankProfile = method()
+columnRankProfile MutableMatrix := (A) -> rawLinAlgRankProfile(raw A, false)
 
 nullSpace = method(Options => {RightSide=>true})
 nullSpace(MutableMatrix) := opts -> (M) -> (
@@ -130,13 +143,6 @@ solveLinear(MutableMatrix, MutableMatrix) := opts -> (A,B) -> (
      R := ring A;
      if ring A =!= ring B then error "expected same base rings";
      map(R,rawLinAlgSolve(raw A,raw B,opts.RightSide))
-     )
-
-invert = method()
-invert MutableMatrix := (A) -> (
-     R := ring A;
-     if numRows A =!= numColumns A then error "expected square matrix";
-     map(R,rawLinAlgInvert(raw A))
      )
 
 addMultipleTo = method(Options => {
@@ -162,12 +168,6 @@ MutableMatrix * MutableMatrix := (A,B) -> (
      addMultipleTo(C,A,B)
      )
 
-rowRankProfile = method()
-rowRankProfile MutableMatrix := (A) -> rawLinAlgRankProfile(raw A, true)
-
-columnRankProfile = method()
-columnRankProfile MutableMatrix := (A) -> rawLinAlgRankProfile(raw A, false)
-
 fastRank= method();
 
 fastRank MutableMatrix := (M) -> (
@@ -176,11 +176,6 @@ fastRank MutableMatrix := (M) -> (
 	  new ZZ from rawFFPackRank raw M
 	  )
      )
-
-
-
-
-
 
 ------------tests
 
@@ -1082,19 +1077,49 @@ time det M
 m = mutableMatrix M;
 time determinant m
 time rank m
-invert m
+(matrix invert m) * M
+
+M1 = M_{0} | M_{1} | M_{0} + 2*M_{1} | M_{2} | M_{2} | M_{3}
+m1 = mutableMatrix M1
+rowRankProfile m1 -- WRONG
+columnRankProfile m1 -- WRONG
+m2 = mutableMatrix transpose M1
+rowRankProfile m2 -- WRONG
+columnRankProfile m2 -- WRONG
+
+M = matrix(kk, {{1,1,1,0}, {0,1,0,0}})
+m = mutableMatrix M
+nullSpace m
+m2 = mutableMatrix transpose M
+nullSpace(m2, RightSide=>false)
+B = matrix(kk, {{1,0},{0,1}})
+b = mutableMatrix B
+solveLinear(m, b)
+
+M = random(kk^10, kk^15)
+m = mutableMatrix M
+kerm = matrix nullSpace m
+assert(M * kerm == 0)
+assert(rank kerm == 5)
+m2 = mutableMatrix transpose M
+kerm2 = matrix nullSpace(m2, RightSide=>false)
+assert(kerm2 * (transpose M) == 0)
+assert(rank kerm2 == 5)
+
 kk = GF(3,4,Strategy=>"Givaro")
 N = 10
+N = 5
 M = random(kk^N, kk^N);
 time det M
 m = mutableMatrix M;
-time determinant m
-time minv = invert m;
-(matrix minv) * M 
+time determinant m  -- WRONG
+rank m -- WRONG
+time minv = invert m; -- NOT IMPLEMENTED for GF
+(matrix minv) * M
 
 M1 = M_{0} | M_{1} | M_{0} + 2*M_{1} | M_{2} | M_{2} | M_{3}
-rowRankProfile mutableMatrix M1  -- WRONG
-columnRankProfile mutableMatrix M1  -- WRONG
+rowRankProfile mutableMatrix M1 -- NOT IMPLEMENTED for GF
+columnRankProfile mutableMatrix M1 -- NOT IMPLEMENTED for GF
 
 ///
 -- TODO:
@@ -1314,6 +1339,15 @@ columnRankProfile mutableMatrix M1  -- WRONG
 --     in EngineTests.m2: test rank, determinant, ...
 --     Mike: get rank, determinant working with other ring types
 --
+-- 29 Mar 2012
+--     interface.dd: rank needs to give an error if -1 is returned.
+--     solve: throw an error if error occurs.
+--     x-mutablemat: catch errors, somehow alert front end.
+--     invert: maybe have the DMat and SMat routines throw an error.
+--         possible errors: not invertible.
+--                          not implemented for this ring/matrix type
+--                          not a square matrix
+
 R = GF(2,7)
 ambient R
 S = ZZ/2[x]/(x^7+x+1)

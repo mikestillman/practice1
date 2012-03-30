@@ -1067,8 +1067,10 @@ debug FastLinearAlgebra
 fastRank M
 
 restart
-debug loadPackage "FastLinearAlgebra"
 debug Core
+debug loadPackage "FastLinearAlgebra"
+
+
 --kk = ZZp 1049599
 kk = ZZp 101
 N = 5
@@ -1096,6 +1098,16 @@ B = matrix(kk, {{1,0},{0,1}})
 b = mutableMatrix B
 solveLinear(m, b)
 
+M = matrix(kk, {{1,1,1,0}, {0,1,0,0}})
+m = mutableMatrix M
+nullSpace m
+m2 = mutableMatrix transpose M
+nullSpace(m2, RightSide=>false)
+B = matrix(kk, {{0},{1} })
+b = mutableMatrix B
+x = solveLinear(m, b)
+(matrix m )*(matrix x)
+
 M = random(kk^10, kk^15)
 m = mutableMatrix M
 kerm = matrix nullSpace m
@@ -1107,13 +1119,17 @@ assert(kerm2 * (transpose M) == 0)
 assert(rank kerm2 == 5)
 
 kk = GF(3,4,Strategy=>"Givaro")
+rawARingGFGenerator raw kk
 N = 10
-N = 5
-M = random(kk^N, kk^N);
+N = 4
+--M = random(kk^N, kk^N);
+--M= matrix {{-a^3+a^2-a-1, -a^3-a^2-a-1, a-1, a-1}, {-a^2-1, a^3-a^2-a, a^3+a^2, -a^3-a^2+a+1}, {a^3-a^2+1, -a^2-a-1, -a^3-a^2+a, a^3-a^2-a+1}, {0, a^2-a-1, -a^2-1, -a^3+a-1}}
+M=matrix {{a^3+a^2, -a^3+a^2+a-1, a^3-a^2+a, -a^2-a}, {a^3-a-1, a^3-a^2-a-1, -a^3-a^2-a, a^3-a^2-1}, {a^2+a-1, a^2+1, -a^3-a^2, a^2+a+1}, {a^3+a^2-a-1, a^3+a^2-1, -a^2-a, a^3-a^2+a}}
 time det M
 m = mutableMatrix M;
 time determinant m  -- WRONG
 rank m -- WRONG
+rank M
 time minv = invert m; -- NOT IMPLEMENTED for GF
 (matrix minv) * M
 
@@ -1309,7 +1325,7 @@ columnRankProfile mutableMatrix M1 -- NOT IMPLEMENTED for GF
 --                 SEEMS OK in ARingGFM2 code, but we need to make sure it is OK in ARingGF code.  Then: fix logic in m2/galois.m2.
 -- TODO made 1 Mar 2012
 --      Jakob: ask givaro authors if there is a reason for their choice of the generator
---        can we set the primitive element ourself ?
+--        can we set the primitive element ourself ? DONE, need to Check 
 --        (2)Does givaro, ffpack, linbox have initialized variables which occur before main()?
 --        (3) make sure all givaro, ffpack uses are enclosed by #ifdef... DONE (Jakob)
 --      Mike:
@@ -1331,9 +1347,11 @@ columnRankProfile mutableMatrix M1 -- NOT IMPLEMENTED for GF
 --         d. (Jakob and Mike): finally get to write the linear algebra routines.
 --
 -- TODO 22 Mar 2012
---     Jakob: why is the bound for modulus in ffpack about 67 million?  is it really?
+--     Jakob: why is the bound for modulus in ffpack about 67 million?  is it really? - yes. (<2^26)
 --            compute the generator in a faster manner, perhaps change interface to rawARing... to take a generator.
 --            debug GF determinant.  Seems not to be working.
+--            benchmarks should also appear as test and fail on specified hardware if the runtime increased significantly #
+--            random generator from givaro seems to be not that good - replace with a better one?
 --     Mike: write powerMod
 --     in FastLinearAlgebra.m2: add in benchmarks for rank, determinant, ...
 --     in EngineTests.m2: test rank, determinant, ...
@@ -1347,6 +1365,11 @@ columnRankProfile mutableMatrix M1 -- NOT IMPLEMENTED for GF
 --         possible errors: not invertible.
 --                          not implemented for this ring/matrix type
 --                          not a square matrix
+----------------------------------------------
+-- not discussed yet:
+--    a. bugs in ffpack ZZ/p: basis(2,R) fails (R = polyring over ZZ/p).  Fix this?  MIKE 
+--        => i suggest we wil use M4RI for basis(2,R) op: we (mostly Mike) did setup this itsy bitsy template interface to incorporate other field implementations
+--           and therefore we should also use it extensively ;-)
 
 R = GF(2,7)
 ambient R

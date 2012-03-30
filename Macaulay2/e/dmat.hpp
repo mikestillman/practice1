@@ -5,12 +5,44 @@
 
 union ring_elem;
 #include "ZZp.hpp"
+
+#include "aring-ffpack.hpp"
+#include "aring-gf.hpp"
+
+
 //#include <mblas_mpfr.h>
 //#include <mlapack_mpfr.h>
 //#include "mpreal.h"
 // This is the low level dense matrix class.
 // The only reason "RingType" is present is to more easily
 //   communicate with the rest of Macaulay2
+
+// enable_if is probably only available for never standard, e.g. compiler flag -std=c++0x
+template<bool, typename T = void> 
+  struct enable_if {};
+
+template<typename T>
+  struct enable_if<true, T> {
+    typedef T type;
+  };
+
+template< typename T > 
+struct is_givaro_or_ffpack{ 
+  static const bool value = false;
+};
+
+template<> 
+struct is_givaro_or_ffpack< M2::ARingZZpFFPACK >{ 
+  static const bool value = true; 
+};
+
+template<> 
+struct is_givaro_or_ffpack< M2::ARingGF >{ 
+  static const bool value = true; 
+};
+
+
+
 
 class MutableMatrix;
 
@@ -203,7 +235,14 @@ public:
   /// Fast linear algebra routines //
   ///////////////////////////////////
 
+  
+  template<class RingType>
+  size_t rank(typename enable_if<is_givaro_or_ffpack<RingType>::value >::type* dummy = 0) const;
   size_t rank() const;
+ 
+  
+  template<class RingType>
+  void determinantGF_or_FFPACK(elem &result) const;
 
   void determinant(elem &result) const;
 

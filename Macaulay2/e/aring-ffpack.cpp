@@ -16,7 +16,8 @@ namespace M2 {
                                         mFfpackRandomIterator(mFfpackField),
                                         mCharac(charact_),
                                         mDimension(1),
-                                        mGenerator(computeGenerator())
+                                        generatorComputed_m(false)
+                                        //mGenerator(computeGenerator())
   {
     assert( FieldType::getMaxModulus()>=mCharac );
   }

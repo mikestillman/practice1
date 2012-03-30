@@ -67,6 +67,31 @@ namespace M2 {
             getModPolynomialCoeffs();
     }
 
+  ARingGF::ARingGF(  UTT charact_, 
+                       const M2_arrayint & modPolynomial,
+                       const M2_arrayint & generatorPoly,
+                       const PolynomialRing &originalRing)  :   
+      mCharac(charact_),
+      mDimension( M2arrayGetDegree(modPolynomial) ),
+      mOriginalRing(&originalRing),
+      mPrimitiveElement(originalRing.var(0)),
+      givaroField( FieldType( charact_,mDimension, ARingGF::M2arrayToStdVec(charact_, modPolynomial), ARingGF::M2arrayToStdVec(charact_, generatorPoly) )),
+      givaroRandomIterator( FieldType::randIter(givaroField )),
+      mGeneratorExponent(1)
+    {
+            /// @jakob: find out if the irreducible polynomial is checked in givaro.     
+            UTT localdegree = M2arrayGetDegree(modPolynomial);
+        
+            if ( !( modPolynomial->len > 1 && modPolynomial->array[ localdegree ]>0 ))
+            {
+                std::cout << "assertion would have failed" << std::endl;
+                assert(modPolynomial->len > 1);
+                assert(modPolynomial->array[ localdegree ]>0);
+            }
+            /// debug code:
+            getModPolynomialCoeffs();
+    }
+
   
   const M2_arrayint ARingGF::findMinimalPolynomial(UTT charac, UTT dim)
   {

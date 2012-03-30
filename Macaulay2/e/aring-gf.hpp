@@ -93,6 +93,13 @@ class ARingGF : public RingInterface
            //TODO: other information too?
            );
 
+  ARingGF( UTT charac_,  
+           const M2_arrayint & modPolynomial,
+            const M2_arrayint & generatorPoly,  
+           const PolynomialRing &originalR
+           //TODO: other information too?
+           );
+
   const FieldType field() const {return givaroField;}
 
   private:

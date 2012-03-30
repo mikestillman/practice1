@@ -69,7 +69,9 @@ namespace M2 {
     UTT mCharac;
     UTT mDimension; ///< same as extensionDegree
     
-    ElementType mGenerator;
+    mutable ElementType generator_m;///< use getGenerator() to access it since generator is cached and not computed if not required.
+
+    mutable bool generatorComputed_m;
     //  int p1; // p-1
     // int minus_one;
     // int prim_root; // element we will use for our primitive root
@@ -77,6 +79,16 @@ namespace M2 {
   public:
     // ring informational
     UTT characteristic() const { return mCharac; }
+
+    ElementType getGenerator() const
+    {
+        if (not generatorComputed_m)
+        {
+            generator_m = computeGenerator();
+            generatorComputed_m=true;
+        }
+        return generator_m;
+    }
 
     // 
     const FieldType field() const { return mFfpackField; }
@@ -155,7 +167,7 @@ namespace M2 {
         
         ElementType computeGenerator ( ) const; 
 
-        void set_var(elem &result, int v) const         { result = mGenerator; }
+        void set_var(elem &result, int v) const         { result = getGenerator(); }
 
     /** @} */
 

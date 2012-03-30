@@ -703,18 +703,18 @@ MutableMatrix* MutableMat<T>::nullSpace(bool right_side) const
 }
 
 template <typename T>
-std::pair<bool, MutableMatrix*> MutableMat<T>::solveLinear(MutableMatrix* B, 
+std::pair<bool, MutableMatrix*> MutableMat<T>::solveLinear(const MutableMatrix* B, 
                                                            bool right_side) const 
 { 
-  MutableMat<T>* B1 = B->cast_to_MutableMat<T>();
+  const MutableMat<T>* B1 = B->cast_to_MutableMat<T>();
   MutableMat<T>* solns = makeZeroMatrix(0,0);
   bool retval = mat.solveLinear(solns->mat, B1->mat, right_side);
   return std::pair<bool, MutableMatrix*>(retval, solns);
 }
 
 template <typename T>
-MutableMatrix* MutableMat<T>::addMultipleTo(MutableMatrix* A,
-                                            MutableMatrix* B,
+MutableMatrix* MutableMat<T>::addMultipleTo(const MutableMatrix* A,
+                                            const MutableMatrix* B,
                                             bool transposeA,
                                             bool transposeB,
                                             const RingElement* a,

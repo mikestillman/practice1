@@ -940,8 +940,8 @@ MutableMatrix* rawLinAlgNullSpace(MutableMatrix* A, M2_bool right_side)
   return A->nullSpace(right_side);
 }
 
-MutableMatrix* rawLinAlgSolve(MutableMatrix* A, 
-                         MutableMatrix* B,
+MutableMatrix* rawLinAlgSolve(const MutableMatrix* A, 
+                         const MutableMatrix* B,
                          M2_bool right_side)
 {
   std::cerr << "calling rawLinAlgSolve" << std::endl;
@@ -954,8 +954,8 @@ MutableMatrix* rawLinAlgSolve(MutableMatrix* A,
 }
 
 MutableMatrix* /* or null */ rawLinAlgAddMultipleTo(MutableMatrix* C,
-                                                    MutableMatrix* A,
-                                                    MutableMatrix* B,
+                                                    const MutableMatrix* A,
+                                                    const MutableMatrix* B,
                                                     M2_bool transposeA,
                                                     M2_bool transposeB,
                                                     const RingElement* a,
@@ -998,7 +998,7 @@ void tryout_givaro()
 
 
 template < typename FieldType >
-typename FieldType::Element *GFtoFFPackMatrix(const GF *kk, const FieldType &F, MutableMatrix *M)
+typename FieldType::Element *GFtoFFPackMatrix(const GF *kk, const FieldType &F, const MutableMatrix *M)
 {
   typedef typename FieldType::Element ElementType;
 
@@ -1016,7 +1016,7 @@ typename FieldType::Element *GFtoFFPackMatrix(const GF *kk, const FieldType &F, 
 }
 
 template < typename FieldType >
-typename FieldType::Element *toFFPackMatrix(const Z_mod *kk, const FieldType &F, MutableMatrix *M)
+typename FieldType::Element *toFFPackMatrix(const Z_mod *kk, const FieldType &F,const MutableMatrix *M)
 {
   typedef typename FieldType::Element ElementType;
 
@@ -1336,8 +1336,8 @@ MutableMatrix /* or null */ *rawFFPackInvert(MutableMatrix *M)
 }
 
 MutableMatrix /* or null */ *rawFFPackAddMultipleTo(MutableMatrix *C,
-                                                    MutableMatrix *A,
-                                                    MutableMatrix *B,
+                                                    const MutableMatrix *A,
+                                                    const MutableMatrix *B,
                                                     M2_bool transposeA,
                                                     M2_bool transposeB,
                                                     const RingElement *a,
@@ -1483,8 +1483,8 @@ MutableMatrix /* or null */ *rawFFPackInvert(MutableMatrix *M)
   return 0;
 }
 MutableMatrix /* or null */ *rawFFPackAddMultipleTo(MutableMatrix *C,
-                                                    MutableMatrix *A,
-                                                    MutableMatrix *B,
+                                                    const MutableMatrix *A,
+                                                    const MutableMatrix *B,
                                                     M2_bool transposeA,
                                                     M2_bool transposeB,
                                                     const RingElement *a,

@@ -17,6 +17,8 @@
 #include "aring-zzp.hpp"
 #include "aring-ffpack.hpp"
 
+
+
 template<typename CoeffRing>
 DMat<CoeffRing>::DMat(const Ring *R0, const CoeffRing *coeffR0, int nrows, int ncols)
   : R(R0),
@@ -863,228 +865,248 @@ void DMat<CoeffRing>::addMultipleTo(DMat<CoeffRing> &C,
   ERROR("not implemented for this ring yet");
 }
 
-template<>
-size_t DMat<M2::ARingZZpFFPACK>::rank() const
-{
-  std::cout << "Calling FFPACK::Rank" << std::endl;
-#ifndef HAVE_FFLAS_FFPACK
-  assert(false);
-  return 0;
-#else
-  M2::ARingZZpFFPACK::ElementType *N = newarray(M2::ARingZZpFFPACK::ElementType, n_rows() * n_cols() );
-    /// @jakob: replace with memcopy or something fast.
-    /// @jakob: potention problem: (  n_rows()*n_cols() ) - overflow for big matrices 
-    copy_elems( n_rows()*n_cols(), N, 1, get_array(), 1); 
-  //size_t result = FFPACK::Rank(ring().field(), n_rows(), n_cols(),  N,  n_cols() );
-  // 1. consider: matrix data (N) is modified.
-  // 2. FFPACK expects row-wise stored matrices while dmat stores them column-wise => switch n_rows and n_cols -parameters!
-  size_t result = FFPACK::Rank(ring().field(), n_cols(), n_rows(),  N,  n_rows() );
-  deletearray(N);
-  return result;
-#endif
-}
+#ifdef HAVE_FFLAS_FFPACK
 
-template<>
-size_t DMat<M2::ARingGF>::rank() const
-{
-#ifndef HAVE_GIVARO
-  assert(false);
-  return 0;
-#else
-  std::cout << "Calling DMat<ARingGF>::rank" << std::endl;
-  ElementType *N = newarray(ElementType, n_rows() * n_cols() );
-    /// @jakob: replace with memcopy or something fast.
-    /// @jakob: potention problem: (  n_rows()*n_cols() ) - overflow for big matrices 
-  copy_elems( n_rows()*n_cols(), N, 1, get_array(), 1); 
-  //size_t result = FFPACK::Rank(ring().field(), n_rows(), n_cols(),  N,  n_cols() );
-  // 1. consider: matrix data (N) is modified.
-  // 2. FFPACK expects row-wise stored matrices while dmat stores them column-wise => switch n_rows and n_cols -parameters!
-  size_t result = FFPACK::Rank(ring().field(), n_cols(), n_rows(),  N,  n_rows() );
-  deletearray(N);
-  return result;
-#endif
-}
-
-template<>
-void DMat<M2::ARingZZpFFPACK>::determinant(elem &result) const
-{
-  std::cout << "Calling determinant" << std::endl;
-#ifndef HAVE_FFLAS_FFPACK
-  assert(false);
-#else
-  ElementType* N = newarray(ElementType, n_rows() * n_cols());
-    /// @jakob: replace with memcopy or something fast.
-    /// @jakob: potention problem: (  n_rows()*n_cols() ) - overflow for big matrices 
-  copy_elems(n_rows()*n_cols(), N, 1, get_array(), 1); 
-  //size_t result = FFPACK::Rank(ring().field(), n_rows(), n_cols(),  N,  n_cols() );
-  // 1. consider: matrix data (N) is modified.
-  // 2. FFPACK expects row-wise stored matrices while dmat stores them column-wise => switch n_rows and n_cols -parameters!
-  result = FFPACK::Det(ring().field(), n_cols(), n_rows(),  N,  n_rows());
-  deletearray(N);
-#endif
-}
-
-template<>
-void DMat<M2::ARingGF>::determinant(elem &result) const
-{
-  std::cout << "Calling determinant" << std::endl;
-#ifndef HAVE_GIVARO
-  assert(false);
-#else
-  std::cout << "Calling determinant for givaro" << std::endl;
-  ElementType* N = newarray(ElementType, n_rows() * n_cols());
-    /// @jakob: replace with memcopy or something fast.
-    /// @jakob: potention problem: (  n_rows()*n_cols() ) - overflow for big matrices 
-  copy_elems(n_rows()*n_cols(), N, 1, get_array(), 1); 
-  //size_t result = FFPACK::Rank(ring().field(), n_rows(), n_cols(),  N,  n_cols() );
-  // 1. consider: matrix data (N) is modified.
-  // 2. FFPACK expects row-wise stored matrices while dmat stores them column-wise => switch n_rows and n_cols -parameters!
-  result = FFPACK::Det(ring().field(), n_cols(), n_rows(),  N,  n_rows());
-  std::cout << "result = " << result << std::endl;
-  deletearray(N);
-#endif
-}
-
-template<>
-bool DMat<M2::ARingZZpFFPACK>::invert(DMat<M2::ARingZZpFFPACK> &inverse) const
-{
-  ASSERT(n_rows() == n_cols());
-  ElementType* N = newarray(ElementType, n_rows() * n_cols());
-  copy_elems(n_rows()*n_cols(), N, 1, get_array(), 1); 
-
-  size_t n = n_rows(); // same as n_cols()
-
-  int nullspacedim;
-  FFPACK::Invert2(ring().field(), n, N, n, inverse.get_array(), n, nullspacedim);
-
-  deletearray(N);
-  return true;
-}
-
-template<>
-M2_arrayintOrNull DMat<M2::ARingZZpFFPACK>::rankProfile(bool row_profile) const
-{
-  // Note that FFPack stores matrices by row, not column, the opposite of what we do.
-  // So row_profile true means use ffpack column rank profile!
-  ElementType* N = newarray(ElementType, n_rows() * n_cols());
-  copy_elems(n_rows()*n_cols(), N, 1, get_array(), 1); 
-
-  size_t * prof;
-
-  size_t rk;
-  if (!row_profile)
-    rk = FFPACK::RowRankProfile(ring().field(),
-                                n_cols(),n_rows(),
-                                N,n_rows(),
-                                prof);
-  else
-    rk = FFPACK::ColumnRankProfile(ring().field(),
-                                n_cols(),n_rows(),
-                                N,n_rows(),
-                                prof);
-
-  M2_arrayint profile = M2_makearrayint(rk);
-  for (size_t i=0; i<rk; i++)
-    profile->array[i] = prof[i];
-
-  delete [] prof;
-
-  deletearray(N);
-  return profile;
-}
-
-template<>
-void DMat<M2::ARingZZpFFPACK>::nullSpace(DMat<M2::ARingZZpFFPACK> &nullspace, bool right_side) const
-{
-  right_side = !right_side; // because FFPACK stores by rows, not columns.
-  ElementType* N = newarray(ElementType, n_rows() * n_cols());
-  copy_elems(n_rows()*n_cols(), N, 1, get_array(), 1); 
-
-  size_t nr = n_rows();
-  size_t nc = n_cols();
-
-  ElementType *nullspaceFFPACK = 0;
-
-  size_t nullspace_dim;
-  size_t nullspace_leading_dim;
-
-  FFPACK::NullSpaceBasis(ring().field(),
-                         (right_side ? FFLAS::FflasRight : FFLAS::FflasLeft),
-                         nc, nr, N, nr, nullspaceFFPACK, nullspace_leading_dim, nullspace_dim);
-
-  std::cerr << "leading dim = " << nullspace_leading_dim << " and dim = " << nullspace_dim << std::endl;
-  size_t nullspace_nrows = (right_side ? nc : nullspace_dim);
-  if (right_side && nullspace_dim != nullspace_leading_dim)
+///  problem: Givaro requires FFPACK anyway and vize versa.
+#ifdef HAVE_GIVARO
+    
+    template<>
+    size_t DMat<M2::ARingGF>::rank() const
     {
-      std::cerr << "error: this should not happen!" << std::endl;
+        std::cout << "Calling  DMat<M2::ARingGF>::rank()" << std::endl;
+        return rank<M2::ARingGF>( );
     }
-  else if (!right_side && nullspace_leading_dim != nc)
+    
+    template<>
+    void DMat<M2::ARingGF>::determinant(elem &result) const
     {
-      std::cerr << "error: this should not happen either!" << std::endl;
+    std::cout << "Calling  DMat<M2::ARingGF>::determinant" << std::endl;
+    determinantGF_or_FFPACK<M2::ARingGF>( result );
+    }
+    
+   
+
+template<typename  CoeffRing >
+template<class RingType>
+    size_t DMat < CoeffRing >::rank(typename enable_if<is_givaro_or_ffpack<RingType>::value >::type* dummy ) const
+    {
+    // assert not neccesary because the test is already done by  "enable_if<is_givaro_or_ffpack<RingType>::value >"
+    // assert( typeid(CoeffRing) == typeid(M2::ARingZZpFFPACK) || typeid(CoeffRing) == typeid(M2::ARingGF ));
+    std::cout << "Calling rankGF_or_FFPACK" << std::endl;
+    ElementType *N = newarray(ElementType, n_rows() * n_cols() );
+        /// @jakob: replace with memcopy or something fast.
+        /// @jakob: potention problem: (  n_rows()*n_cols() ) - overflow for big matrices 
+        copy_elems( n_rows()*n_cols(), N, 1, get_array(), 1); 
+    /// @note 1. matrix data (N) is modified by FFPACK
+    /// @note 2. FFPACK expects row-wise stored matrices while dmat stores them column-wise => switch n_rows and n_cols -parameters!
+    
+        /* //debug
+        typename MatrixType::ElementType *Npos=N;
+        for ( int currRow=0; currRow < n_rows(); currRow++ )
+        for ( int currCol =0; currCol < n_cols(); currCol++ )
+        {
+            typename MatrixType::ElementType entry;
+                get_entry(currRow, currCol,entry)  ;
+                ring().field().init(Npos, entry );
+            //  mat.setEntry( currRow, currCol ,( (int)rand() ) % characteristic );
+        }*/
+    
+    size_t result = FFPACK::Rank(ring().field(), n_cols(), n_rows(),  N,  n_rows() );
+    deletearray(N);
+    return result;
+    
     }
 
-  if (right_side)
-    nullspace.resize(nullspace_dim,nr);
-  else
-    nullspace.resize(nc,nullspace_dim);
-
-  copy_elems(nullspace.n_rows() * nullspace.n_cols(), nullspace.get_array(), 1, nullspaceFFPACK, 1); 
-  
-  delete [] nullspaceFFPACK;
-}
-
-template<>
-bool DMat<M2::ARingZZpFFPACK>::solveLinear(DMat<M2::ARingZZpFFPACK> &X, const DMat<M2::ARingZZpFFPACK> &B, bool right_side) const
-{
-  std::cerr << "inside solveLinear for ARingZZpFFPACK" << std::endl;
-  right_side = !right_side; // FFPACK stores by rows, not columns
-
-  size_t a_rows = n_rows();
-  size_t a_cols = n_cols();
-
-  size_t b_rows = B.n_rows();
-  size_t b_cols = B.n_cols();
-
-  ElementType* ffpackA = newarray(ElementType, n_rows() * n_cols());
-  copy_elems(n_rows()*n_cols(), ffpackA, 1, get_array(), 1); 
-
-  ElementType* ffpackB = newarray(ElementType, b_rows * b_cols);
-  B.copy_elems(b_rows * b_cols, ffpackB, 1, B.get_array(), 1); 
-
-  // preallocate the space for the solutions:
-  size_t x_rows = (right_side ? a_cols : b_rows);
-  size_t x_cols = (right_side ? b_cols : a_rows);
-  size_t n_eqns = (right_side ? b_cols : b_rows);
-
-  ElementType *ffpackX = newarray_clear(ElementType, x_rows * x_cols);
-
-  int info; // >0 if the system is inconsistent, ==0 means success
-
-  FFPACK::fgesv(ring().field(),
-                (right_side ? FFLAS::FflasLeft : FFLAS::FflasRight),
-                a_rows, a_cols,
-                (right_side ? b_cols : b_rows),
-                ffpackA,
-                a_cols, // leading dim of A
-                ffpackX, x_cols,
-                ffpackB, b_cols,
-                &info);
-
-  if (info > 0)
+    template<>
+    size_t DMat<M2::ARingZZpFFPACK>::rank() const
     {
-      // the system is inconsistent
-      ERROR("the system is inconsistent");
-      return false;
+        std::cout << "DMat<M2::ARingZZpFFPACK>::rank()" << std::endl;
+        return rank<M2::ARingZZpFFPACK>( );
     }
 
-  X.resize(x_rows, x_cols);
 
-  copy_elems(x_rows * x_cols, X.get_array(), 1, ffpackX, 1); 
-  
-  delete [] ffpackX;
+    
+    template<typename CoeffRing>
+    template<class CoeffRingType>
+    //void DMat<CoeffRing>::determinantGF_or_FFPACK(elem &result ) const
+    void DMat<CoeffRing>::determinantGF_or_FFPACK(ElementType  & result ) const
+    {
+    std::cout << "Calling determinantGF_or_FFPACK" << std::endl;
+    assert( typeid(CoeffRing) == typeid(M2::ARingZZpFFPACK) || typeid(CoeffRing) == typeid(M2::ARingGF ));
+    ElementType* N = newarray( ElementType, n_rows() * n_cols());    
+    copy_elems(n_rows()*n_cols(), N, 1, get_array(), 1); 
+    /// @note 1. matrix data (N) is modified by FFPACK
+    /// @note 2. FFPACK expects row-wise stored matrices while dmat stores them column-wise => switch n_rows and n_cols -parameters!
+    result = FFPACK::Det(ring().field(), n_cols(), n_rows(),  N,  n_rows());
+    deletearray(N);
+    }
+    
+    template<>
+    void DMat<M2::ARingZZpFFPACK>::determinant(elem &result) const
+    {
+        std::cout << "Calling  DMat<M2::ARingZZpFFPACK>::determinant" << std::endl;
+        determinantGF_or_FFPACK<M2::ARingZZpFFPACK>(result);
+    }
+    
+    
+    
+    template<>
+    bool DMat<M2::ARingZZpFFPACK>::invert(DMat<M2::ARingZZpFFPACK> &inverse) const
+    {
+    ASSERT(n_rows() == n_cols());
+    ElementType* N = newarray(ElementType, n_rows() * n_cols());
+    copy_elems(n_rows()*n_cols(), N, 1, get_array(), 1); 
+    
+    size_t n = n_rows(); // same as n_cols()
+    
+    int nullspacedim;
+    FFPACK::Invert2(ring().field(), n, N, n, inverse.get_array(), n, nullspacedim);
+    
+    deletearray(N);
+    return true;
+    }
+    
+    template<>
+    M2_arrayintOrNull DMat<M2::ARingZZpFFPACK>::rankProfile(bool row_profile) const
+    {
+    // Note that FFPack stores matrices by row, not column, the opposite of what we do.
+    // So row_profile true means use ffpack column rank profile!
+    ElementType* N = newarray(ElementType, n_rows() * n_cols());
+    copy_elems(n_rows()*n_cols(), N, 1, get_array(), 1); 
+    
+    size_t * prof;
+    
+    size_t rk;
+    if (!row_profile)
+        rk = FFPACK::RowRankProfile(ring().field(),
+                                    n_cols(),n_rows(),
+                                    N,n_rows(),
+                                    prof);
+    else
+        rk = FFPACK::ColumnRankProfile(ring().field(),
+                                    n_cols(),n_rows(),
+                                    N,n_rows(),
+                                    prof);
+    
+    M2_arrayint profile = M2_makearrayint(rk);
+    for (size_t i=0; i<rk; i++)
+        profile->array[i] = prof[i];
+    
+    delete [] prof;
+    
+    deletearray(N);
+    return profile;
+    }
+    
+    template<>
+    void DMat<M2::ARingZZpFFPACK>::nullSpace(DMat<M2::ARingZZpFFPACK> &nullspace, bool right_side) const
+    {
+    right_side = !right_side; // because FFPACK stores by rows, not columns.
+    ElementType* N = newarray(ElementType, n_rows() * n_cols());
+    copy_elems(n_rows()*n_cols(), N, 1, get_array(), 1); 
+    
+    size_t nr = n_rows();
+    size_t nc = n_cols();
+    
+    ElementType *nullspaceFFPACK = 0;
+    
+    size_t nullspace_dim;
+    size_t nullspace_leading_dim;
+    
+    FFPACK::NullSpaceBasis(ring().field(),
+                            (right_side ? FFLAS::FflasRight : FFLAS::FflasLeft),
+                            nc, nr, N, nr, nullspaceFFPACK, nullspace_leading_dim, nullspace_dim);
+    
+    std::cerr << "leading dim = " << nullspace_leading_dim << " and dim = " << nullspace_dim << std::endl;
+    size_t nullspace_nrows = (right_side ? nc : nullspace_dim);
+    if (right_side && nullspace_dim != nullspace_leading_dim)
+        {
+        std::cerr << "error: this should not happen!" << std::endl;
+        }
+    else if (!right_side && nullspace_leading_dim != nc)
+        {
+        std::cerr << "error: this should not happen either!" << std::endl;
+        }
+    
+    if (right_side)
+        nullspace.resize(nullspace_dim,nr);
+    else
+        nullspace.resize(nc,nullspace_dim);
+    
+    copy_elems(nullspace.n_rows() * nullspace.n_cols(), nullspace.get_array(), 1, nullspaceFFPACK, 1); 
+    
+    delete [] nullspaceFFPACK;
+    }
+    
+    template<>
+    bool DMat<M2::ARingZZpFFPACK>::solveLinear(DMat<M2::ARingZZpFFPACK> &X, const DMat<M2::ARingZZpFFPACK> &B, bool right_side) const
+    {
+    std::cerr << "inside solveLinear for ARingZZpFFPACK" << std::endl;
+    //right_side = !right_side; // FFPACK stores by rows, not columns
+    
+    size_t a_rows = n_rows();
+    size_t a_cols = n_cols();
+    
+    size_t b_rows = B.n_rows();
+    size_t b_cols = B.n_cols();
+    
+    ElementType* ffpackA = newarray(ElementType, n_rows() * n_cols());
+    copy_elems(n_rows()*n_cols(), ffpackA, 1, get_array(), 1); 
+    
+    ElementType* ffpackB = newarray(ElementType, b_rows * b_cols);
+    B.copy_elems(b_rows * b_cols, ffpackB, 1, B.get_array(), 1); 
+    
+    // preallocate the space for the solutions:
+    size_t x_rows = (right_side ? a_cols : b_rows);
+    size_t x_cols = (right_side ? b_cols : a_rows);
+    size_t n_eqns = (right_side ? b_cols : b_rows);
+    
+    ElementType *ffpackX = newarray_clear(ElementType, x_rows * x_cols);
+    
+    int info; // >0 if the system is inconsistent, ==0 means success
+    
+    /*FFPACK::fgesv(ring().field(),
+                    (!right_side ? FFLAS::FflasLeft : FFLAS::FflasRight),
+                    a_rows, a_cols,
+                    (right_side ? b_cols : b_rows),
+                    ffpackA,
+                    a_cols, // leading dim of A
+                    ffpackX, x_cols,
+                    ffpackB, b_cols,
+                    &info);*/
+    
+    FFPACK::fgesv(ring().field(),
+                    (!right_side ? FFLAS::FflasLeft : FFLAS::FflasRight),
+                    a_cols, a_rows, 
+                    (!right_side ? b_cols : b_rows),
+                    ffpackA,
+                    a_rows, // leading dim of A
+                    ffpackX, x_rows,
+                    ffpackB, b_rows,
+                    &info);
+    
+    
+    if (info > 0)
+        {
+        // the system is inconsistent
+        ERROR("the system is inconsistent");
+        return false;
+        }
+    
+    X.resize(x_rows, x_cols);
+    
+    copy_elems(x_rows * x_cols, X.get_array(), 1, ffpackX, 1); 
+    
+    delete [] ffpackX;
+    
+    return true;
+    } 
+    
 
-  return true;
-}
+  #endif
+
+#endif
+
 
 
 /* Insert n_to_add rows directly BEFORE row i. */

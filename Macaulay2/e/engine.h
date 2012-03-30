@@ -1283,8 +1283,8 @@ extern "C" {
 
   MutableMatrix* rawLinAlgNullSpace(MutableMatrix* A, M2_bool right_side);
 
-  MutableMatrix* rawLinAlgSolve(MutableMatrix* A, 
-                                MutableMatrix* B,
+  MutableMatrix* rawLinAlgSolve(const MutableMatrix* A, 
+                                const MutableMatrix* B,
                                 M2_bool right_side);
 
   /** A,B,C should be mutable matrices over the same ring, and a,b
@@ -1294,8 +1294,8 @@ extern "C" {
      where op(B) = B or transpose(B), depending on transposeB
   */
   MutableMatrix* /* or null */ rawLinAlgAddMultipleTo(MutableMatrix* C,
-                                                      MutableMatrix* A,
-                                                      MutableMatrix* B,
+                                                      const MutableMatrix* A,
+                                                      const MutableMatrix* B,
                                                       M2_bool transposeA,
                                                       M2_bool transposeB,
                                                       const RingElement* a,
@@ -1324,8 +1324,8 @@ extern "C" {
   /* requires: M should be a square matrix over a prime finite field */
 
   MutableMatrix /* or null */ *rawFFPackAddMultipleTo(MutableMatrix *C,
-                                                      MutableMatrix *A,
-                                                      MutableMatrix *B,
+                                                      const MutableMatrix *A,
+                                                      const MutableMatrix *B,
                                                       M2_bool transposeA,
                                                       M2_bool transposeB,
                                                       const RingElement *a,

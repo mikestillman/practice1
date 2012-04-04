@@ -124,8 +124,8 @@ bool GF::initialize_GF(const RingElement *prim)
   oneV = from_int(1);
   minus_oneV = from_int(-1);
 
-  M2::GaloisFieldTable G(*_originalR, primelem);
-  G.display(std::cout);
+  // M2::GaloisFieldTable G(*_originalR, primelem);
+  //  G.display(std::cout);
 
   return true;
 }

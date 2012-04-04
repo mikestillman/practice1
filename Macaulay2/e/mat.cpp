@@ -48,7 +48,6 @@ MutableMatrix *MutableMatrix::zero_matrix(const Ring *R,
     }
   MutableMatrix *result = R->makeMutableMatrix(nrows, ncols, dense);
   if (result != 0) return result;
-  std::cerr << "debug: in zero_matrix" << std::endl;
   const Z_mod *KZZp = R->cast_to_Z_mod();
   if (KZZp != 0)
     {

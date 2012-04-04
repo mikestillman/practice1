@@ -6,11 +6,27 @@
 
 always:
 
+sandboxed : always
+	mkdir -p sandbox64
+	cd sandbox64; ../../../configure \
+		--prefix="`pwd`/sandbox" \
+		--enable-download
+
+dan-ubuntu64: always
+	mkdir -p dan-ubuntu64
+	cd dan-ubuntu64; ../../../configure \
+		--prefix="`pwd`/sandbox" \
+                --enable-encap \
+	        --enable-download \
+                --disable-common-staging-area \
+                --build=x86_64-unknown-linux-gnu \
+                --with-mpir-config-options="ABI=64"
+
 opt64 : always
 	mkdir -p opt64
 	cd opt64; ../../../configure \
 		--prefix="`pwd`/installed" \
-		CC="gcc -m64" CXX="g++ -m64" \
+		CC="gcc-4.2 -m64" CXX="g++-4.2 -m64" \
 		--build=x86_64-apple-darwin \
 		--disable-strip \
 		--enable-download \
@@ -21,7 +37,7 @@ opt64-givaro : always
 	mkdir -p opt64-givaro
 	cd opt64-givaro; ../../../configure \
 		--prefix="`pwd`/installed" \
-		CC="gcc -m64" CXX="g++ -m64" \
+		CC="gcc-4.2 -m64" CXX="g++-4.2 -m64" \
 		--build=x86_64-apple-darwin \
 		--enable-fflas-ffpack \
 		--enable-givaro \
@@ -33,7 +49,7 @@ opt64-linbox : always
 	mkdir -p opt64-linbox
 	cd opt64-linbox; ../../../configure \
 		--prefix="`pwd`/installed" \
-		CC="gcc -m64" CXX="g++ -m64" \
+		CC="gcc-4.2 -m64" CXX="g++-4.2 -m64" \
 		--build=x86_64-apple-darwin \
 		--enable-fflas-ffpack \
 		--enable-givaro \
@@ -59,7 +75,7 @@ debug64 : always
 	mkdir -p debug64
 	cd debug64; ../../../configure \
 		--prefix="`pwd`/installed" \
-		CC="gcc -m64" CXX="g++ -m64" \
+		CC="gcc-4.2 -m64" CXX="g++-4.2 -m64" \
 		--build=x86_64-apple-darwin \
 		--enable-debug \
 		--disable-optimize \

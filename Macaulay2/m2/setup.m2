@@ -137,7 +137,11 @@ warning = x -> (
 lastLN := 0
 lastWI := 0
      
-load "loads.m2"
+loads := minimizeFilename concatenate(currentFileDirectory, "loadsequence")
+if notify then stderr << "--about to read " << loads << endl
+scan(lines get loads, load)
+if notify then stderr << "--read " << loads << endl
+
 -- after this point, private global symbols, such as noinitfile, are no longer visible
 protect Core.Dictionary
 -- Local Variables:

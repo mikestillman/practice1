@@ -225,6 +225,22 @@ public:
                              MutableMatrix *x,
                              bool assume_full_rank) const = 0;
 
+  ///////////////////////////////////
+  /// LU decomposition routines /////
+  ///////////////////////////////////
+
+  // Return a permutation P of 0..nrows-1 and place into LU
+  // the encoded L and U matrices, such that this = A = PLU
+  virtual M2_arrayintOrNull LU1(MutableMatrix *LU) const { return 0; }
+
+  // If X = this, and A = PLU, then replace X with a solution to AX=B
+  // If the sizes don't match, return null, otherwise return 'this'
+  // ASSUMPTION: (LU, row_permutation) is the result of an LU
+  // decomposition of A.  (LU is encoded as in LU1).
+  virtual MutableMatrix *LUSolve(const MutableMatrix *LU,
+                                 const M2_arrayint row_permutation,
+                                 const MutableMatrix *B) const { return 0; }
+
   /// Fast linear algebra routines (well, fast for some rings)
 
   virtual size_t rank() const { return static_cast<size_t>(-1); }

@@ -730,6 +730,54 @@ M2_arrayintOrNull rawLU(const MutableMatrix *A,
   return A->LU(L,U);
 }
 
+///////////////////////////////////////////////
+// with Anton:
+//   add in Jon's code from LUdecomp.c (at least for mpf)
+//   RR_53, CC_53: should use doubles as their rep
+//   RR_n, CC_n, n > 53 should use either mpf or mpfr (which?)
+// warning: avoid default precision if possible
+//   1. make ring types (use with aring...) for these 4 rings
+//   2. make DMat routines for these functions
+//   
+
+M2_arrayintOrNull rawLU1(const MutableMatrix *A,
+                         MutableMatrix *LU)
+{
+  // A = input, which is r x c.
+  // factors A as A = PLU
+  // P = r x r perm matrix
+  // L = r x r unit lower triangular (ones on diagonal)
+  // U = r x c upper triangular matrix
+
+  // LU are placed in the same LU matrix
+  //TODO: MES write this.
+  //  return A->LU(LU);
+}
+
+MutableMatrix* rawLUSolve(MutableMatrix* resultX, 
+                          const MutableMatrix* LU, 
+                          const M2_arrayint row_permutation, 
+                          const MutableMatrix* B)
+{
+  //TODO: MES write this.
+  //  resultX->LUSolve(LU,row_permutation,B);
+  return resultX;
+}
+
+void rawLUSplit(const MutableMatrix *LU, 
+                MutableMatrix *L,
+                MutableMatrix *U)
+{
+  //TODO: MES write this.
+  // make sure that L, U and LU have the same type?
+  // resize L, U if necessary.
+  // loop through LU, and set the corresponding entries of L and U
+}
+////////////////////////////////////////////////
+
+
+
+
 M2_bool rawNullspaceU(MutableMatrix *U,
                       MutableMatrix *x)
   /* U should be a matrix in LU 'U' format.

@@ -31,6 +31,10 @@ export RawPathTrackerOrNull := RawPathTracker or null;
 export RawMutableMatrix := Pointer "struct MutableMatrix *";
 export RawMutableMatrixOrNull := RawMutableMatrix or null;
 export RawMonomialOrderingArray := array(RawMonomialOrdering);
+
+export RawArrayIntPair := { a:RawArrayInt, b:RawArrayInt };
+export RawArrayIntPairOrNull := RawArrayIntPair or null;
+
 export RawMatrixPair := { a:RawMatrix, b:RawMatrix };
 export RawMatrixPairOrNull := RawMatrixPair or null;
 export RawMatrixArray := array(RawMatrix);

@@ -1174,11 +1174,24 @@ columnRankProfile mutableMatrix M1 -- NOT IMPLEMENTED for GF
 loadPackage "FastLinearAlgebra"
 R = ZZp 101
 M = random(R^3, R^5)
+M1 = matrix(R, {{0,1,0,0,0},
+	        {0,1,0,1,1},
+		{0,1,0,1,0}})
+M2 = transpose M1
+M3 = matrix(R, {{0,0,0,0,0},
+	        {0,0,0,0,1},
+		{0,0,1,0,0}})
+M4 = transpose M3
+
+m = mutableMatrix M1      
 m = mutableMatrix M
-L = mutableMatrix(R,0,0)
-U = mutableMatrix(R,0,0)
+
 debug Core
-rawLU(raw m, raw L, raw U)
+m = mutableMatrix M1
+(P,Q) = rawLQUPFactorization(raw m)
+  -- #P == rank of the matrix U (which columns pivots)
+  -- #Q == #rows of m, or is it rank m?  (ignore 0 rows)
+  -- A=3x5, rank 3:  #P=3, #Q=3
 ///
 -- TODO:
 --   top level M2 package (this file): calls the rawFFPack routines
@@ -1430,7 +1443,14 @@ rawLU(raw m, raw L, raw U)
 --       after this, remove code, including: FFLU, gauss.
 --       implement these functions for sparse large matrices
 --       matrix: implement using MutableMatrix (or DMat<>, SMat<>).
-
+-- 19 April 2012
+--    LQUP: place LQUPFactorizationInPlace in mat.hpp, mutablemat.hpp, dmat.cpp  (mike)
+--          understand the lengths of the output arrays P and Qt (jakob)
+--    linbox: get M2 to compile with it, or understand the problem
+--            givaro version seems messed up or givaro is in the wrong place?
+--    CharPoly, MinPoly: learn the interface
+--            what should our interface be?
+--    (12 April 2012 todo list is still active too!)
 ----------------------------------------------
 -- not discussed yet:
 --    a. bugs in ffpack ZZ/p: basis(2,R) fails (R = polyring over ZZ/p).  Fix this?  MIKE 

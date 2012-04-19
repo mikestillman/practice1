@@ -1239,7 +1239,15 @@ inline const MatT * MutableMatrix::coerce() const
   return P->get_Mat();
 }
 
-M2_arrayintOrNull rawLQUP(MutableMatrix *A, M2_bool transpose)
+M2_arrayint stdvector_to_M2_arrayint(std::vector<size_t> &v)
+{
+  M2_arrayint result = M2_makearrayint(v.size());
+  for (size_t i = 0; i < v.size(); i++)
+    result->array[i] = v[i];
+  return result;
+}
+
+engine_RawArrayIntPairOrNull rawLQUP(MutableMatrix *A, M2_bool transpose)
 {
 #ifdef HAVE_FFLAS_FFPACK
   // Suppose A is m x n
@@ -1253,8 +1261,10 @@ M2_arrayintOrNull rawLQUP(MutableMatrix *A, M2_bool transpose)
     }
   size_t nelems = mat->n_cols();
   if (mat->n_rows() > mat->n_cols()) nelems = mat->n_rows();
-  size_t* P = newarray_atomic(size_t, nelems ); // initialize this (column perm
-  size_t* Qt = newarray_atomic(size_t, nelems); // initialize this
+
+  std::vector<size_t> P(nelems, -1);
+  std::vector<size_t> Qt(nelems, -1);
+
   size_t rk = LUdivine(mat->ring().field(),
                        FFLAS::FflasNonUnit,
                        (!transpose ? FFLAS::FflasTrans : FFLAS::FflasNoTrans),
@@ -1262,17 +1272,13 @@ M2_arrayintOrNull rawLQUP(MutableMatrix *A, M2_bool transpose)
                        mat->n_rows(),
                        mat->get_array(),
                        mat->n_rows(),
-                       P, 
-                       Qt);
-  std::cout << "P = [";
-  for (size_t i=0; i<nelems; i++)
-    std::cout << P[i] << " ";
-  std::cout << "]" << std::endl;
+                       &P[0], 
+                       &Qt[0]);
 
-  std::cout << "Qt = [";
-  for (size_t i=0; i<nelems; i++)
-    std::cout << Qt[i] << " ";
-  std::cout << "]" << std::endl;
+  engine_RawArrayIntPairOrNull result = new engine_RawArrayIntPair_struct;
+  result->a = stdvector_to_M2_arrayint(Qt);
+  result->b = stdvector_to_M2_arrayint(P);
+  return result;
 #endif
   return 0;
 }

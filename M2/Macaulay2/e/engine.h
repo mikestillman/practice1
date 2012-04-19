@@ -1344,6 +1344,8 @@ extern "C" {
   M2_arrayintOrNull rawFFPackColumnRankProfile(MutableMatrix *A);
   /* connected, MES */
 
+  engine_RawArrayIntPairOrNull rawLQUPFactorization(MutableMatrix *A);
+
   /***************************************************
    ***** Lapack routines for dense mutable matrices **
    ***************************************************/

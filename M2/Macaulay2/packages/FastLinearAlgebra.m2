@@ -1461,6 +1461,7 @@ rawLinAlgCharPoly raw m
 -- 3 May 2012
 --  Prioritize what we need to do
 --    1. hook up from ffpack the char poly and minimal poly functions
+--         Mike: needs to make better conversion functions for arrays of ring elements
 --    2. Make the dense linear algebra over ZZ/p solid:
 --         tests
 --         incorporate top level M2 functions to use these fast routines (when available)

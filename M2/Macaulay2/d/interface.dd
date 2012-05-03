@@ -921,9 +921,8 @@ export rawFromNumber(e:Expr):Expr := (
      else WrongNumArgs(2));
 setupfun("rawFromNumber", rawFromNumber);
 
-rawRingElementInverse(f:RawRingElement):RawRingElementOrNull := Ccode(returns,"
-     try { return f->invert(); }
-     catch (exc::engine_error m) { ERROR(m.what()); return NULL; }");
+rawRingElementInverse(f:RawRingElement):RawRingElementOrNull := Ccode(returns,
+     "TRY return f->invert(); CATCH");
 export rawInverse(e:Expr):Expr := (
      when e
      is x:RawRingElementCell do toExpr(rawRingElementInverse(x.p))
@@ -2799,6 +2798,20 @@ export rawLinAlgAddMultipleTo(e:Expr):Expr := (
      else WrongArgMutableMatrix(1)
      else WrongNumArgs(7));
 setupfun("rawLinAlgAddMultipleTo", rawLinAlgAddMultipleTo);
+
+export rawLinAlgCharPoly(e:Expr):Expr := (
+     when e
+     is m:RawMutableMatrixCell
+     do toExpr(Ccode(RawRingElementArrayOrNull, "rawLinAlgCharPoly(", m.p, ")" ))
+     else WrongArgMutableMatrix());
+setupfun("rawLinAlgCharPoly",rawLinAlgCharPoly);
+
+export rawLinAlgMinPoly(e:Expr):Expr := (
+     when e
+     is m:RawMutableMatrixCell
+     do toExpr(Ccode(RawRingElementArrayOrNull, "rawLinAlgMinPoly(", m.p, ")" ))
+     else WrongArgMutableMatrix());
+setupfun("rawLinAlgMinPoly",rawLinAlgMinPoly);
 
 ----------------------------
 -- ffpack interface routines

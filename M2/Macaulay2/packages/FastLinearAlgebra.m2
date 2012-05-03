@@ -1188,10 +1188,17 @@ m = mutableMatrix M
 
 debug Core
 m = mutableMatrix M1
+m = mutableMatrix matrix{{1,2},{3,4}}
 (P,Q) = rawLQUPFactorization(raw m)
+
   -- #P == rank of the matrix U (which columns pivots)
   -- #Q == #rows of m, or is it rank m?  (ignore 0 rows)
   -- A=3x5, rank 3:  #P=3, #Q=3
+
+debug Core  
+M = random(R^3, R^3)
+m = mutableMatrix M
+rawLinAlgCharPoly raw m
 ///
 -- TODO:
 --   top level M2 package (this file): calls the rawFFPack routines
@@ -1447,10 +1454,24 @@ m = mutableMatrix M1
 --    LQUP: place LQUPFactorizationInPlace in mat.hpp, mutablemat.hpp, dmat.cpp  (mike)
 --          understand the lengths of the output arrays P and Qt (jakob)
 --    linbox: get M2 to compile with it, or understand the problem
---            givaro version seems messed up or givaro is in the wrong place?
+--            givaro version seems messed up or givaro is in the wrong place? FIXED
 --    CharPoly, MinPoly: learn the interface
 --            what should our interface be?
 --    (12 April 2012 todo list is still active too!)
+-- 3 May 2012
+--  Prioritize what we need to do
+--    1. hook up from ffpack the char poly and minimal poly functions
+--    2. Make the dense linear algebra over ZZ/p solid:
+--         tests
+--         incorporate top level M2 functions to use these fast routines (when available)
+--    3. Linear algebra routines, written more generically, but as fast as possible (dense arithmetic)
+--         hook up to GF
+--         hook up to other fields
+--         tests
+--    4. Linear algebra routines for sparse matrices
+--    5. Attach various normal forms of matrices from linbox to M2
+--         over ZZ: Hermite, Smith, LLL
+--         over fields: rational decomposition of a matrix, ...
 ----------------------------------------------
 -- not discussed yet:
 --    a. bugs in ffpack ZZ/p: basis(2,R) fails (R = polyring over ZZ/p).  Fix this?  MIKE 

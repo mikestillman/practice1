@@ -1,5 +1,7 @@
 // Copyright 2005  Michael E. Stillman
 
+#include "exceptions.hpp"
+
 #include "coeffrings.hpp"
 #include "coeffrings-zz.hpp"
 #include "ZZp.hpp"
@@ -1247,7 +1249,7 @@ M2_arrayint stdvector_to_M2_arrayint(std::vector<size_t> &v)
   return result;
 }
 
-engine_RawArrayIntPairOrNull rawLQUP(MutableMatrix *A, M2_bool transpose)
+engine_RawArrayIntPairOrNull rawLQUPFactorizationInPlace(MutableMatrix *A, M2_bool transpose)
 {
 #ifdef HAVE_FFLAS_FFPACK
   // Suppose A is m x n
@@ -1256,8 +1258,9 @@ engine_RawArrayIntPairOrNull rawLQUP(MutableMatrix *A, M2_bool transpose)
   DMat<M2::ARingZZpFFPACK> *mat = A->coerce< DMat<M2::ARingZZpFFPACK> >();
   if (mat == 0) 
     {
-      ERROR("LUDivine not defined for this ring");
-      return 0;
+      throw exc::engine_error("LUDivine not defined for this ring");
+      //      ERROR("LUDivine not defined for this ring");
+      //      return 0;
     }
   size_t nelems = mat->n_cols();
   if (mat->n_rows() > mat->n_cols()) nelems = mat->n_rows();

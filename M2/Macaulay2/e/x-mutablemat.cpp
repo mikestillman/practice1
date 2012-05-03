@@ -15,6 +15,8 @@
 #include "exceptions.hpp"
 
 #include "matrix.hpp"
+#include "aring-ffpack.hpp"
+#include "mutablemat.hpp"
 
 MutableMatrix * IM2_MutableMatrix_identity(const Ring *R,
                                                  int n,
@@ -710,22 +712,35 @@ M2_bool IM2_HermiteNormalForm(MutableMatrix *M)
   /* Each of the following routines accepts honest MutableMatrix arguments,
      and returns false if there is an error.  The return values are placed into
      some of the (already existing) parameters of the routine */
-//typedef DMat<CoefficientRingRRR> LMatrixRR;
-//typedef DMat<CoefficientRingCCC> LMatrixCC;
 
-extern engine_RawArrayIntPairOrNull rawLQUP(MutableMatrix *A, M2_bool transpose);
+extern engine_RawArrayIntPairOrNull rawLQUPFactorizationInPlace(MutableMatrix *A, M2_bool transpose);
 
 M2_arrayintOrNull rawLU(const MutableMatrix *A,
                          MutableMatrix *L,
                          MutableMatrix *U)
 {
-  return A->LU(L,U);
+  try {
+    return A->LU(L,U);
+  }
+  catch (exc::engine_error e) {
+    ERROR(e.what());
+    return NULL;
+  }
 }
 
 engine_RawArrayIntPairOrNull rawLQUPFactorization(MutableMatrix *A)
 {
-  //  return A->LQUPFactorizationInPlace(A);
-  return rawLQUP(A, false);
+  TRY return rawLQUPFactorizationInPlace(A, false); CATCH
+#if 0
+  try {
+    //    return A->LQUPFactorizationInPlace(A, false);
+    return rawLQUPFactorizationInPlace(A, false);
+  }
+  catch (exc::engine_error e) {
+    ERROR(e.what());
+    return NULL;
+  }
+#endif
 }
 
 ///////////////////////////////////////////////
@@ -1020,6 +1035,47 @@ MutableMatrix* /* or null */ rawLinAlgAddMultipleTo(MutableMatrix* C,
     std::cerr << "x-mutableMat : rawLinAlgAddMultipleTo" << std::endl;
     C->addMultipleTo(A,B,transposeA,transposeB,a,b);
     return C;
+}
+
+engine_RawRingElementArray convertRingelemsToArray(const Ring *R, 
+                                                   std::vector<M2::ARingZZpFFPACK::ElementType> &elems)
+{
+  size_t len = elems.size();
+  engine_RawRingElementArray result = getmemarraytype( engine_RawRingElementArray, len );
+  result->len = len;
+  for (size_t i=0; i<len; i++)
+    result->array[i] = RingElement::make_raw( R, static_cast<int>(elems[i]) );
+  
+  return result;
+}
+
+engine_RawRingElementArrayOrNull rawLinAlgCharPoly(MutableMatrix* A)
+// returns an array whose coefficients give the characteristic polynomial of the square matrix A
+{
+  const Ring *R = A->get_ring();
+  typedef DMat<M2::ARingZZpFFPACK> DMatZZp;
+  MutableMat<DMatZZp>* B = A->cast_to_MutableMat< DMatZZp >();
+  if (B == 0)
+    {
+      ERROR("expected a dense mutable matrix over the ffpack finite field");
+      return 0;
+    }
+  M2::ARingZZpFFPACK::ElementType* elemsA = B->get_Mat()->get_array();
+  std::vector< M2::ARingZZpFFPACK::ElementType > charpoly;
+
+  CharPoly(B->get_Mat()->ring().field(), charpoly, A->n_rows(), elemsA, A->n_rows());
+
+  for (size_t i=0; i<charpoly.size(); i++)
+    std::cout << charpoly[i] << " ";
+  std::cout << std::endl;
+  return convertRingelemsToArray(R, charpoly);
+}
+
+engine_RawRingElementArrayOrNull rawLinAlgMinPoly(MutableMatrix* A)
+// returns an array whose coefficients give the minimal polynomial of the square matrix A
+{
+  ERROR("not implemented yet");
+  return 0;
 }
 
 

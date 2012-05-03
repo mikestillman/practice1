@@ -3,6 +3,7 @@
 #ifndef _mat_hpp_
 #define _mat_hpp_
 
+#include "exceptions.hpp"
 #include "hash.hpp"
 #include "relem.hpp"
 
@@ -228,6 +229,23 @@ public:
   ///////////////////////////////////
   /// LU decomposition routines /////
   ///////////////////////////////////
+
+  // A = m x n 'this' is factored as A = LQUP, where 
+  //   L is m x m lower unit triangular
+  //   U is m x n upper triangular
+  //   Q is a m x m permutation matrix
+  //   P is an n x n permutation matrix
+  // However, the result is constructed in an abbreviated, encoded format:
+  // First, the entries of A are modified:
+  //   L and U are placed into A
+  // Two integer arrays are returned:
+  // The first represents Q, giving the rows of U ??
+  // The second represents P, which tells which columns of A have non-zero pivots
+  //   (and, the elements below the main diagonal in these columns form the lower part of L).
+  // If the ring or matrix type does not support this computation, an engine_error is thrown.
+  virtual engine_RawArrayIntPairOrNull LQUPFactorizationInPlace(bool transpose) { 
+    throw exc::engine_error("not implemented for this ring or matrix type");
+  }
 
   // Return a permutation P of 0..nrows-1 and place into LU
   // the encoded L and U matrices, such that this = A = PLU

@@ -1301,6 +1301,15 @@ extern "C" {
                                                       const RingElement* a,
                                                       const RingElement* b);
 
+  engine_RawRingElementArrayOrNull rawLinAlgCharPoly(MutableMatrix* A);
+  // returns an array whose coefficients give the characteristic polynomial of the square matrix A
+
+  engine_RawRingElementArrayOrNull rawLinAlgMinPoly(MutableMatrix* A);
+  // returns an array whose coefficients give the minimal polynomial of the square matrix A
+
+
+
+
   RingElement *rawFFPackDeterminant(MutableMatrix *M);
   /* connected to rawFFPackDeterminant, MES */
   /* requires: M should be a square matrix over a prime finite field */

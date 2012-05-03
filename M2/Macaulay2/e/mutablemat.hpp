@@ -474,6 +474,9 @@ public:
                              bool assume_full_rank) const;
 
 
+
+  virtual engine_RawArrayIntPairOrNull LQUPFactorizationInPlace(bool transpose);
+
   /// Fast linear algebra routines (well, fast for some rings)
 
   virtual size_t rank() const;

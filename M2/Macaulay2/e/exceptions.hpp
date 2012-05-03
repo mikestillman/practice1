@@ -22,6 +22,9 @@ namespace exc {
 
 }
 
+#define TRY try { 
+#define CATCH } catch (exc::engine_error __x424621) { ERROR(__x424621.what()); return NULL; }
+
 #endif
 // Local Variables:
 // compile-command: "make -C $M2BUILDDIR/Macaulay2/e "

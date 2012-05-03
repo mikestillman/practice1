@@ -266,6 +266,14 @@ MutableMat<Mat> *MutableMat<Mat>::grab_Mat(const Mat *m) {
 ///////////////////////////////////
 
 template<typename Mat>
+engine_RawArrayIntPairOrNull MutableMat<Mat>::
+  LQUPFactorizationInPlace(bool transpose)
+{
+  throw exc::engine_error("LU decomposition currently not implemented for this ring and matrix type");
+}
+
+
+template<typename Mat>
 bool MutableMat<Mat>::solve(const MutableMatrix *b, MutableMatrix *x) const
   // resets x, find a solution of Ax=b, return false if no such exists.
 {

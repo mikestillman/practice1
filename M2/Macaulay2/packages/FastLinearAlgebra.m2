@@ -22,6 +22,9 @@ export {
    ARing,
    ZZp,
    powerMod,
+   
+   characteristicPolynomial,
+   minimalPolynomial,
    	
    testDivide,
     testAdd,
@@ -176,6 +179,24 @@ fastRank MutableMatrix := (M) -> (
 	  new ZZ from rawFFPackRank raw M
 	  )
      )
+
+characteristicPolynomial = method()
+characteristicPolynomial(MutableMatrix, Ring) := (M, P) -> (
+     R := ring M;
+     time cp := rawLinAlgCharPoly raw M;
+     t := P_0;
+     time sum for i from 0 to #cp - 1 list (new R from cp#i) * t^i
+     )
+characteristicPolynomial(Matrix, Ring) := (M, P) -> characteristicPolynomial(mutableMatrix M, P)
+
+minimalPolynomial = method()
+minimalPolynomial(MutableMatrix, Ring) := (M, P) -> (
+     R := ring M;
+     cp := rawLinAlgMinPoly raw M;
+     t := P_0;
+     sum for i from 0 to #cp - 1 list (new R from cp#i) * t^i
+     )
+minimalPolynomial(Matrix, Ring) := (M, P) -> minimalPolynomial(mutableMatrix M, P)
 
 ------------tests
 
@@ -1170,7 +1191,71 @@ columnRankProfile mutableMatrix M1 -- NOT IMPLEMENTED for GF
 
 ///
 
+TEST /// -- testing char and min poly
+YYYYYYYYYY
+restart
+loadPackage "FastLinearAlgebra"
+R = ZZp 101
+M = random(R^10, R^10)
+Rt = R[t]
+characteristicPolynomial(M, Rt)
+M2 = M ++ M
+cp = characteristicPolynomial(M2, Rt)
+mp = minimalPolynomial(M2, Rt)
+assert(cp == mp^2)
+
+restart
+loadPackage "FastLinearAlgebra"
+R = ZZp 5
+Rt = R[t]
+M = mutableMatrix(R, 5000, 5000);
+fillMatrix M;
+time cp = characteristicPolynomial(M, Rt);
+time mp = minimalPolynomial(M, Rt);
+///
+
+TEST ///
+restart
+loadPackage "FastLinearAlgebra"
+R = ZZp 5
+Rt = R[t]
+jordanBlock = (R, diag, n) -> (
+     m := mutableMatrix(R,n,n);
+     for i from 0 to n-1 do m_(i,i) = diag;
+     for i from 0 to n-2 do m_(i,i+1) = 1;
+     m
+     )
+jordanForm = (R, L) -> (
+     -- L is a list of (eigenvalue, size)
+     directSum apply(L, (diag, n) -> matrix jordanBlock(R, diag, n))
+     )
+jordanBlock(R,2_R,5)
+M = jordanForm(R, {(2_R, 4), (1_R, 2), (0_R, 6), (0_R, 3)})
+A = random(target M, source M)
+Ainv = matrix invert(mutableMatrix A)
+A * Ainv
+N = A * M * Ainv
+
+cp = characteristicPolynomial(N, Rt)
+mp = minimalPolynomial(N, Rt)
+
+Rt1 = ZZ/5[t]
+cp1 = sub(cp, Rt1)
+mp1 = sub(mp, Rt1)
+factor cp1
+factor mp1
+  -- list of top level issues with ZZp:
+  -- 1. display is using too many parentheses
+  -- 2. can't factor polynomials over Rt
+  -- 3. want linear algebra to be transparent.
+  --    A^-1
+  --    det(A)
+  --    syz A
+  --    what else?
+///
+
 /// -- looking into LUdivine
+restart
 loadPackage "FastLinearAlgebra"
 R = ZZp 101
 M = random(R^3, R^5)
@@ -1197,8 +1282,17 @@ m = mutableMatrix matrix{{1,2},{3,4}}
 
 debug Core  
 M = random(R^3, R^3)
-m = mutableMatrix M
-rawLinAlgCharPoly raw m
+M2 = M ++ M
+m = mutableMatrix M2
+cp = rawLinAlgCharPoly raw m
+mp = rawLinAlgMinPoly raw m
+
+P = R[t]
+det(t*id_(P^3) - M)
+
+P = ZZ/101[t]
+M = matrix {{41, 41, -29}, {-36, 19, 11}, {31, 15, -23}}
+det(M - t*id_(P^3))
 ///
 -- TODO:
 --   top level M2 package (this file): calls the rawFFPack routines

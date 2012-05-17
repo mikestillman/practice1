@@ -1063,7 +1063,7 @@ engine_RawRingElementArrayOrNull rawLinAlgCharPoly(MutableMatrix* A)
   M2::ARingZZpFFPACK::ElementType* elemsA = B->get_Mat()->get_array();
   std::vector< M2::ARingZZpFFPACK::ElementType > charpoly;
 
-  CharPoly(B->get_Mat()->ring().field(), charpoly, A->n_rows(), elemsA, A->n_rows());
+  FFPACK::CharPoly(B->get_Mat()->ring().field(), charpoly, A->n_rows(), elemsA, A->n_rows());
 
   for (size_t i=0; i<charpoly.size(); i++)
     std::cout << charpoly[i] << " ";
@@ -1074,11 +1074,35 @@ engine_RawRingElementArrayOrNull rawLinAlgCharPoly(MutableMatrix* A)
 engine_RawRingElementArrayOrNull rawLinAlgMinPoly(MutableMatrix* A)
 // returns an array whose coefficients give the minimal polynomial of the square matrix A
 {
-  ERROR("not implemented yet");
-  return 0;
+  const Ring *R = A->get_ring();
+  typedef DMat<M2::ARingZZpFFPACK> DMatZZp;
+  MutableMat<DMatZZp>* B = A->cast_to_MutableMat< DMatZZp >();
+  if (B == 0)
+    {
+      ERROR("expected a dense mutable matrix over the ffpack finite field");
+      return 0;
+    }
+  typedef M2::ARingZZpFFPACK::ElementType Element;
+  typedef std::vector<Element> Polynomial;
+
+  Element* elemsA = B->get_Mat()->get_array();
+  size_t n = B->n_rows();
+  Polynomial minpoly(n);
+
+  // the following are uninitialized!  This is scratch space for use in the algorithm, apparently...
+  Element * X = new Element[n*(n+1)];
+  size_t * P = new size_t[n];
+
+  FFPACK::MinPoly(B->get_Mat()->ring().field(), minpoly, n, elemsA, n, X, n, P);
+
+  delete[] P;
+  delete[] X;
+
+  for (size_t i=0; i<minpoly.size(); i++)
+    std::cout << minpoly[i] << " ";
+  std::cout << std::endl;
+  return convertRingelemsToArray(R, minpoly);
 }
-
-
 
 //////////////////////////////////
 // Older code we used to figure things out.  Will be removed

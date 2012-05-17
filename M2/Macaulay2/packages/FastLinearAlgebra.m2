@@ -23,8 +23,6 @@ export {
    ZZp,
    powerMod,
    
-   characteristicPolynomial,
-   minimalPolynomial,
    	
    testDivide,
     testAdd,
@@ -40,6 +38,8 @@ export {
     testField,
 
      RightSide,
+     characteristicPolynomial,
+     minimalPolynomial,
      nullSpace,
      invert,
      rowRankProfile,
@@ -114,6 +114,11 @@ isPrimeField Ring := (R) -> (
      true
      )
 
+transpose MutableMatrix := (M) -> (
+     << "warning: rewrite to be in the engine" << endl;
+     mutableMatrix transpose matrix M
+     )
+
 rank MutableMatrix := (M) -> rawLinAlgRank raw M
 
 determinant MutableMatrix := opts -> (M) -> (
@@ -126,6 +131,18 @@ invert MutableMatrix := (A) -> (
      R := ring A;
      if numRows A =!= numColumns A then error "expected square matrix";
      map(R,rawLinAlgInvert(raw A))
+     )
+
+MutableMatrix ^ ZZ := (A, r) -> (
+     if r == 0 then 
+       return mutableIdentity(ring A, numRows A);
+     if r < 0 then (
+	  r = -r;
+	  A = invert A;
+	  );
+     result := A;
+     if r > 1 then for i from 2 to r do result = result * A;
+     result     
      )
 
 rowRankProfile = method()
@@ -461,6 +478,75 @@ testGFArithmetic GaloisField := (F) -> (
      )
 
 beginDocumentation()
+
+NONTEST = (str) -> null
+
+TEST ///
+kk = ZZp 101
+R = kk[t]
+M1 = mutableMatrix matrix(kk, {{2, 16, 29}, {-18, 24, 12}, {-41, 7, -31}})
+M2 = mutableMatrix matrix(kk, {{-39, 27, 9}, {-44, 14, 28}, {-22, -23, 14}})
+
+assert(M1 * M2 == mutableMatrix((matrix M1) * (matrix M2)))
+assert(rank M1 == 3)
+assert(rank M2 == 3)
+
+assert(M1 * invert M1  == mutableIdentity(kk, 3))
+assert(M1^-1 == invert M1)
+assert(M1^2 == M1*M1)
+assert(M1^-2 == (invert M1)*(invert M1))
+
+cp = characteristicPolynomial(M1, R)
+mp = minimalPolynomial(M1,R)
+assert(mp == cp)
+mp2 = minimalPolynomial(mutableMatrix (matrix M1 ++ matrix M1),R)
+assert(mp2 == mp)
+mp3 = minimalPolynomial(mutableMatrix (matrix M1 ++ matrix M2),R)
+assert(mp3 == mp * minimalPolynomial(M2, R))
+
+assert(nullSpace M1 == 0)
+assert(nullSpace(M1, RightSide=>false) == 0)
+
+M11 = mutableMatrix ((matrix M1) || (matrix M1))
+assert(nullSpace M11 == 0)
+assert(numRows nullSpace(M11, RightSide=>false) == 3)
+
+X = solveLinear(M1, M2)
+assert(M1 * X == M2)
+Y = solveLinear(M1, M2, RightSide=>false)
+assert(Y * M1 == M2)
+
+assert(rowRankProfile(M1) == {0,1,2})
+assert(columnRankProfile(M1) == {0,1,2})
+assert(rowRankProfile(M11) == {0,1,2})
+assert(columnRankProfile(M11) == {0,1,2})
+
+C = mutableMatrix(kk,3,3)
+addMultipleTo(C, M1, M2)
+assert(C == M1*M2)
+
+C = mutableMatrix(kk,3,3)
+addMultipleTo(C, M1, M2, TransposeA=>true)
+assert(C == (transpose M1)*M2) -- fails
+
+C = mutableMatrix(kk,3,3)
+addMultipleTo(C, M1, M2, TransposeB=>true)
+assert(C == M1*(transpose M2)) -- fails
+
+C = mutableMatrix(kk,3,3)
+addMultipleTo(C, M1, M2, TransposeA=>true, TransposeB=>true)
+assert(C == (transpose M1)*(transpose M2)) 
+
+C = M1
+addMultipleTo(C, M1, M2, Alpha=>2_kk, Beta=>3_kk)
+assert(C == 2_kk*M1 + 3_kk*M1*M2) -- fails since we need to implement a*M, a in ZZ or a in ring(M).
+assert(C == 2*M1 + 3*M1*M2) -- fails since we need to implement a*M, a in ZZ or a in ring(M).
+
+///
+
+
+-- move good tests above this line
+end
 
 
 TEST ///
@@ -960,7 +1046,7 @@ testGFArithmetic D
 
 ///
 
-TEST /// -- XXXXXXXXXX -- of findGalois  (which will be placed into the engine?)
+TEST /// -- of findGalois  (which will be placed into the engine?)
 restart
 loadPackage "FastLinearAlgebra"
 
@@ -1074,7 +1160,6 @@ time (A*A);
 time (A+A);
 
 restart
--- XXXXXXXXXXXXXX
 restart
 debug loadPackage "FastLinearAlgebra"
 --kk = ZZ/101
@@ -1192,7 +1277,6 @@ columnRankProfile mutableMatrix M1 -- NOT IMPLEMENTED for GF
 ///
 
 TEST /// -- testing char and min poly
-YYYYYYYYYY
 restart
 loadPackage "FastLinearAlgebra"
 R = ZZp 101

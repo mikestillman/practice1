@@ -661,6 +661,25 @@ MutableMatrix* M2::makeMutableZeroMatrix(const Ring* Rgeneral,
     ::zero_matrix(Rgeneral,R,nrows,ncols);
 }
 
+#if 0
+//TODO: Mike, Jakob.  Once we have sparse linbox matrices implemented, this
+// might be how we create them.
+template<>
+MutableMatrix* M2::makeMutableZeroMatrix<M2::ARingZZpFFPACK>(const Ring* Rgeneral,
+                                         const M2::ARingZZpFFPACK* R,
+                                         size_t nrows,
+                                         size_t ncols,
+                                         bool dense)
+{
+  if (dense)
+    return MutableMat< DMat<M2::ARingZZpFFPACK> >
+      ::zero_matrix(Rgeneral,R,nrows,ncols);
+
+  return MutableMat< SparseLinboxMat<M2::ARingZZpFFPACK> >
+    ::zero_matrix(Rgeneral,R,nrows,ncols);
+}
+#endif
+
 /////////////////////////////////////////
 /// Fast Linear Algebra Routines ////////
 /////////////////////////////////////////

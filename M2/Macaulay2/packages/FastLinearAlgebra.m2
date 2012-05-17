@@ -119,6 +119,22 @@ transpose MutableMatrix := (M) -> (
      mutableMatrix transpose matrix M
      )
 
+MutableMatrix + MutableMatrix := (A,B) -> (
+     << "warning: rewrite to be in the engine" << endl;
+     mutableMatrix(matrix A + matrix B)
+     )
+
+MutableMatrix - MutableMatrix := (A,B) -> (
+     << "warning: rewrite to be in the engine" << endl;
+     mutableMatrix(matrix A - matrix B)
+     )
+
+ZZ * MutableMatrix :=
+RingElement * MutableMatrix := (a,M) -> (
+     << "warning: rewrite to be in the engine" << endl;
+     mutableMatrix(a*(matrix M))
+     )
+
 rank MutableMatrix := (M) -> rawLinAlgRank raw M
 
 determinant MutableMatrix := opts -> (M) -> (
@@ -525,6 +541,7 @@ C = mutableMatrix(kk,3,3)
 addMultipleTo(C, M1, M2)
 assert(C == M1*M2)
 
+{*
 C = mutableMatrix(kk,3,3)
 addMultipleTo(C, M1, M2, TransposeA=>true)
 assert(C == (transpose M1)*M2) -- fails
@@ -537,13 +554,40 @@ C = mutableMatrix(kk,3,3)
 addMultipleTo(C, M1, M2, TransposeA=>true, TransposeB=>true)
 assert(C == (transpose M1)*(transpose M2)) 
 
+-- These all fail:
 C = M1
 addMultipleTo(C, M1, M2, Alpha=>2_kk, Beta=>3_kk)
 assert(C == 2_kk*M1 + 3_kk*M1*M2) -- fails since we need to implement a*M, a in ZZ or a in ring(M).
+assert(C == 3*M1 + 2*M1*M2) -- fails since we need to implement a*M, a in ZZ or a in ring(M).
 assert(C == 2*M1 + 3*M1*M2) -- fails since we need to implement a*M, a in ZZ or a in ring(M).
-
+*}
 ///
 
+TEST ///
+-- addMultipleTo
+kk = ZZp 101
+R = kk[t]
+M1 = mutableMatrix random(kk^3, kk^5)
+M2 = mutableMatrix random(kk^2, kk^3)
+M3 = mutableMatrix random(kk^2, kk^5)
+
+M3 = mutableMatrix(kk, 2, 5)
+addMultipleTo(M3, M2, M1)
+assert(M3 == M2*M1)
+
+M3 = mutableMatrix(kk, 2, 5)
+addMultipleTo(M3, transpose M2, M1, TransposeB=>true)
+assert(M3 == M2*M1)
+
+M3 = mutableMatrix(kk, 2, 5)
+addMultipleTo(M3, M2, transpose M1, TransposeB=>true)
+assert(M3 == M2*M1)
+
+M3 = mutableMatrix(kk, 2, 5)
+addMultipleTo(M3, transpose M2, transpose M1, TransposeA=>true, TransposeB=>true)
+assert(M3 == M2*M1)
+
+///
 
 -- move good tests above this line
 end
@@ -1638,7 +1682,7 @@ det(M - t*id_(P^3))
 --    (12 April 2012 todo list is still active too!)
 -- 3 May 2012
 --  Prioritize what we need to do
---    1. hook up from ffpack the char poly and minimal poly functions
+--    1. hook up from ffpack the char poly and minimal poly functions DONE
 --         Mike: needs to make better conversion functions for arrays of ring elements
 --    2. Make the dense linear algebra over ZZ/p solid:
 --         tests
@@ -1651,6 +1695,12 @@ det(M - t*id_(P^3))
 --    5. Attach various normal forms of matrices from linbox to M2
 --         over ZZ: Hermite, Smith, LLL
 --         over fields: rational decomposition of a matrix, ...
+-- 17 May 2012
+--    1. JAKOB: find bugs in addMultipleTo
+--    2. JAKOB: read about sparse matrices in linbox, how to use them.  Then: implement SMat type matrix type using their type.
+--    3. MIKE: Place characteristicPolynomial, minimalPolynomial into DMat, SMat, ...
+--    4. MIKE: internal routines for +, scalar mult and transpose (and perhaps submatrices), in DMat, SMat, ...  and use these at top level.
+--    5. stuff from 3 May 2012.
 ----------------------------------------------
 -- not discussed yet:
 --    a. bugs in ffpack ZZ/p: basis(2,R) fails (R = polyring over ZZ/p).  Fix this?  MIKE 

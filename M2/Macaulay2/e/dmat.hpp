@@ -1,9 +1,10 @@
-// Copyright 2005  Michael E. Stillman
+// Copyright 2005-2012  Michael E. Stillman
 
 #ifndef _dmat_hpp_
 #define _dmat_hpp_
 
 union ring_elem;
+
 #include "ZZp.hpp"
 
 #include "aring-ffpack.hpp"
@@ -40,9 +41,6 @@ template<>
 struct is_givaro_or_ffpack< M2::ARingGF >{ 
   static const bool value = true; 
 };
-
-
-
 
 class MutableMatrix;
 
@@ -235,9 +233,9 @@ public:
   /// Fast linear algebra routines //
   ///////////////////////////////////
 
-  
   template<class RingType>
   size_t rank(typename enable_if<is_givaro_or_ffpack<RingType>::value >::type* dummy = 0) const;
+
   size_t rank() const;
  
   void determinant(elem &result) const;
@@ -276,6 +274,20 @@ public:
                      bool transposeB,
                      const ElementType& a,
                      const ElementType& b);
+
+  /** if 'this' is a square n x n matrix, return
+      an array, {a0,a1,a2,...,an} such that
+      the characteristic polynomial is
+      det(t*I - this) = a0 + a1 * t + ... + an * t^n .
+  */
+  engine_RawRingElementArrayOrNull characteristicPolynomial() const;
+
+  /** if 'this' is a square n x n matrix, return
+      an array, {a0,a1,a2,...,am} such that
+      the minimal monic polynomial of 'this' is
+      a0 + a1 * t + ... + am * t^m .
+  */
+  engine_RawRingElementArrayOrNull minimalPolynomial() const;
 
   void copy_elems(long n_to_copy, elem *target, int target_stride, const elem *source, int stride) const;
 private:

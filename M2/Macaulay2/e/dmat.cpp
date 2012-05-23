@@ -837,6 +837,20 @@ bool DMat<CoeffRing>::solveLinear(DMat<CoeffRing> &X, const DMat<CoeffRing> &B, 
 }
 
 template<typename CoeffRing>
+engine_RawRingElementArrayOrNull DMat<CoeffRing>::characteristicPolynomial() const
+{
+  ERROR("not implemented for this ring yet");
+  return false;
+}
+
+template<typename CoeffRing>
+engine_RawRingElementArrayOrNull DMat<CoeffRing>::minimalPolynomial() const
+{
+  ERROR("not implemented for this ring yet");
+  return false;
+}
+
+template<typename CoeffRing>
 void DMat<CoeffRing>::addMultipleTo(const DMat<CoeffRing> &A,
                                     const DMat<CoeffRing> &B,
                                     bool transposeA,

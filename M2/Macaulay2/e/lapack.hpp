@@ -1,6 +1,8 @@
 #ifndef __lapack_h_
 #define __lapack_h_
 
+#include "RRR.hpp"
+#include "coeffrings.hpp"
 #include "dmat.hpp"
 #ifdef HAVE_MPACK
 #include <mpack/mblas_mpfr.h>

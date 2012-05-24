@@ -20,6 +20,87 @@
 #include "aring-ffpack.hpp"
  #include <typeinfo>
 
+////////////////////////////////////////////////////////////////////////////
+// dmat code that might have alternate implementations, depending of type //
+////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////
+/// Fast linear algebra routines //
+///////////////////////////////////
+
+template<typename CoeffRing>
+size_t DMat<CoeffRing>::rank() const
+{
+  ERROR("not implemented for this ring yet");
+  return static_cast<size_t>(-1);
+}
+
+template<typename CoeffRing>
+void DMat<CoeffRing>::determinant(elem &result) const
+{
+  ERROR("not implemented for this ring yet");
+}
+
+template<typename CoeffRing>
+bool DMat<CoeffRing>::invert(DMat<CoeffRing> &inverse) const
+{
+  ERROR("not implemented for this ring yet");
+  return false;
+}
+
+template<typename CoeffRing>
+M2_arrayintOrNull DMat<CoeffRing>::rankProfile(bool row_profile) const
+{
+  ERROR("not implemented for this ring yet");
+  return 0;
+}
+
+template<typename CoeffRing>
+void DMat<CoeffRing>::nullSpace(DMat<CoeffRing> &nullspace, bool right_side) const
+{
+  ERROR("not implemented for this ring yet");
+}
+
+template<typename CoeffRing>
+bool DMat<CoeffRing>::solveLinear(DMat<CoeffRing> &X, const DMat<CoeffRing> &B, bool right_size) const
+{
+  ERROR("not implemented for this ring yet");
+  return false;
+}
+
+template<typename CoeffRing>
+engine_RawRingElementArrayOrNull DMat<CoeffRing>::characteristicPolynomial() const
+{
+  ERROR("not implemented for this ring yet");
+  return 0;
+}
+
+template<typename CoeffRing>
+engine_RawRingElementArrayOrNull DMat<CoeffRing>::minimalPolynomial() const
+{
+  ERROR("not implemented for this ring yet");
+  return 0;
+}
+
+template<typename CoeffRing>
+void DMat<CoeffRing>::addMultipleTo(const DMat<CoeffRing> &A,
+                                    const DMat<CoeffRing> &B,
+                                    bool transposeA,
+                                    bool transposeB,
+                                    const ElementType& a,
+                                    const ElementType& b)
+{
+  std::cerr << "DMat  addMultipleTo" << std::endl;
+    std::cerr << "typeid: " << typeid(CoeffRing).name () << std::endl;
+  ERROR("addMultipleTo not implemented for this ring yet");
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
 
 

@@ -63,6 +63,9 @@ public:
   Mat * get_Mat() { return &mat; }
   const Mat * get_Mat() const { return &mat; }
 
+  Mat& getMat() { return mat; }
+  const Mat& getMat() const { return mat; }
+
   class iterator : public MutableMatrix::iterator
   {
     typename Mat::iterator i;

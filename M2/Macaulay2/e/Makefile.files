@@ -108,6 +108,7 @@ INTERFACE = \
 	ZZp
 
 COMMANDS = \
+	dmat-ffpack \
 	ntl-internal \
 	ntl-debugio \
 	matrix-kbasis \

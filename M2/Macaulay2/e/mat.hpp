@@ -309,7 +309,6 @@ public:
 
 };
 
-
 #endif
 
 // Local Variables:

@@ -20,6 +20,22 @@
 #include "aring-ffpack.hpp"
  #include <typeinfo>
 
+template <typename CoeffRing>
+void DMat<CoeffRing>::addInPlace(const DMat<CoeffRing>& B)
+  // return this + B.  return NULL of sizes or types do not match.
+{
+  ASSERT(&B.ring() == &ring());
+  ASSERT(B.n_rows() == n_rows());
+  ASSERT(B.n_cols() == n_cols());
+  
+  for (size_t i=0; i<n_rows()*n_cols(); i++)
+    {
+      ring().add(array_[i], array_[i], B.array_[i]);
+    }
+}
+
+
+
 ////////////////////////////////////////////////////////////////////////////
 // dmat code that might have alternate implementations, depending of type //
 ////////////////////////////////////////////////////////////////////////////

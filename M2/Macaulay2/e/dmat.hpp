@@ -917,20 +917,6 @@ DMat<CoeffRing> * DMat<CoeffRing>::submatrix(M2_arrayint cols) const
 
 
 template <typename CoeffRing>
-void DMat<CoeffRing>::addInPlace(const DMat<CoeffRing>& B)
-  // return this + B.  return NULL of sizes or types do not match.
-{
-  ASSERT(&B.ring() == &ring());
-  ASSERT(B.n_rows() == n_rows());
-  ASSERT(B.n_cols() == n_cols());
-  
-  for (size_t i=0; i<n_rows()*n_cols(); i++)
-    {
-      ring().add(array_[i], array_[i], B.array_[i]);
-    }
-}
-
-template <typename CoeffRing>
 DMat<CoeffRing> * DMat<CoeffRing>::subtract(const MutableMatrix *B) const
   // return this - B.  return NULL of sizes or types do not match.
   // note: can subtract a sparse + dense

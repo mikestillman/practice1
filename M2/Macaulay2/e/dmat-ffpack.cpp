@@ -229,6 +229,17 @@
     }
 
  template<typename CoeffRing>
+    void FFpackMatrixAddInPlace(DMat<CoeffRing>& C, 
+                                const DMat<CoeffRing>& A)
+    {
+
+        FFLAS::faddin ( C.ring().field(),  
+                C.n_cols(),  C.n_rows(),
+                A.get_array(), A.n_rows(),
+                C.get_array(), C.n_rows() );
+    }
+
+ template<typename CoeffRing>
     void FFpackMatrixSub(DMat<CoeffRing>& C, 
                              const DMat<CoeffRing>& A,
                              const DMat<CoeffRing>& B)
@@ -294,6 +305,14 @@
     // ARingZZpFFPACK specific linear algebra functions //
     //////////////////////////////////////////////////////
     template<>
+    void DMat<M2::ARingZZpFFPACK>::addInPlace(const DMat& B)
+    {
+        std::cout << "DMat<M2::ARingZZpFFPACK>::addInPlace()" << std::endl;
+        FFpackMatrixAddInPlace<M2::ARingZZpFFPACK>(*this,B);
+    }
+
+
+    template<>
     size_t DMat<M2::ARingZZpFFPACK>::rank() const
     {
         std::cout << "DMat<M2::ARingZZpFFPACK>::rank()" << std::endl;
@@ -354,6 +373,12 @@
     //////////////////////////////////////////////////////
     // ARingGF specific linear algebra functions /////////
     //////////////////////////////////////////////////////
+
+    template<>
+    void DMat<M2::ARingGF>::addInPlace(const DMat& B)
+    {
+      std::cout << "not implemented yet" << std::endl;
+    }
     
     template<>
     size_t DMat<M2::ARingGF>::rank() const

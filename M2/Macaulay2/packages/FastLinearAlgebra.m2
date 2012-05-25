@@ -642,6 +642,20 @@ TEST ///
 -- move good tests above this line
 end
 
+TEST ///
+    kk = ZZp 101
+    M = mutableMatrix(kk,5000,5000);
+    N = mutableMatrix(kk,5000,5000);
+    fillMatrix M;
+    fillMatrix N;
+    time (M+N);	
+
+    A = mutableMatrix(kk,50000,50000, Dense=>false);
+    B = mutableMatrix(kk,50000,50000, Dense=>false);
+    fillMatrix(A, Density=>.001);    
+    fillMatrix(B, Density=>.001);    
+    time (A+B);
+///
 
 TEST ///
 needsPackage "FastLinearAlgebra"

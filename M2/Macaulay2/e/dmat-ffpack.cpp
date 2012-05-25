@@ -16,6 +16,7 @@
         ElementType *N = newarray(ElementType, n_rows() * n_cols() );
         /// @jakob: replace with memcopy or something fast.
         /// @jakob: potention problem: (  n_rows()*n_cols() ) - overflow for big matrices 
+        /// @jakob: write a logger ur ose a logger for warnings/messages. Ideal case: if disabled, logger messaging is optimized out by compiler.
         copy_elems( n_rows()*n_cols(), N, 1, get_array(), 1); 
         /// @note 1. matrix data (N) is modified by FFPACK
         /// @note 2. FFPACK expects row-wise stored matrices while dmat stores them column-wise => switch n_rows and n_cols -parameters!
@@ -72,7 +73,7 @@
                          DMat<CoeffRing> &nullspace, 
                          bool right_side)
     {
-        right_side = !right_side; // because FFPACK stores by rows, not columns.
+        right_side = !right_side; // because FFPACK stores by rows, not by columns.
 
         typedef typename CoeffRing::ElementType ElementType;
         ElementType* N = newarray( ElementType, mat.n_rows() * mat.n_cols());    
@@ -201,6 +202,47 @@
         return true;
     } 
 
+ 
+
+   
+    template<typename CoeffRing>
+    void FFpackScalarMultiplyInPlace(DMat<CoeffRing>& A, 
+                                            
+                             const typename CoeffRing::ElementType& scalar)
+    {
+        size_t incx = 1;
+         FFLAS::fgemm( A.ring().field(), A.n_rows()*A.n_cols(), scalar, A.get_array(), incx);
+    }
+    
+
+ template<typename CoeffRing>
+    void FFpackMatrixAdd(DMat<CoeffRing>& C, 
+                             const DMat<CoeffRing>& A,
+                             const DMat<CoeffRing>& B)
+    {
+
+        FFLAS::fadd ( C.ring().field(),  
+                C.n_cols(),  C.n_rows(),
+                A.get_array(), A.n_rows(),
+                B.get_array(), B.n_rows(),
+                C.get_array(), C.n_rows() );
+    }
+
+ template<typename CoeffRing>
+    void FFpackMatrixSub(DMat<CoeffRing>& C, 
+                             const DMat<CoeffRing>& A,
+                             const DMat<CoeffRing>& B)
+    {
+
+        FFLAS::fsub ( C.ring().field(),  
+                C.n_cols(),  C.n_rows(),
+                A.get_array(), A.n_rows(),
+                B.get_array(), B.n_rows(),
+                C.get_array(), C.n_rows() );
+    }
+
+    // there is no BLAS or even FFPACK routine for transposing a matrix.
+    
     template<typename CoeffRing>
     void FFpackAddMultipleTo(DMat<CoeffRing>& C, 
                              const DMat<CoeffRing>& A,
@@ -216,16 +258,9 @@
        where op(B) = B or transpose(B), depending on transposeB
     */
     { 
-        std::cout << " FFpackAddMultipleTo " << std::endl;
-        // set tA, tB
+
         FFLAS::FFLAS_TRANSPOSE tA = (transposeA ? FFLAS::FflasTrans : FFLAS::FflasNoTrans);
         FFLAS::FFLAS_TRANSPOSE tB = (transposeB ? FFLAS::FflasTrans : FFLAS::FflasNoTrans);
-
-        // determine m,n,k
-        //size_t m = (transposeA ? A.n_cols() : A.n_rows());
-        //size_t n = (transposeB ? B.n_rows() : B.n_cols());
-        //size_t k = (transposeA ? A.n_rows() : A.n_cols());
-        //size_t k2 = (transposeB ? B.n_cols() : B.n_rows());
 
         size_t m = (transposeB ? B.n_rows() : B.n_cols());
         size_t n = (transposeA ? A.n_cols() : A.n_rows());
@@ -233,14 +268,16 @@
         size_t k = (transposeA ? A.n_rows() : A.n_cols());
         size_t k2 = (transposeB ? B.n_cols() : B.n_rows());
 
-        std::cout <<"k  :" << k << std::endl;
-        std::cout <<"k2 :" << k2 << std::endl;
         assert(k == k2); // The user of this function must insure that sizes are correct.
         if (k!=k2)
-            ERROR("matrices are not composable");
+        {
+            ERROR("matrices are not composable. this error is handled in Macaulay2 code and this message should never appear! ");
+            return;
+        }
+            
 
-        FFLAS::fgemm(C.ring().field(),
-                     tA, tB,
+        FFLAS::fgemm( C.ring().field(),
+                     tB, tA,
                      m,n,k,
                      a,
                      B.get_array(),

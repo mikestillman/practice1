@@ -25,35 +25,34 @@ export {
    
    	
    testDivide,
-    testAdd,
-    testNegate,
-    testSubtract,
-    testMultiply,
-    testAxioms,
-    testGFArithmetic,
-    constructGivaroField,
-    constructZZpFFPACK,
-    constructMacaulayGF,
-    constructMacaulayZZp,
-    testField,
+   testAdd,
+   testNegate,
+   testSubtract,
+   testMultiply,
+   testAxioms,
+   testGFArithmetic,
+   constructGivaroField,
+   constructZZpFFPACK,
+   constructMacaulayGF,
+   constructMacaulayZZp,
+   testField,
 
-     RightSide,
-     characteristicPolynomial,
-     minimalPolynomial,
-     nullSpace,
-     invert,
-     rowRankProfile,
-     columnRankProfile,
-     addMultipleTo,
-     solveLinear,
-     TransposeA,
-     TransposeB,
-     Alpha,
-     Beta
---     ,
---     columnRankProfile,
---     rowRankProfile
-     }
+   testAddMultipleTo,
+     
+   RightSide,
+   characteristicPolynomial,
+   minimalPolynomial,
+   nullSpace,
+   invert,
+   rowRankProfile,
+   columnRankProfile,
+   addMultipleTo,
+   solveLinear,
+   TransposeA,
+   TransposeB,
+   Alpha,
+   Beta
+   }
 
 debug Core
 
@@ -119,10 +118,10 @@ transpose MutableMatrix := (M) -> (
      mutableMatrix transpose matrix M
      )
 
-MutableMatrix + MutableMatrix := (A,B) -> (
-     << "warning: rewrite to be in the engine" << endl;
-     mutableMatrix(matrix A + matrix B)
-     )
+--MutableMatrix + MutableMatrix := (A,B) -> (
+--     << "warning: rewrite to be in the engine" << endl;
+--     mutableMatrix(matrix A + matrix B)
+--     )
 
 MutableMatrix - MutableMatrix := (A,B) -> (
      << "warning: rewrite to be in the engine" << endl;
@@ -131,10 +130,10 @@ MutableMatrix - MutableMatrix := (A,B) -> (
 
 ZZ * MutableMatrix :=
 RingElement * MutableMatrix := (a,M) -> (
-     -- << "warning: rewrite to be in the engine" << endl;
+     << "warning: rewrite to be in the engine" << endl;
      mutableMatrix(a*(matrix M))
-    C:=mutableMatrix(
-    addMultipleTo()
+--    C:=mutableMatrix(
+--    addMultipleTo()
      )
 
 rank MutableMatrix := (M) -> rawLinAlgRank raw M
@@ -500,15 +499,51 @@ testGFArithmetic GaloisField := (F) -> (
 	       assert(elemsR#i ^ N == lift(elemsF#i ^ N, R)));
      )
 
-testAddMultipleTo = method();
-testAddMultipleTo ()->
-(
-kk = ZZp 101
-R = kk[t]
-M1 = mutableMatrix matrix(kk, {{2, 16, 29}, {-18, 24, 12}, {-41, 7, -31}})
-M2 = mutableMatrix matrix(kk, {{-39, 27, 9}, {-44, 14, 28}, {-22, -23, 14}})
+testAddMultipleTo = method()
+testAddMultipleTo(MutableMatrix, MutableMatrix, MutableMatrix) := (M3,M1,M2) -> (
+     kk := ring M3;
+     numrows := numRows M3;
+     numcols := numColumns M3;
+     assert(ring M1 === kk);
+     assert(ring M2 === kk);
+
+     A := mutableMatrix matrix M3;  -- 'copy' should work here!!
+     B := mutableMatrix matrix M3;
+     
+     addMultipleTo(A, M1, M2);
+     assert(A == M3 + M1*M2);
     
-)
+     A = mutableMatrix matrix M3;  -- 'copy' should work here!!
+     addMultipleTo(A,  M1, transpose M2, TransposeB=>true);
+     assert(A == M3 + M1*M2);
+    
+     A = mutableMatrix matrix M3;  -- 'copy' should work here!!
+     addMultipleTo(A, transpose M1,  M2, TransposeA=>true);
+     assert(A == M3 + M1*M2);
+
+     A = mutableMatrix matrix M3;  -- 'copy' should work here!!    
+     addMultipleTo(A, transpose M1, transpose M2, TransposeA=>true, TransposeB=>true);
+     assert(A == M3 + M1*M2);
+
+     A = mutableMatrix matrix M3;  -- 'copy' should work here!!
+     a := 2_kk;
+     b := 3_kk;
+     addMultipleTo(A, M1, M2, Alpha=>a, Beta=>b);
+     assert(A == b*M3 + a*M1*M2);
+
+     A = mutableMatrix matrix M3;  -- 'copy' should work here!!
+     a = 0_kk;
+     b = 0_kk;
+     addMultipleTo(A, M1, M2, Alpha=>a, Beta=>b);
+     assert(A == b*M3 + a*M1*M2);
+
+     A = mutableMatrix matrix M3;  -- 'copy' should work here!!
+     a = 1_kk;
+     b = 0_kk;
+     addMultipleTo(A, M1, M2, Alpha=>a, Beta=>b);
+     assert(A == b*M3 + a*M1*M2);
+     )
+
 
 beginDocumentation()
 
@@ -519,92 +554,89 @@ NONTEST = (str) -> null
 
 TEST ///
 
-kk = ZZp 101
-R = kk[t]
-M1 = mutableMatrix matrix(kk, {{2, 16, 29}, {-18, 24, 12}, {-41, 7, -31}})
-M2 = mutableMatrix matrix(kk, {{-39, 27, 9}, {-44, 14, 28}, {-22, -23, 14}})
+    kk = ZZp 101
+    R = kk[t]
+    M1 = mutableMatrix matrix(kk, {{2, 16, 29}, {-18, 24, 12}, {-41, 7, -31}})
+    M2 = mutableMatrix matrix(kk, {{-39, 27, 9}, {-44, 14, 28}, {-22, -23, 14}})
 
-assert(M1 * M2 == mutableMatrix((matrix M1) * (matrix M2)))
-assert(rank M1 == 3)
-assert(rank M2 == 3)
+    assert(M1 * M2 == mutableMatrix((matrix M1) * (matrix M2)))
+    assert(rank M1 == 3)
+    assert(rank M2 == 3)
 
-assert(M1 * invert M1  == mutableIdentity(kk, 3))
-assert(M1^-1 == invert M1)
-assert(M1^2 == M1*M1)
-assert(M1^-2 == (invert M1)*(invert M1))
+    assert(M1 * invert M1  == mutableIdentity(kk, 3))
+    assert(M1^-1 == invert M1)
+    assert(M1^2 == M1*M1)
+    assert(M1^-2 == (invert M1)*(invert M1))
 
-cp = characteristicPolynomial(M1, R)
-mp = minimalPolynomial(M1,R)
-assert(mp == cp)
-mp2 = minimalPolynomial(mutableMatrix (matrix M1 ++ matrix M1),R)
-assert(mp2 == mp)
-mp3 = minimalPolynomial(mutableMatrix (matrix M1 ++ matrix M2),R)
-assert(mp3 == mp * minimalPolynomial(M2, R))
+    cp = characteristicPolynomial(M1, R)
+    mp = minimalPolynomial(M1,R)
+    assert(mp == cp)
+    mp2 = minimalPolynomial(mutableMatrix (matrix M1 ++ matrix M1),R)
+    assert(mp2 == mp)
+    mp3 = minimalPolynomial(mutableMatrix (matrix M1 ++ matrix M2),R)
+    assert(mp3 == mp * minimalPolynomial(M2, R))
 
-assert(nullSpace M1 == 0)
-assert(nullSpace(M1, RightSide=>false) == 0)
+    assert(nullSpace M1 == 0)
+    assert(nullSpace(M1, RightSide=>false) == 0)
 
-M11 = mutableMatrix ((matrix M1) || (matrix M1))
-assert(nullSpace M11 == 0)
-assert(numRows nullSpace(M11, RightSide=>false) == 3)
+    M11 = mutableMatrix ((matrix M1) || (matrix M1))
+    assert(nullSpace M11 == 0)
+    assert(numRows nullSpace(M11, RightSide=>false) == 3)
 
-X = solveLinear(M1, M2)
-assert(M1 * X == M2)
-Y = solveLinear(M1, M2, RightSide=>false)
-assert(Y * M1 == M2)
+    X = solveLinear(M1, M2)
+    assert(M1 * X == M2)
+    Y = solveLinear(M1, M2, RightSide=>false)
+    assert(Y * M1 == M2)
 
-assert(rowRankProfile(M1) == {0,1,2})
-assert(columnRankProfile(M1) == {0,1,2})
-assert(rowRankProfile(M11) == {0,1,2})
-assert(columnRankProfile(M11) == {0,1,2})
+    assert(rowRankProfile(M1) == {0,1,2})
+    assert(columnRankProfile(M1) == {0,1,2})
+    assert(rowRankProfile(M11) == {0,1,2})
+    assert(columnRankProfile(M11) == {0,1,2})
 
-C = mutableMatrix(kk,3,3)
-addMultipleTo(C, M1, M2)
-assert(C == M1*M2)
-
-C = mutableMatrix(kk,3,3)
-addMultipleTo(C, M1, M2, TransposeA=>true)
-assert(C == (transpose M1)*M2)
-
-C = mutableMatrix(kk,3,3)
-addMultipleTo(C, M1, M2, TransposeB=>true)
-assert(C == M1*(transpose M2)) 
-
-C = mutableMatrix(kk,3,3)
-addMultipleTo(C, M1, M2, TransposeA=>true, TransposeB=>true)
-assert(C == (transpose M1)*(transpose M2)) 
-
-C = M2*M1
-addMultipleTo(C, M2, M1, Alpha=>2_kk, Beta=>3_kk)
-assert(C == 2_kk*M2*M1 + 3_kk*M2*M1) 
-
-
+    C = mutableMatrix(kk,3,3)
+    testAddMultipleTo(C,M1,M2)
 ///
 
 TEST ///
 -- addMultipleTo
     kk = ZZp 101
-    R = kk[t]
     M1 = mutableMatrix random(kk^3, kk^5)
     M2 = mutableMatrix random(kk^2, kk^3)
     M3 = mutableMatrix random(kk^2, kk^5)
-    
-    M3 = mutableMatrix(kk, 2, 5)
-    addMultipleTo(M3, M2, M1)
-    assert(M3 == M2*M1)
-    
-    M3 = mutableMatrix(kk, 2, 5)
-    addMultipleTo(M3,  M2, transpose M1, TransposeB=>true)
-    assert(M3 == M2*M1)
-    
-    M3 = mutableMatrix(kk, 2, 5)
-    addMultipleTo(M3, transpose M2,  M1, TransposeA=>true)
-    assert(M3 == M2*M1)
-    
-    M3 = mutableMatrix(kk, 2, 5)
-    addMultipleTo(M3, transpose M2, transpose M1, TransposeA=>true, TransposeB=>true)
-    assert(M3 == M2*M1)
 
+    testAddMultipleTo(M3,M2,M1)
+///
+
+TEST ///
+-- addMultipleTo
+    kk = ZZp 67000993
+    M1 = mutableMatrix random(kk^3, kk^5)
+    M2 = mutableMatrix random(kk^2, kk^3)
+    M3 = mutableMatrix random(kk^2, kk^5)
+
+    testAddMultipleTo(M3,M2,M1)
+///
+
+TEST ///
+-- addMultipleTo
+    kk = ZZp 101
+    M1 = mutableMatrix random(kk^300, kk^500);
+    M2 = mutableMatrix random(kk^200, kk^300);
+    M3 = mutableMatrix random(kk^200, kk^500);
+
+    testAddMultipleTo(M3,M2,M1)
+    time addMultipleTo(M3, M2, M1);
+///
+
+TEST ///
+-- addMultipleTo
+    kk = ZZp 67000993
+    M1 = mutableMatrix random(kk^300, kk^500);
+    M2 = mutableMatrix random(kk^200, kk^300);
+    M3 = mutableMatrix random(kk^200, kk^500);
+
+    testAddMultipleTo(M3,M2,M1)
+    time addMultipleTo(M3, M2, M1);
 ///
 
 -- move good tests above this line

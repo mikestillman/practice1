@@ -104,6 +104,12 @@ public:
     return result;
   }
 
+  virtual MutableMat *clone() const
+  {
+    Mat *m = new Mat(mat); // copies mat
+    return new MutableMat(*m); // places copy into result
+  }
+
   virtual int lead_row(int col) const { return mat.lead_row(col); }
   /* returns the largest index row which has a non-zero value in column 'col'.
      returns -1 if the column is 0 */
@@ -402,11 +408,26 @@ public:
 
   virtual MutableMat * add(const MutableMatrix *B) const
   // return this + B.  return NULL if sizes or types do not match.
-  // note: can add a sparse + dense
-  //       can add a matrix over RR and one over CC and/or one over ZZ.
   {
-    MutableMat *result = new MutableMat;
-    result->mat.grab(mat.add(B));
+    const Mat *B1 = B->coerce<Mat>();
+    if (B1 == NULL) 
+      {
+        ERROR("expected matrices with the same ring and sparsity");
+        return NULL;
+      }
+    if (B->get_ring() != get_ring())
+      {
+        ERROR("expected matrices with the same ring");
+        return NULL;
+      }
+    if (B1->n_rows() != n_rows() || B1->n_cols() != n_cols())
+      {
+        ERROR("expected matrices of the same shape");
+        return NULL;
+      }
+
+    MutableMat* result = clone();
+    result->getMat().addInPlace(*B1);
     return result;
   }
 

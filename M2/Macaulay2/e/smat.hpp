@@ -36,6 +36,8 @@ public:
 
   SMat(const SMat<ACoeffRing> &M, size_t nrows, size_t ncols); // Makes a zero matrix, same ring.
 
+  SMat(const SMat<ACoeffRing> &M); // Copies (clones) M
+
   void grab(SMat *M);// swaps M and this.
 
   SMat<CoeffRing> *copy() const;
@@ -168,7 +170,8 @@ public:
 
   bool is_equal(const MutableMatrix *B) const;
 
-  SMat * add(const MutableMatrix *B) const;
+  void addInPlace(const SMat& B);
+  // this += B, assertion failure on bad ring or bad sizes
 
   SMat * subtract(const MutableMatrix *B) const;
   // return this - B.  return NULL of sizes or types do not match.

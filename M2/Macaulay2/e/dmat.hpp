@@ -54,6 +54,8 @@ public:
 
   DMat(const DMat<ACoeffRing> &M, size_t nrows, size_t ncols); // Makes a zero matrix, same ring.
 
+  DMat(const DMat<ACoeffRing> &M); // Copies (clones) M
+
   void grab(DMat *M);// swaps M and this.
 
   DMat<CoeffRing> *copy() const;
@@ -205,7 +207,8 @@ public:
 
   bool is_equal(const MutableMatrix *B) const;
 
-  DMat * add(const MutableMatrix *B) const;
+  void addInPlace(const DMat& B);
+  // this += B, assertion failure on bad ring or bad sizes
 
   DMat * subtract(const MutableMatrix *B) const;
   // return this - B.  return NULL of sizes or types do not match.
@@ -314,6 +317,16 @@ DMat<CoeffRing>::DMat(const DMat<CoeffRing> &m, size_t nrows, size_t ncols)
     ncols_(ncols)
 {
   initialize(nrows,ncols,0);
+}
+
+template<typename CoeffRing>
+DMat<CoeffRing>::DMat(const DMat<CoeffRing> &m)
+  : R(m.R),
+    coeffR(m.coeffR),
+    nrows_(m.nrows_),
+    ncols_(m.ncols_)
+{
+  initialize(nrows_,ncols_,m.array_);
 }
 
 template<typename CoeffRing>
@@ -904,19 +917,17 @@ DMat<CoeffRing> * DMat<CoeffRing>::submatrix(M2_arrayint cols) const
 
 
 template <typename CoeffRing>
-DMat<CoeffRing> * DMat<CoeffRing>::add(const MutableMatrix *B) const
+void DMat<CoeffRing>::addInPlace(const DMat<CoeffRing>& B)
   // return this + B.  return NULL of sizes or types do not match.
-  // note: can add a sparse + dense
-  //       can add a matrix over RR and one over CC and/or one over ZZ.
 {
-#ifdef DEVELOPMENT
-  DMat<CoeffRing> *result = copy();
-  for (int c=0; c<B->n_cols(); c++)
+  ASSERT(&B.ring() == &ring());
+  ASSERT(B.n_rows() == n_rows());
+  ASSERT(B.n_cols() == n_cols());
+  
+  for (size_t i=0; i<n_rows()*n_cols(); i++)
     {
+      ring().add(array_[i], array_[i], B.array_[i]);
     }
-#warning "to be written"
-#endif
-  return 0;
 }
 
 template <typename CoeffRing>

@@ -179,8 +179,6 @@ public:
 
   virtual MutableMatrix /* or null */ * add(const MutableMatrix *B) const = 0;
   // return this + B.  return NULL of sizes or types do not match.
-  // note: can add a sparse + dense
-  //       can add a matrix over RR and one over CC and/or one over ZZ.
 
   virtual MutableMatrix /* or null */ * subtract(const MutableMatrix *B) const = 0;
   // return this - B.  return NULL of sizes or types do not match.

@@ -518,6 +518,16 @@ SMat<CoeffRing>::SMat(const Ring *R0, const CoeffRing *coeffR0, int nrows, int n
   initialize(nrows,ncols,0);
 }
 
+template<typename CoeffRing>
+SMat<CoeffRing>::SMat(const SMat &M)
+  : R(M.R),
+    coeffR(M.coeffR),
+    nrows_(M.nrows_),
+    ncols_(M.ncols_)
+{
+  initialize(nrows_,ncols_,M.columns_);
+}
+
 #if 0
 //TODO: MES remove this once above compiles.
 template <> SMat<CoefficientRingR>::SMat(const Ring *R0, int nrows, int ncols)
@@ -562,9 +572,7 @@ void SMat<CoeffRing>::grab(SMat<CoeffRing> *M)
 template<typename CoeffRing>
 SMat<CoeffRing> *SMat<CoeffRing>::copy() const
 {
-  SMat<CoeffRing> *result = new SMat<CoeffRing>(get_ring(), get_CoeffRing(), 0, 0);
-  result->initialize(nrows_, ncols_, columns_);
-  return result;
+  return new SMat(*this);
 }
 
 template<typename CoeffRing>
@@ -897,15 +905,18 @@ bool SMat<CoeffRing>::is_equal(const MutableMatrix *B) const
 }
 
 template <typename CoeffRing>
-SMat<CoeffRing> * SMat<CoeffRing>::add(const MutableMatrix *B) const
+void SMat<CoeffRing>::addInPlace(const SMat<CoeffRing>& B)
   // return this + B.  return NULL of sizes or types do not match.
-  // note: can add a sparse + dense
-  //       can add a matrix over RR and one over CC and/or one over ZZ.
 {
-#ifdef DEVELOPMENT
-#warning "to be written"
-#endif
-  return 0;
+  ASSERT(&B.ring() == &ring());
+  ASSERT(B.n_rows() == n_rows());
+  ASSERT(B.n_cols() == n_cols());
+
+  for (int c=0; c<n_cols(); c++)
+    {
+      sparsevec *v = vec_copy(B.columns_[c]);
+      vec_add_to(columns_[c], v);
+    }
 }
 
 template <typename CoeffRing>

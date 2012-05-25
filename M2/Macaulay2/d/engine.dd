@@ -125,10 +125,8 @@ export (M:RawMatrix) + (N:RawMatrix) : RawMatrixOrNull := Ccode(returns, "
      -- of the result is set to have each degree zero.  Similarly with the
      -- source, and also with the degree of the matrix.
      );
-export (x:RawMutableMatrix) + (y:RawMutableMatrix) : RawMutableMatrixOrNull := Ccode(returns, "
-     ERROR(\"not implemented for mutable matrices\");
-     return 0;
-     // return M->add(N);
+export (M:RawMutableMatrix) + (N:RawMutableMatrix) : RawMutableMatrixOrNull := Ccode(returns, "
+     return M->add(N);
      "
      -- /* If the sizes do not match, then NULL is returned.  If they do match,
      --    the addition is performed.  If the targets are not equal, the target 

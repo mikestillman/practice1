@@ -170,7 +170,7 @@ void DMatLU<CoeffRing>::set_pivot_info(const DMat<CoeffRing> *U,
 
   pivotcols = M2_makearrayint(nrows); // pivot columns 0..npivots-1
 
-  elem *loc = U->get_array();
+  const elem *loc = U->get_array();
   int this_row = 0;
   int this_col = 0;
   while (this_col < ncols && this_row < nrows)
@@ -262,7 +262,7 @@ bool DMatLU<CoeffRing>::solve(const DMat<CoeffRing> *A,
   elem *y = newarray(elem, nrowsA);
   for (int i=0; i<A->n_rows(); i++)
     K->set_zero(y[i]);
-  elem *bcol = b->get_array();
+  const elem *bcol = b->get_array();
   elem *xcol = x->get_array();
   for (int i=0; i<b->n_cols(); i++)
     {

@@ -7,6 +7,8 @@
 #include "ZZp.hpp"
 #include "aring-gf.hpp"
 #include "aring-m2-gf.hpp"
+
+
 #include "dmat.hpp"
 #include "mat.hpp"
 #include "mpfr.h"
@@ -18,6 +20,7 @@
 
 #include "aring-zzp.hpp"
 #include "aring-ffpack.hpp"
+
  #include <typeinfo>
 
 template <typename CoeffRing>

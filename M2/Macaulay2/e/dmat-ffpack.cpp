@@ -6,6 +6,7 @@
 #include "aring-ffpack.hpp"
 #include "aring-gf.hpp"
 
+#if 0
     template<typename  CoeffRing >
     template<class RingType>
     size_t DMat < CoeffRing >::rank(typename enable_if<is_givaro_or_ffpack<RingType>::value >::type* dummy ) const
@@ -33,6 +34,22 @@
         }*/
     
         size_t result = FFPACK::Rank(ring().field(), n_cols(), n_rows(),  N,  n_rows() );
+        deletearray(N);
+        return result;
+    }
+#endif
+
+    template<typename CoeffRing>
+    size_t FFpackRank(const DMat<CoeffRing>& mat)
+    {
+        typedef typename CoeffRing::ElementType ElementType;
+        std::cout << "Calling FFpackRank" << std::endl;
+        assert( typeid(CoeffRing) == typeid(M2::ARingZZpFFPACK) || typeid(CoeffRing) == typeid(M2::ARingGF ));
+        ElementType* N = newarray( ElementType, mat.n_rows() * mat.n_cols());    
+        mat.copy_elems(mat.n_rows()*mat.n_cols(), N, 1, mat.get_array(), 1); 
+        /// @note 1. matrix data (N) is modified by FFPACK
+        /// @note 2. FFPACK expects row-wise stored matrices while dmat stores them column-wise => switch n_rows and n_cols -parameters!
+        size_t result = FFPACK::Rank(mat.ring().field(), mat.n_cols(), mat.n_rows(),  N,  mat.n_rows());
         deletearray(N);
         return result;
     }
@@ -316,7 +333,7 @@
     size_t DMat<M2::ARingZZpFFPACK>::rank() const
     {
         std::cout << "DMat<M2::ARingZZpFFPACK>::rank()" << std::endl;
-        return rank<M2::ARingZZpFFPACK>( );
+        return FFpackRank<M2::ARingZZpFFPACK>(*this);
     }
 
     template<>
@@ -379,12 +396,12 @@
     {
       std::cout << "not implemented yet" << std::endl;
     }
-    
+
     template<>
     size_t DMat<M2::ARingGF>::rank() const
     {
-        std::cout << "Calling  DMat<M2::ARingGF>::rank()" << std::endl;
-        return rank<M2::ARingGF>( );
+        std::cout << "Calling DMat<M2::ARingGF>::rank()" << std::endl;
+        return FFpackRank<M2::ARingGF>(*this);
     }
     
     template<>

@@ -4,13 +4,19 @@
 #define _dmat_hpp_
 
 union ring_elem;
+class Ring;
 
+#include "newdelete.hpp"
+#include "ring.hpp"
+#include "coeffrings.hpp"
+
+#if 0
 #include "ZZp.hpp"
-
 #include "aring-ffpack.hpp"
 #include "aring-gf.hpp"
+#endif
 
-
+#if 0
 // enable_if is probably only available for never standard, e.g. compiler flag -std=c++0x
 template<bool, typename T = void> 
   struct enable_if {};
@@ -34,6 +40,7 @@ template<>
 struct is_givaro_or_ffpack< M2::ARingGF >{ 
   static const bool value = true; 
 };
+#endif
 
 class MutableMatrix;
 
@@ -69,17 +76,18 @@ public:
   const CoeffRing& ring() const { return *coeffR; }
 
   void set_matrix(const DMat<CoeffRing> *mat0);
-  void initialize(int nrows, int ncols, elem *array);
+  void initialize(int nrows, int ncols, const elem *array);
   void resize(int nrows, int ncols);
 
-  ///@todo potential trouble if array is modivied by the caller... either return copy  or introduce a second non-const function .
-  elem * get_array() const { return array_; } // Used for lapack type routines
+  // These functions are used for interface with e.g. lapack, ffpack.
+  const elem * get_array() const { return array_; }
+  elem * get_array() { return array_; }
 
   double *get_lapack_array() const; // redefined by RR,CC
-
   double *make_lapack_array() const; // creates an array of doubles (or 0, if not applicable)
-  __mpfr_struct *make_mpack_array() const;
   void fill_from_lapack_array(double *lapack_array);  // The size of the array should match the size of this.
+
+  __mpfr_struct *make_mpack_array() const;
   //void fill_from_mpack_array(mpreal *mparray);
 
   class iterator : public our_new_delete
@@ -229,8 +237,10 @@ public:
   /// Fast linear algebra routines //
   ///////////////////////////////////
 
+#if 0
   template<class RingType>
   size_t rank(typename enable_if<is_givaro_or_ffpack<RingType>::value >::type* dummy = 0) const;
+#endif
 
   size_t rank() const;
  
@@ -330,7 +340,7 @@ DMat<CoeffRing>::DMat(const DMat<CoeffRing> &m)
 }
 
 template<typename CoeffRing>
-void DMat<CoeffRing>::initialize(int nrows, int ncols, elem *array)
+void DMat<CoeffRing>::initialize(int nrows, int ncols, const elem *array)
 {
   nrows_ = nrows;
   ncols_ = ncols;

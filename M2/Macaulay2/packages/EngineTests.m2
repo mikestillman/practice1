@@ -15,7 +15,7 @@ export { ringOps,
      }
 
 --load (EngineTests#"source directory"|"EngineTests/test-gbZZ.m2")
-load (EngineTests#"source directory"|"EngineTests/test-linalg.m2")
+--load (EngineTests#"source directory"|"EngineTests/test-linalg.m2")
 
 beginDocumentation()
 

@@ -84,7 +84,7 @@ public:
     return new MutableMat(R,coeffR,nrows,ncols);
   }
 
-  static MutableMat *grab_Mat(const Mat *m);
+  //  static MutableMat *grab_Mat(const Mat *m);
 
   virtual iterator * begin() const { return new iterator(&mat); }
 
@@ -98,10 +98,13 @@ public:
 
   virtual MutableMat *copy(bool prefer_dense) const
   {
+#if 0
     MutableMat *result = new MutableMat;
     Mat *m = mat.copy();
     result->mat.grab(m);
     return result;
+#endif
+    return clone();
   }
 
   virtual MutableMat *clone() const

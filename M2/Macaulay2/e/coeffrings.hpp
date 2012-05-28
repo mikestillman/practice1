@@ -321,6 +321,8 @@ public:
 
   void add(elem &result, elem a, elem b) const { mpfr_add(&result, &a, &b, GMP_RNDN); }
 
+  void negate(elem &result, elem a) const { mpfr_neg(&result, &a, GMP_RNDN); }
+
   void subtract(elem &result, elem a, elem b) const { mpfr_sub(&result, &a, &b, GMP_RNDN); }
 
   void mult(elem &result, elem a, elem b) const { mpfr_mul(&result, &a, &b, GMP_RNDN); }
@@ -494,6 +496,8 @@ public:
 
   void add(elem &result, elem a, elem b) const { mpfc_add(&result,&a,&b); }
 
+  void negate(elem &result, elem a) const { mpfc_neg(&result,&a); }
+
   void subtract(elem &result, elem a, elem b) const { mpfc_sub(&result,&a,&b); }
 
   void mult(elem &result, elem a, elem b) const { mpfc_mul(&result,&a,&b); }
@@ -562,6 +566,11 @@ public:
   void add(elem &result, elem a, elem b) const
   {
     result = R->add(a,b);
+  }
+
+  void negate(elem &result, elem a) const
+  {
+    result = R->negate(a);
   }
 
   void subtract(elem &result, elem a, elem b) const

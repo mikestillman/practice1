@@ -44,6 +44,11 @@ public:
     result = a+b;
   }
 
+  void negate(elem &result, const elem &a) const
+  {
+    result = -a;
+  }
+
   void subtract(elem &result, const elem &a, const elem &b) const
   {
     result = a-b;

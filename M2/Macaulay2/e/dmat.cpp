@@ -25,7 +25,8 @@
 
 template <typename CoeffRing>
 void DMat<CoeffRing>::addInPlace(const DMat<CoeffRing>& B)
-  // return this + B.  return NULL of sizes or types do not match.
+  // this += B.
+  // assumption:the assert statements below:
 {
   ASSERT(&B.ring() == &ring());
   ASSERT(B.n_rows() == n_rows());
@@ -34,6 +35,41 @@ void DMat<CoeffRing>::addInPlace(const DMat<CoeffRing>& B)
   for (size_t i=0; i<n_rows()*n_cols(); i++)
     {
       ring().add(array_[i], array_[i], B.array_[i]);
+    }
+}
+
+template <typename CoeffRing>
+void DMat<CoeffRing>::subtractInPlace(const DMat<CoeffRing>& B)
+  // this -= B.
+  // assumption:the assert statements below:
+{
+  ASSERT(&B.ring() == &ring());
+  ASSERT(B.n_rows() == n_rows());
+  ASSERT(B.n_cols() == n_cols());
+  
+  for (size_t i=0; i<n_rows()*n_cols(); i++)
+    {
+      ring().subtract(array_[i], array_[i], B.array_[i]);
+    }
+}
+
+template <typename CoeffRing>
+void DMat<CoeffRing>::negateInPlace()
+  // this = -this
+{
+  for (size_t i=0; i<n_rows()*n_cols(); i++)
+    {
+      ring().negate(array_[i], array_[i]);
+    }
+}
+
+template <typename CoeffRing>
+void DMat<CoeffRing>::scalarMultInPlace(const elem &f)
+  // this = f * this
+{
+  for (size_t i=0; i<n_rows()*n_cols(); i++)
+    {
+      ring().mult(array_[i], f, array_[i]);
     }
 }
 

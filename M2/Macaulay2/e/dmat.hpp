@@ -65,7 +65,7 @@ public:
 
   void grab(DMat *M);// swaps M and this.
 
-  DMat<CoeffRing> *copy() const;
+  //  DMat<CoeffRing> *copy() const;
 
   bool is_dense() const { return true; }
 
@@ -215,8 +215,6 @@ public:
 
   bool is_equal(const MutableMatrix *B) const;
 
-  void addInPlace(const DMat& B);
-  // this += B, assertion failure on bad ring or bad sizes
 
   DMat * subtract(const MutableMatrix *B) const;
   // return this - B.  return NULL of sizes or types do not match.
@@ -236,6 +234,29 @@ public:
   ///////////////////////////////////
   /// Fast linear algebra routines //
   ///////////////////////////////////
+
+  // this += B, assertion failure on bad ring or bad sizes
+  void addInPlace(const DMat& B);
+
+  // this -= B, assertion failure on bad ring or bad sizes
+  void subtractInPlace(const DMat& B);
+
+  // this = -this
+  void negateInPlace();
+
+  // this = f * this
+  void scalarMultInPlace(const elem &f);
+
+  // this += A*B
+  //  void addMultipleInPlace(const DMat& A, const DMat& B);
+
+  //  void fillFrom(const DMat &m);
+  //  void fillFrom(const SMat &m);
+
+  /// fillFromMatrix initializes 'this' with a submatrix of 'm'.
+  // if 'rows' or 'cols' is NULL, then that argument means take all rows (resp. columns).
+  //  void fillFromSubmatrix(const DMat &m, M2_arrayint rows, M2_arrayint cols);
+  //  void fillFromSubmatrix(const SMat &m, M2_arrayint rows, M2_arrayint cols);
 
 #if 0
   template<class RingType>
@@ -390,6 +411,7 @@ void DMat<CoeffRing>::grab(DMat<CoeffRing> *M)
   std::swap(array_, M->array_);
 }
 
+#if 0
 template<typename CoeffRing>
 DMat<CoeffRing> *DMat<CoeffRing>::copy() const
 {
@@ -397,6 +419,7 @@ DMat<CoeffRing> *DMat<CoeffRing>::copy() const
   result->initialize(nrows_, ncols_, array_);
   return result;
 }
+#endif
 
 template<typename CoeffRing>
 int DMat<CoeffRing>::lead_row(int col) const
@@ -862,12 +885,14 @@ DMat<CoeffRing> * DMat<CoeffRing>::negate() const
 {
   elem zero;
   coeffR->set_zero(zero);
-  DMat *result = copy();
+  ////MES  DMat *result = copy();
+  DMat* result = new DMat(*this);
   elem *a = result->get_array();
   elem *end = result->get_array() + n_rows() * n_cols();
   for ( ; a < end; a++)
     coeffR->subtract(*a, zero, *a);
   return result;
+
 }
 
 template<typename CoeffRing>

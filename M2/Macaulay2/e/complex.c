@@ -49,6 +49,11 @@ void mpfc_add(gmp_CC result, gmp_CC a, gmp_CC b)
   mpfr_add(result->re, a->re, b->re, GMP_RNDN);
   mpfr_add(result->im, a->im, b->im, GMP_RNDN);
 }
+void mpfc_neg(gmp_CC result, gmp_CC a)
+{
+  mpfr_neg(result->re, a->re, GMP_RNDN);
+  mpfr_neg(result->im, a->im, GMP_RNDN);
+}
 void mpfc_sub(gmp_CC result, gmp_CC a, gmp_CC b)
 {
   mpfr_sub(result->re, a->re, b->re, GMP_RNDN);

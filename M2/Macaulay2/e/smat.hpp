@@ -168,15 +168,7 @@ public:
 
   bool is_zero() const;
 
-  bool is_equal(const MutableMatrix *B) const;
-
-  void addInPlace(const SMat& B);
-  // this += B, assertion failure on bad ring or bad sizes
-
-  SMat * subtract(const MutableMatrix *B) const;
-  // return this - B.  return NULL of sizes or types do not match.
-  // note: can subtract a sparse + dense
-  //       can subtract a matrix over RR and one over CC and/or one over ZZ.
+  bool is_equal(const SMat& B) const;
 
   SMat * mult(const MutableMatrix *B) const;
   // return this * B.  return NULL of sizes or types do not match.
@@ -185,8 +177,6 @@ public:
 
   SMat * mult(const elem &f) const;
   // return f*this.  return NULL of sizes or types do not match.
-
-  SMat * negate() const;
 
   ///////////////////////////////////
   /// Fast linear algebra routines //
@@ -231,6 +221,19 @@ public:
                      ElementType& a,
                      ElementType& b);
 
+
+  // this += B, assertion failure on bad ring or bad sizes
+  void addInPlace(const SMat& B);
+
+  // this -= B, assertion failure on bad ring or bad sizes
+  void subtractInPlace(const SMat& B);
+
+  // this = -this
+  void negateInPlace();
+
+  // this = f * this
+  void scalarMultInPlace(const elem &f);
+
 private:
   const Ring *R; // To interface to the outside world
   const CoeffRing * coeffR; // Same as R, optimized for speed.  R->get_CoeffRing()
@@ -246,9 +249,11 @@ private:
   void vec_remove_node(sparsevec *&v) const;
   void vec_remove(sparsevec *&v) const;
   sparsevec *vec_copy(const sparsevec *v) const;
+  bool vec_equals(const sparsevec* v, const sparsevec* w) const;
   bool vec_get_entry(const sparsevec *v, int r, elem &result) const;
   void vec_set_entry(sparsevec *&v, int r, const elem &result) const;
   void vec_interchange_rows(sparsevec *&v, int r1, int r2) const;
+  void vec_negate(sparsevec *&v) const;
   void vec_scale_row(sparsevec *&v, int r, const elem &a) const;
   void vec_scale(sparsevec *&v, const elem &a) const;
   void vec_divide_row(sparsevec *&v, int r, const elem &a) const;

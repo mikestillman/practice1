@@ -28,6 +28,8 @@ public:
 
   bool is_zero(const elem &result) const { return result == 0; }
 
+  bool is_equal(const elem &a, const elem &b) const { return a == b; }
+
   void invert(elem &result, const elem &a) const
   {
     if (a == 1 || a == -1)

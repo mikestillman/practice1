@@ -213,13 +213,7 @@ public:
 
   bool is_zero() const;
 
-  bool is_equal(const MutableMatrix *B) const;
-
-
-  DMat * subtract(const MutableMatrix *B) const;
-  // return this - B.  return NULL of sizes or types do not match.
-  // note: can subtract a sparse + dense
-  //       can subtract a matrix over RR and one over CC and/or one over ZZ.
+  bool is_equal(const DMat& B) const;
 
   DMat * mult(const MutableMatrix *B) const;
   // return this * B.  return NULL of sizes or types do not match.
@@ -228,8 +222,6 @@ public:
 
   DMat * mult(const elem &f) const;
   // return f*this.  return NULL of sizes or types do not match.
-
-  DMat * negate() const;
 
   ///////////////////////////////////
   /// Fast linear algebra routines //
@@ -879,22 +871,6 @@ bool DMat<CoeffRing>::is_zero() const
   return true;
 }
 
-
-template <typename CoeffRing>
-DMat<CoeffRing> * DMat<CoeffRing>::negate() const
-{
-  elem zero;
-  coeffR->set_zero(zero);
-  ////MES  DMat *result = copy();
-  DMat* result = new DMat(*this);
-  elem *a = result->get_array();
-  elem *end = result->get_array() + n_rows() * n_cols();
-  for ( ; a < end; a++)
-    coeffR->subtract(*a, zero, *a);
-  return result;
-
-}
-
 template<typename CoeffRing>
 bool DMat<CoeffRing>::set_submatrix(M2_arrayint rows,
                                     M2_arrayint cols,
@@ -950,17 +926,54 @@ DMat<CoeffRing> * DMat<CoeffRing>::submatrix(M2_arrayint cols) const
   return result;
 }
 
+template <typename CoeffRing>
+void DMat<CoeffRing>::addInPlace(const DMat<CoeffRing>& B)
+  // this += B.
+  // assumption:the assert statements below:
+{
+  ASSERT(&B.ring() == &ring());
+  ASSERT(B.n_rows() == n_rows());
+  ASSERT(B.n_cols() == n_cols());
+  
+  for (size_t i=0; i<n_rows()*n_cols(); i++)
+    {
+      ring().add(array_[i], array_[i], B.array_[i]);
+    }
+}
 
 template <typename CoeffRing>
-DMat<CoeffRing> * DMat<CoeffRing>::subtract(const MutableMatrix *B) const
-  // return this - B.  return NULL of sizes or types do not match.
-  // note: can subtract a sparse + dense
-  //       can subtract a matrix over RR and one over CC and/or one over ZZ.
+void DMat<CoeffRing>::subtractInPlace(const DMat<CoeffRing>& B)
+  // this -= B.
+  // assumption:the assert statements below:
 {
-#ifdef DEVELOPMENT
-#warning "to be written"
-#endif
-  return 0;
+  ASSERT(&B.ring() == &ring());
+  ASSERT(B.n_rows() == n_rows());
+  ASSERT(B.n_cols() == n_cols());
+  
+  for (size_t i=0; i<n_rows()*n_cols(); i++)
+    {
+      ring().subtract(array_[i], array_[i], B.array_[i]);
+    }
+}
+
+template <typename CoeffRing>
+void DMat<CoeffRing>::negateInPlace()
+  // this = -this
+{
+  for (size_t i=0; i<n_rows()*n_cols(); i++)
+    {
+      ring().negate(array_[i], array_[i]);
+    }
+}
+
+template <typename CoeffRing>
+void DMat<CoeffRing>::scalarMultInPlace(const elem &f)
+  // this = f * this
+{
+  for (size_t i=0; i<n_rows()*n_cols(); i++)
+    {
+      ring().mult(array_[i], f, array_[i]);
+    }
 }
 
 template <typename CoeffRing>
@@ -985,43 +998,20 @@ DMat<CoeffRing> * DMat<CoeffRing>::mult(const elem &f) const
   return 0;
 }
 
-#include "mat.hpp"
 template <typename CoeffRing>
-bool DMat<CoeffRing>::is_equal(const MutableMatrix *B) const
+bool DMat<CoeffRing>::is_equal(const DMat& B) const
 {
-  if (B->get_ring() != get_ring()) return false;
-  if (B->n_rows() != n_rows()) return false;
-  if (B->n_cols() != n_cols()) return false;
-  MutableMatrix::iterator *i = B->begin();
-  iterator j(this);
-
-  for (int c=0; c<n_cols(); c++)
-    {
-      i->set(c);
-      j.set(c);
-      for (;;)
-        {
-          if (!i->valid())
-            {
-              if (j.valid()) return false;
-              break;
-            }
-          else if (!j.valid()) return false;
-          // i->valid(), j.valid() are both true
-          if (i->row() != j.row())
-            return false;
-          ring_elem a, b;
-          i->copy_ring_elem(a);
-          coeffR->to_ring_elem(b, j.value());
-          if (!get_ring()->is_equal(a,b))
-            return false;
-          i->next();
-          j.next();
-        }
-    }
+  ASSERT(&ring() == &B.ring())
+  if (B.n_rows() != n_rows()) return false;
+  if (B.n_cols() != n_cols()) return false;
+  size_t top = n_rows() * n_cols();
+  const elem * elemsA = get_array();
+  const elem * elemsB = B.get_array();
+  for (size_t i = 0; i < top; i++)
+    if (!ring().is_equal(*elemsA++, *elemsB++))
+      return false;
   return true;
 }
-
 
 #endif
 

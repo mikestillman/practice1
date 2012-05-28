@@ -406,7 +406,10 @@ public:
 
   virtual bool is_equal(const MutableMatrix *B) const
   {
-    return mat.is_equal(B);
+    const MutableMat *B1 = dynamic_cast<const MutableMat *>(B);
+    if (B1 == NULL || &B1->getMat().ring() != &getMat().ring())
+      return false;
+    return getMat().is_equal(B1->getMat());
   }
 
   virtual MutableMat * add(const MutableMatrix *B) const
@@ -434,13 +437,24 @@ public:
     return result;
   }
 
+  virtual MutableMatrix * negate() const
+  {
+    MutableMat *result = clone();
+    result->getMat().negateInPlace();
+    return result;
+  }
+
   virtual MutableMat * subtract(const MutableMatrix *B) const
   // return this - B.  return NULL of sizes or types do not match.
-  // note: can subtract a sparse + dense
-  //       can subtract a matrix over RR and one over CC and/or one over ZZ.
   {
-    MutableMat *result = new MutableMat;
-    result->mat.grab(mat.subtract(B));
+    const MutableMat *B1 = dynamic_cast<const MutableMat *>(B);
+    if (B1 == NULL || &B1->getMat().ring() != &getMat().ring())
+      {
+        ERROR("expected matrices with same sparsity and same base ring");
+        return 0;
+      }
+    MutableMat *result = clone();
+    result->getMat().subtractInPlace(B1->getMat());
     return result;
   }
 
@@ -461,13 +475,6 @@ public:
     mat.get_CoeffRing()->from_ring_elem(a, f->get_value());
     MutableMat *result = new MutableMat;
     result->mat.grab(mat.mult(a));
-    return result;
-  }
-
-  virtual MutableMatrix * negate() const
-  {
-    MutableMat *result = new MutableMat;
-    result->mat.grab(mat.negate());
     return result;
   }
 

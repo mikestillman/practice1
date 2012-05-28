@@ -205,6 +205,8 @@ public:
 
   bool is_zero(elem result) const { return result == zero; }
 
+  bool is_equal(elem a, elem b ) const { return a == b; }
+
   void invert(elem &result, elem a) const
   {
     if (a == 0)
@@ -313,6 +315,8 @@ public:
   void set(elem &result, elem a) const { mpfr_set(&result, &a, GMP_RNDN); }
 
   bool is_zero(elem result) const { return mpfr_cmp_si(&result, 0) == 0; }
+
+  bool is_equal(elem a, elem b ) const { return mpfr_cmp(&a,&b) == 0; }
 
   void invert(elem &result, elem a) const { mpfr_si_div(&result, 1, &a, GMP_RNDN); }
 
@@ -492,6 +496,8 @@ public:
 
   void set(elem &result, elem a) const { mpfc_set(&result, &a); }
 
+  bool is_equal(elem a, elem b ) const { return mpfc_is_equal(&a,&b); }
+
   bool is_zero(elem result) const { return mpfc_is_zero(&result); }
 
   void add(elem &result, elem a, elem b) const { mpfc_add(&result,&a,&b); }
@@ -554,6 +560,8 @@ public:
   void set(elem &result, elem a) const { result = a; }
 
   bool is_zero(elem result) const { return R->is_zero(result); }
+
+  bool is_equal(elem a, elem b ) const { return R->is_equal(a,b); }
 
   void invert(elem &result, elem a) const
   {

@@ -123,10 +123,10 @@ transpose MutableMatrix := (M) -> (
 --     mutableMatrix(matrix A + matrix B)
 --     )
 
-MutableMatrix - MutableMatrix := (A,B) -> (
-     << "warning: rewrite to be in the engine" << endl;
-     mutableMatrix(matrix A - matrix B)
-     )
+--MutableMatrix - MutableMatrix := (A,B) -> (
+--     << "warning: rewrite to be in the engine" << endl;
+--     mutableMatrix(matrix A - matrix B)
+--     )
 
 ZZ * MutableMatrix :=
 RingElement * MutableMatrix := (a,M) -> (

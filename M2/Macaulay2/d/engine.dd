@@ -147,14 +147,8 @@ export (M:RawMatrix) - (N:RawMatrix) : RawMatrixOrNull := Ccode(returns, "
      -- source, and also with the degree of the matrix.
      );
 export (M:RawMutableMatrix) - (N:RawMutableMatrix) : RawMutableMatrixOrNull := Ccode(returns, "
-     ERROR(\"not implemented for mutable matrices\");
-     return 0;
-     // return M->subtract(N);
-     "
-     -- /* If the sizes do not match, then NULL is returned.  If they do match,
-     --    the addition is performed.  If the targets are not equal, the target 
-     --    of the result is set to have each degree zero.  Similarly with the
-     --    source, and also with the degree of the matrix. */
+     try { return M->subtract(N); }
+     catch (exc::engine_error e) { ERROR(e.what()); return NULL; } "
      );
 export (f:RawRingElement) * (M:RawMatrix) : RawMatrixOrNull := Ccode(returns, "
      try { if (f->get_ring() != M->get_ring()) {

@@ -55,6 +55,14 @@ typename SMat<CoeffRing>::sparsevec *SMat<CoeffRing>::vec_copy(const sparsevec *
 }
 
 template<typename CoeffRing>
+bool SMat<CoeffRing>::vec_equals(const sparsevec* v, const sparsevec* w) const
+{
+  for ( ; v != NULL && w != NULL; v=v->next, w=w->next)
+    if (!ring().is_equal(v->coeff, w->coeff)) return false;
+  return true;
+}
+
+template<typename CoeffRing>
 bool SMat<CoeffRing>::vec_get_entry(const sparsevec *v, int r, elem &result) const
 {
   for (const sparsevec *p = v; p != 0; p = p->next)
@@ -202,6 +210,13 @@ void SMat<CoeffRing>::vec_scale(sparsevec *&v, const elem &a) const
         }
     }
   v = head.next;
+}
+
+template<typename CoeffRing>
+void SMat<CoeffRing>::vec_negate(sparsevec *&v) const
+{
+  for (sparsevec *p = v; p->next != NULL; p=p->next)
+    ring().negate(p->coeff, p->coeff);
 }
 
 template<typename CoeffRing>
@@ -896,12 +911,19 @@ SMat<CoeffRing> * SMat<CoeffRing>::submatrix(M2_arrayint cols) const
 }
 
 template <typename CoeffRing>
-bool SMat<CoeffRing>::is_equal(const MutableMatrix *B) const
+bool SMat<CoeffRing>::is_equal(const SMat& B) const
 {
-#ifdef DEVELOPMENT
-#warning "to be written"
-#endif
-  return 0;
+  ASSERT(&ring() == &B.ring())
+  if (B.n_rows() != n_rows()) return false;
+  if (B.n_cols() != n_cols()) return false;
+  for (size_t c = 0; c < n_cols(); c++)
+    {
+      sparsevec *v = columns_[c];
+      sparsevec *w = B.columns_[c];
+      if (!vec_equals(v,w))
+        return false;
+    }
+  return true;
 }
 
 template <typename CoeffRing>
@@ -920,15 +942,37 @@ void SMat<CoeffRing>::addInPlace(const SMat<CoeffRing>& B)
 }
 
 template <typename CoeffRing>
-SMat<CoeffRing> * SMat<CoeffRing>::subtract(const MutableMatrix *B) const
-  // return this - B.  return NULL of sizes or types do not match.
-  // note: can subtract a sparse + dense
-  //       can subtract a matrix over RR and one over CC and/or one over ZZ.
+void SMat<CoeffRing>::subtractInPlace(const SMat<CoeffRing>& B)
+  // this -= B.
+  // assumption:the assert statements below:
 {
-#ifdef DEVELOPMENT
-#warning "to be written"
-#endif
-  return 0;
+  ASSERT(&B.ring() == &ring());
+  ASSERT(B.n_rows() == n_rows());
+  ASSERT(B.n_cols() == n_cols());
+
+  for (int c=0; c<n_cols(); c++)
+    {
+      sparsevec *v = vec_copy(B.columns_[c]);
+      vec_negate(v);
+      vec_add_to(columns_[c], v);
+    }
+}
+
+template <typename CoeffRing>
+void SMat<CoeffRing>::negateInPlace()
+  // this = -this
+{
+  for (int c=0; c<n_cols(); c++)
+    for (sparsevec *p = columns_[c]; p != NULL; p=p->next)
+      ring().negate(p->coeff, p->coeff);
+}
+
+template <typename CoeffRing>
+void SMat<CoeffRing>::scalarMultInPlace(const elem &f)
+  // this = f * this
+{
+  for (int c=0; c<n_cols(); c++)
+    vec_scale(columns_[c], f);
 }
 
 template <typename CoeffRing>
@@ -946,15 +990,6 @@ SMat<CoeffRing> * SMat<CoeffRing>::mult(const MutableMatrix *B) const
 template <typename CoeffRing>
 SMat<CoeffRing> * SMat<CoeffRing>::mult(const elem &f) const
 // return f*this.  return NULL of sizes or types do not match.
-{
-#ifdef DEVELOPMENT
-#warning "to be written"
-#endif
-  return 0;
-}
-
-template <typename CoeffRing>
-SMat<CoeffRing> * SMat<CoeffRing>::negate() const
 {
 #ifdef DEVELOPMENT
 #warning "to be written"

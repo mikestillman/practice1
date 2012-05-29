@@ -128,13 +128,14 @@ transpose MutableMatrix := (M) -> (
 --     mutableMatrix(matrix A - matrix B)
 --     )
 
-ZZ * MutableMatrix :=
-RingElement * MutableMatrix := (a,M) -> (
-     << "warning: rewrite to be in the engine" << endl;
-     mutableMatrix(a*(matrix M))
+ZZ * MutableMatrix := (a,M) -> (a_(ring M)) * M
+
+--RingElement * MutableMatrix := (a,M) -> (
+--     << "warning: rewrite to be in the engine" << endl;
+--     mutableMatrix(a*(matrix M))
 --    C:=mutableMatrix(
 --    addMultipleTo()
-     )
+--     )
 
 rank MutableMatrix := (M) -> rawLinAlgRank raw M
 

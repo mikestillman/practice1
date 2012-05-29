@@ -109,7 +109,7 @@
                                nc, nr, N, nr, nullspaceFFPACK, nullspace_leading_dim, nullspace_dim);
     
         std::cerr << "leading dim = " << nullspace_leading_dim << " and dim = " << nullspace_dim << std::endl;
-        size_t nullspace_nrows = (right_side ? nc : nullspace_dim);
+        //NOTUSED? size_t nullspace_nrows = (right_side ? nc : nullspace_dim);
         if (right_side && nullspace_dim != nullspace_leading_dim)
           {
             std::cerr << "error: this should not happen!" << std::endl;
@@ -188,7 +188,7 @@
         // preallocate the space for the solutions:
         size_t x_rows = (right_side ? a_cols : b_rows);
         size_t x_cols = (right_side ? b_cols : a_rows);
-        size_t n_eqns = (right_side ? b_cols : b_rows);
+        //NOTUSED? size_t n_eqns = (right_side ? b_cols : b_rows);
     
         ElementType *ffpackX = newarray_clear(ElementType, x_rows * x_cols);
     

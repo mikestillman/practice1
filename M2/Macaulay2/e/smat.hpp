@@ -162,10 +162,6 @@ public:
                      M2_arrayint cols,
                      const MutableMatrix *M);
 
-  SMat<CoeffRing> *submatrix(M2_arrayint rows, M2_arrayint cols) const;
-
-  SMat<CoeffRing> *submatrix(M2_arrayint cols) const;
-
   bool is_zero() const;
 
   bool is_equal(const SMat& B) const;
@@ -234,13 +230,9 @@ public:
   // this = f * this
   void scalarMultInPlace(const elem &f);
 
-  void setFromSubmatrix(const SMat &A, M2_arrayint rows, M2_arrayint cols) const { 
-    //TODO MES: write me
-  }
+  void setFromSubmatrix(const SMat &A, M2_arrayint rows, M2_arrayint cols);
 
-  void setFromSubmatrix(const SMat &A, M2_arrayint cols) const { 
-    //TODO MES: write me
-  }
+  void setFromSubmatrix(const SMat &A, M2_arrayint cols);
 
 private:
   const Ring *R; // To interface to the outside world

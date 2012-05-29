@@ -881,35 +881,6 @@ bool SMat<CoeffRing>::is_zero() const
   return true;
 }
 
-template<typename CoeffRing>
-SMat<CoeffRing> * SMat<CoeffRing>::submatrix(M2_arrayint rows,
-                                             M2_arrayint cols) const
-{
-  SMat<CoeffRing> *result = new SMat<CoeffRing>(get_ring(), get_CoeffRing(),rows->len,cols->len);
-  for (int r=0; r<rows->len; r++)
-    for (int c=0; c<cols->len; c++)
-      {
-        elem f;
-        get_entry(rows->array[r],cols->array[c],f);
-        result->set_entry(r,c,f);
-      }
-  return result;
-}
-
-template<typename CoeffRing>
-SMat<CoeffRing> * SMat<CoeffRing>::submatrix(M2_arrayint cols) const
-{
-  SMat<CoeffRing> *result = new SMat<CoeffRing>(get_ring(), get_CoeffRing(),nrows_,cols->len);
-  for (int r=0; r<nrows_; r++)
-    for (int c=0; c<cols->len; c++)
-      {
-        elem f;
-        get_entry(r,cols->array[c],f);
-        result->set_entry(r,c,f);
-      }
-  return result;
-}
-
 template <typename CoeffRing>
 bool SMat<CoeffRing>::is_equal(const SMat& B) const
 {
@@ -924,6 +895,37 @@ bool SMat<CoeffRing>::is_equal(const SMat& B) const
         return false;
     }
   return true;
+}
+
+template <typename CoeffRing>
+void SMat<CoeffRing>::setFromSubmatrix(const SMat &A, M2_arrayint rows, M2_arrayint cols)
+{
+  R = A.R;
+  coeffR = A.coeffR;
+  initialize(rows->len, cols->len, NULL);
+
+  for (int r=0; r<rows->len; r++)
+    for (int c=0; c<cols->len; c++)
+      {
+        elem f;
+        A.get_entry(rows->array[r],cols->array[c],f);
+        set_entry(r,c,f);
+      }
+}
+
+template <typename CoeffRing>
+void SMat<CoeffRing>::setFromSubmatrix(const SMat &A, M2_arrayint cols)
+{
+  R = A.R;
+  coeffR = A.coeffR;
+  initialize(A.n_rows(), cols->len, NULL);
+  for (int r=0; r<nrows_; r++)
+    for (int c=0; c<cols->len; c++)
+      {
+        elem f;
+        A.get_entry(r,cols->array[c],f);
+        set_entry(r,c,f);
+      }
 }
 
 template <typename CoeffRing>

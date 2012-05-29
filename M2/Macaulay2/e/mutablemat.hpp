@@ -375,6 +375,18 @@ public:
 
   virtual MutableMatrix * submatrix(M2_arrayint rows, M2_arrayint cols) const
   {
+    for (int r = 0; r<rows->len; r++)
+      if (rows->array[r] < 0 || rows->array[r] >= n_rows())
+        {
+          ERROR("row index %d out of bounds 0..%d", rows->array[r], n_rows()-1);
+          return 0;
+        }
+    for (int c = 0; c<cols->len; c++)
+      if (cols->array[c] < 0 || cols->array[c] >= n_cols())
+        {
+          ERROR("column index %d out of bounds 0..%d", cols->array[c], n_cols()-1);
+          return 0;
+        }
     MutableMat *result = new MutableMat(*this); // zero matrix, over the same ring
     result->getMat().setFromSubmatrix(getMat(), rows, cols);
     return result;
@@ -382,6 +394,12 @@ public:
 
   virtual MutableMatrix * submatrix(M2_arrayint cols) const
   {
+    for (int c = 0; c<cols->len; c++)
+      if (cols->array[c] < 0 || cols->array[c] >= n_cols())
+        {
+          ERROR("column index %d out of bounds 0..%d", cols->array[c], n_cols()-1);
+          return 0;
+        }
     MutableMat *result = new MutableMat(*this); // zero matrix, over the same ring
     result->getMat().setFromSubmatrix(getMat(), cols);
     return result;

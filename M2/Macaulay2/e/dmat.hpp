@@ -207,10 +207,6 @@ public:
                      M2_arrayint cols,
                      const MutableMatrix *N);
 
-  DMat<CoeffRing> *submatrix(M2_arrayint rows, M2_arrayint cols) const;
-
-  DMat<CoeffRing> *submatrix(M2_arrayint cols) const;
-
   bool is_zero() const;
 
   bool is_equal(const DMat& B) const;
@@ -239,13 +235,9 @@ public:
   // this = f * this
   void scalarMultInPlace(const elem &f);
 
-  void setFromSubmatrix(const DMat &A, M2_arrayint rows, M2_arrayint cols) const { 
-    //TODO MES: write me
-  }
+  void setFromSubmatrix(const DMat &A, M2_arrayint rows, M2_arrayint cols);
 
-  void setFromSubmatrix(const DMat &A, M2_arrayint cols) const { 
-    //TODO MES: write me
-  }
+  void setFromSubmatrix(const DMat &A, M2_arrayint cols);
 
   // this += A*B
   //  void addMultipleInPlace(const DMat& A, const DMat& B);
@@ -904,34 +896,52 @@ bool DMat<CoeffRing>::set_submatrix(M2_arrayint rows,
   return true;
 }
 
-
 template<typename CoeffRing>
-DMat<CoeffRing> * DMat<CoeffRing>::submatrix(M2_arrayint rows,
-                                             M2_arrayint cols) const
+void DMat<CoeffRing>::setFromSubmatrix(const DMat& A, 
+                                       M2_arrayint rows,
+                                       M2_arrayint cols)
 {
-  DMat<CoeffRing> *result = new DMat<CoeffRing>(get_ring(), get_CoeffRing(),rows->len,cols->len);
-  for (int r=0; r<rows->len; r++)
-    for (int c=0; c<cols->len; c++)
-      {
-        elem f;
-        get_entry(rows->array[r],cols->array[c],f);
-        result->set_entry(r,c,f);
-      }
-  return result;
+  R = A.R;
+  coeffR = A.coeffR;
+  nrows_ = rows->len;
+  ncols_ = cols->len;
+  size_t len = nrows_ * ncols_;
+  array_ = newarray_clear(elem,len);
+
+  elem *target = get_array();
+  for (int c=0; c<cols->len; c++)
+    {
+      const elem* src = A.get_array() + A.n_rows() * cols->array[c];
+      ASSERT(cols->array[c] >= 0 && cols->array[c] < A.n_cols());
+
+      for (int r=0; r<rows->len; r++)
+        {
+          ASSERT(rows->array[r] >= 0 && rows->array[r] < A.n_rows());
+          ring().init_set(*target++, src[rows->array[r]]);
+        }
+    }
 }
 
 template<typename CoeffRing>
-DMat<CoeffRing> * DMat<CoeffRing>::submatrix(M2_arrayint cols) const
+void DMat<CoeffRing>::setFromSubmatrix(const DMat& A, 
+                                       M2_arrayint cols)
 {
-  DMat<CoeffRing> *result = new DMat<CoeffRing>(get_ring(), get_CoeffRing(),nrows_,cols->len);
-  for (int r=0; r<nrows_; r++)
-    for (int c=0; c<cols->len; c++)
-      {
-        elem f;
-        get_entry(r,cols->array[c],f);
-        result->set_entry(r,c,f);
-      }
-  return result;
+  R = A.R;
+  coeffR = A.coeffR;
+  nrows_ = A.nrows_;
+  ncols_ = cols->len;
+  size_t len = nrows_ * ncols_;
+  array_ = newarray_clear(elem,len);
+
+  elem *target = get_array();
+  for (int c=0; c<cols->len; c++)
+    {
+      const elem* src = A.get_array() + A.n_rows() * cols->array[c];
+      ASSERT(cols->array[c] >= 0 && cols->array[c] < A.n_cols());
+
+      for (int r=0; r<nrows_; r++)
+        ring().init_set(*target++, *src++);
+    }
 }
 
 template <typename CoeffRing>

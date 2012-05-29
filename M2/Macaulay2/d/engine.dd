@@ -163,15 +163,11 @@ export (M:RawMatrix) * (f:RawRingElement) : RawMatrixOrNull := Ccode(returns, "
 	  return M->scalar_mult(f->get_value(), true); }
      catch (exc::engine_error e) { ERROR(e.what()); return NULL; } ");
 export (f:RawRingElement) * (M:RawMutableMatrix) : RawMutableMatrixOrNull := Ccode(returns, "
-     ERROR(\"scalar multiplication not implemented for mutable matrices\");
-     return 0;
-     // return M->mult(f);
-     ");
+     try { return M->mult(f); }
+     catch (exc::engine_error e) { ERROR(e.what()); return NULL; } ");
 export (M:RawMutableMatrix) * (f:RawRingElement) : RawMutableMatrixOrNull := Ccode(returns, "
-     ERROR(\"scalar multiplication not implemented for mutable matrices\");
-     return 0;
-     // return M->mult(f);
-     ");
+     try { return M->mult(f); }
+     catch (exc::engine_error e) { ERROR(e.what()); return NULL; } ");
 export (M:RawMatrix) * (N:RawMatrix) : RawMatrixOrNull := Ccode(returns, "
      try { return M->mult(N, true); }
      catch (exc::engine_error e) { ERROR(e.what()); return NULL; } "

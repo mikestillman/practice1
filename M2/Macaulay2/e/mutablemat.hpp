@@ -375,16 +375,16 @@ public:
 
   virtual MutableMatrix * submatrix(M2_arrayint rows, M2_arrayint cols) const
   {
-    MutableMat *M = new MutableMat;
-    M->mat.grab(mat.submatrix(rows,cols));
-    return M;
+    MutableMat *result = new MutableMat(*this); // zero matrix, over the same ring
+    result->getMat().setFromSubmatrix(getMat(), rows, cols);
+    return result;
   }
 
   virtual MutableMatrix * submatrix(M2_arrayint cols) const
   {
-    MutableMat *M = new MutableMat;
-    M->mat.grab(mat.submatrix(cols));
-    return M;
+    MutableMat *result = new MutableMat(*this); // zero matrix, over the same ring
+    result->getMat().setFromSubmatrix(getMat(), cols);
+    return result;
   }
 
   virtual bool set_submatrix(M2_arrayint rows,
@@ -471,10 +471,17 @@ public:
   virtual MutableMat * mult(const RingElement *f) const
   // return f*this.  return NULL of sizes or types do not match.
   {
+    if (f->get_ring() != get_ring())
+      {
+        ERROR("expected same ring");
+        return 0;
+      }
     elem a;
-    mat.get_CoeffRing()->from_ring_elem(a, f->get_value());
-    MutableMat *result = new MutableMat;
-    result->mat.grab(mat.mult(a));
+    mat.ring().from_ring_elem(a, f->get_value());
+
+    MutableMat *result = clone();
+    result->mat.scalarMultInPlace(a);
+
     return result;
   }
 

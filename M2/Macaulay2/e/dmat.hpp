@@ -239,6 +239,14 @@ public:
   // this = f * this
   void scalarMultInPlace(const elem &f);
 
+  void setFromSubmatrix(const DMat &A, M2_arrayint rows, M2_arrayint cols) const { 
+    //TODO MES: write me
+  }
+
+  void setFromSubmatrix(const DMat &A, M2_arrayint cols) const { 
+    //TODO MES: write me
+  }
+
   // this += A*B
   //  void addMultipleInPlace(const DMat& A, const DMat& B);
 

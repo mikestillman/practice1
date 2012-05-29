@@ -234,6 +234,14 @@ public:
   // this = f * this
   void scalarMultInPlace(const elem &f);
 
+  void setFromSubmatrix(const SMat &A, M2_arrayint rows, M2_arrayint cols) const { 
+    //TODO MES: write me
+  }
+
+  void setFromSubmatrix(const SMat &A, M2_arrayint cols) const { 
+    //TODO MES: write me
+  }
+
 private:
   const Ring *R; // To interface to the outside world
   const CoeffRing * coeffR; // Same as R, optimized for speed.  R->get_CoeffRing()

@@ -48,7 +48,7 @@ typename SMat<CoeffRing>::sparsevec *SMat<CoeffRing>::vec_copy(const sparsevec *
       result->next = w;
       result = w;
       w->row = p->row;
-      coeffR->init_set(w->coeff, p->coeff);
+      ring().init_set(w->coeff, p->coeff);
     }
   result->next = 0;
   return head.next;
@@ -70,7 +70,7 @@ bool SMat<CoeffRing>::vec_get_entry(const sparsevec *v, int r, elem &result) con
       break;
     else if (p->row == r)
       {
-        coeffR->init_set(result,p->coeff);
+        ring().init_set(result,p->coeff);
         return true;
       }
   return false;
@@ -80,7 +80,7 @@ template<typename CoeffRing>
 void SMat<CoeffRing>::vec_set_entry(sparsevec *&v, int r, const elem &a) const
 {
   sparsevec * p;
-  bool iszero = coeffR->is_zero(a);
+  bool iszero = ring().is_zero(a);
   sparsevec head;
   head.next = v;
   for (p = &head; p->next != 0; p = p->next)
@@ -93,7 +93,7 @@ void SMat<CoeffRing>::vec_set_entry(sparsevec *&v, int r, const elem &a) const
       sparsevec * w = vec_new();
       w->next = p->next;
       w->row = r;
-      coeffR->init_set(w->coeff, a);
+      ring().init_set(w->coeff, a);
       p->next = w;
     }
   else if (p->next->row == r)
@@ -106,7 +106,7 @@ void SMat<CoeffRing>::vec_set_entry(sparsevec *&v, int r, const elem &a) const
           vec_remove_node(tmp);
         }
       else
-        coeffR->set(p->next->coeff, a);
+        ring().set(p->next->coeff, a);
     }
   v = head.next;
 }
@@ -175,8 +175,8 @@ void SMat<CoeffRing>::vec_scale_row(sparsevec *&v, int r, const elem &a) const
       break;
     else if (p->next->row == r)
       {
-        coeffR->mult(p->next->coeff, a, p->next->coeff);
-        if (coeffR->is_zero(p->next->coeff))
+        ring().mult(p->next->coeff, a, p->next->coeff);
+        if (ring().is_zero(p->next->coeff))
           {
             sparsevec *tmp = p->next;
             p->next = tmp->next;
@@ -190,7 +190,7 @@ void SMat<CoeffRing>::vec_scale_row(sparsevec *&v, int r, const elem &a) const
 template<typename CoeffRing>
 void SMat<CoeffRing>::vec_scale(sparsevec *&v, const elem &a) const
 {
-  if (coeffR->is_zero(a))
+  if (ring().is_zero(a))
     {
       vec_remove(v);
       v = 0;
@@ -200,8 +200,8 @@ void SMat<CoeffRing>::vec_scale(sparsevec *&v, const elem &a) const
   head.next = v;
   for (sparsevec *p = &head; p->next != 0; p=p->next)
     {
-      coeffR->mult(p->next->coeff, a, p->next->coeff);
-      if (coeffR->is_zero(p->next->coeff))
+      ring().mult(p->next->coeff, a, p->next->coeff);
+      if (ring().is_zero(p->next->coeff))
         {
           sparsevec *tmp = p->next;
           p->next = tmp->next;
@@ -229,8 +229,8 @@ void SMat<CoeffRing>::vec_divide_row(sparsevec *&v, int r, const elem &a) const
       break;
     else if (p->next->row == r)
       {
-        coeffR->divide(p->next->coeff, p->next->coeff, a);
-        if (coeffR->is_zero(p->next->coeff))
+        ring().divide(p->next->coeff, p->next->coeff, a);
+        if (ring().is_zero(p->next->coeff))
           {
             sparsevec *tmp = p->next;
             p->next = tmp->next;
@@ -244,7 +244,7 @@ void SMat<CoeffRing>::vec_divide_row(sparsevec *&v, int r, const elem &a) const
 template<typename CoeffRing>
 void SMat<CoeffRing>::vec_divide(sparsevec *&v, const elem &a) const
 {
-  if (coeffR->is_zero(a))
+  if (ring().is_zero(a))
     {
       vec_remove(v);
       v = 0;
@@ -254,8 +254,8 @@ void SMat<CoeffRing>::vec_divide(sparsevec *&v, const elem &a) const
   head.next = v;
   for (sparsevec *p = &head; p->next != 0; p=p->next)
     {
-      coeffR->divide(p->next->coeff, p->next->coeff,a);
-      if (coeffR->is_zero(p->next->coeff))
+      ring().divide(p->next->coeff, p->next->coeff,a);
+      if (ring().is_zero(p->next->coeff))
         {
           sparsevec *tmp = p->next;
           p->next = tmp->next;
@@ -306,8 +306,8 @@ void SMat<CoeffRing>::vec_add_to(sparsevec *&v, sparsevec *&w) const
         sparsevec *tmw = w;
         v = v->next;
         w = w->next;
-        coeffR->add(tmv->coeff, tmv->coeff, tmw->coeff);
-        if (coeffR->is_zero(tmv->coeff))
+        ring().add(tmv->coeff, tmv->coeff, tmw->coeff);
+        if (ring().is_zero(tmv->coeff))
           {
             vec_remove_node(tmv);
           }
@@ -347,9 +347,9 @@ void SMat<CoeffRing>::vec_row_op(sparsevec *&v, int r1, const elem &a, int r2) c
       }
   if (vec2 == 0) return;
   elem c;
-  coeffR->set_zero(c);
-  coeffR->mult(c, vec2->coeff, a);
-  if (coeffR->is_zero(c)) return; // nothing to change
+  ring().set_zero(c);
+  ring().mult(c, vec2->coeff, a);
+  if (ring().is_zero(c)) return; // nothing to change
 
   // Now add c to the r1'th row of v
   sparsevec head;
@@ -363,13 +363,13 @@ void SMat<CoeffRing>::vec_row_op(sparsevec *&v, int r1, const elem &a, int r2) c
       sparsevec *w = vec_new();
       w->next = p->next;
       w->row = r1;
-      coeffR->init_set(w->coeff, c);
+      ring().init_set(w->coeff, c);
       p->next = w;
     }
   else
     {
-      coeffR->add(p->next->coeff, p->next->coeff, c);
-      if (coeffR->is_zero(p->next->coeff))
+      ring().add(p->next->coeff, p->next->coeff, c);
+      if (ring().is_zero(p->next->coeff))
         {
           sparsevec *tmp = p->next;
           p->next = tmp->next;
@@ -391,27 +391,27 @@ void SMat<CoeffRing>::vec_row_op2(sparsevec *&v,
   // v[row r2] = b1 * v[r1] + b2 * v[r2]
   elem e1,e2, c1,c2,c3,c4;
 
-  coeffR->set_zero(c1);
-  coeffR->set_zero(c2);
-  coeffR->set_zero(c3);
-  coeffR->set_zero(c4);
+  ring().set_zero(c1);
+  ring().set_zero(c2);
+  ring().set_zero(c3);
+  ring().set_zero(c4);
   bool r1_nonzero = vec_get_entry(v,r1,e1);
   bool r2_nonzero = vec_get_entry(v,r2,e2);
   if (!r1_nonzero && !r2_nonzero) return;
 
   if (r1_nonzero)
     {
-      coeffR->mult(c1, a1, e1);
-      coeffR->mult(c3, b1, e1);
+      ring().mult(c1, a1, e1);
+      ring().mult(c3, b1, e1);
     }
   if (r2_nonzero)
     {
-      coeffR->mult(c2,a2,e2);
-      coeffR->mult(c4,b2,e2);
+      ring().mult(c2,a2,e2);
+      ring().mult(c4,b2,e2);
     }
 
-  coeffR->add(c1,c1,c2);
-  coeffR->add(c3,c3,c4);
+  ring().add(c1,c1,c2);
+  ring().add(c3,c3,c4);
   vec_set_entry(v,r1,c1);
   vec_set_entry(v,r2,c3);
 }
@@ -429,8 +429,8 @@ template<typename CoeffRing>
 void SMat<CoeffRing>::vec_dot_product(sparsevec *v, sparsevec *w, elem &result) const
 {
   elem a;
-  coeffR->set_zero(a);
-  coeffR->set_zero(result);
+  ring().set_zero(a);
+  ring().set_zero(result);
   while (true)
     {
       if (v == 0 || w == 0) return;
@@ -440,8 +440,8 @@ void SMat<CoeffRing>::vec_dot_product(sparsevec *v, sparsevec *w, elem &result) 
         w = w->next;
       else
         {
-          coeffR->mult(a, v->coeff, w->coeff);
-          coeffR->add(result, result, a);
+          ring().mult(a, v->coeff, w->coeff);
+          ring().add(result, result, a);
           v = v->next;
           w = w->next;
         }
@@ -609,7 +609,7 @@ int SMat<CoeffRing>::lead_row(int col, elem &result) const
 {
   sparsevec *v = columns_[col];
   if (v == 0) return -1;
-  coeffR->init_set(result, v->coeff);
+  ring().init_set(result, v->coeff);
   return v->row;
 }
 
@@ -863,7 +863,7 @@ bool SMat<CoeffRing>::set_submatrix(M2_arrayint rows,
 //      {
 //        ring_elem a;
 //        i->copy_ring_elem(a);
-//        coeffR->from_ring_elem(*(first + i->row()), a);
+//        ring().from_ring_elem(*(first + i->row()), a);
 //      }
 //       first += nrows_;
 //     }

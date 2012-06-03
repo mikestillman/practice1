@@ -45,6 +45,7 @@ namespace M2 {
     ring_FFPACK,
     ring_RRR,
     ring_CCC,
+    ring_tower_ZZp,
     ring_old,  ///< refers to all rings which are not ConcreteRing's.
     ring_top = 8 ///< used to determine the number of ring types
   };

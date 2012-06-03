@@ -138,6 +138,7 @@ namespace M2 {
 //#endif
 
 
+  template class ConcreteRing<ARingTower>;
   ///////////////////////////
   // Matrix creation ////////
   ///////////////////////////

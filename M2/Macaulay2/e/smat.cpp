@@ -9,6 +9,7 @@
 #include "aring-zzp.hpp"
 #include "aring-gf.hpp"
 #include "aring-m2-gf.hpp"
+#include "aring-tower.hpp"
 
 //////////////////////////
 // sparsevec operations //
@@ -1069,6 +1070,7 @@ void SMat<CoeffRing>::addMultipleTo(const SMat<CoeffRing> &A,
 #include "aring-ffpack.hpp"
 template class SMat<CoefficientRingZZ_NTL>;
 template class SMat<M2::ARingZZp>;
+template class SMat<M2::ARingTower>;
 template class SMat<M2::ARingZZpFFPACK>;
 template class SMat<M2::ARingGF>;
 template class SMat<M2::ARingGFM2>;

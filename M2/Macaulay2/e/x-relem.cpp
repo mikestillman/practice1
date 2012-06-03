@@ -429,6 +429,7 @@ const Ring /* or null */ *rawTowerRing3(const Ring *R1, engine_RawRingElementArr
 }
 
 
+
 M2_bool IM2_Ring_is_field(const Ring *K)
   /* Returns true if K is a field, or has been declared to be one.
      In the latter case, if an operation shows that K cannot be a field,
@@ -1259,6 +1260,6 @@ const RingElement /* or null */ *rawPowerMod(const RingElement *f, mpz_ptr n, co
 }
 
 // Local Variables:
-// compile-command: "make -C $M2BUILDDIR/Macaulay2/e x-relem.o "
+// compile-command: "make -C $M2BUILDDIR/Macaulay2/e  "
 // indent-tabs-mode: nil
 // End:

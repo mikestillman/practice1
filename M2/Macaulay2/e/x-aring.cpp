@@ -7,6 +7,7 @@
 #include "aring-gf.hpp"
 #include "aring-m2-gf.hpp"
 #include "aring-ffpack.hpp"
+#include "aring-tower.hpp"
 
 #include "polyring.hpp"
 
@@ -247,3 +248,97 @@ M2_arrayintOrNull rawARingGFCoefficients(const RingElement *f)
   return 0;
 #endif
 }
+
+void M2_ArrayString_to_stdvector(M2_ArrayString strs, std::vector<std::string> &result)
+{
+  for (size_t i = 0; i< strs->len; i++)
+    {
+      M2_string a = strs->array[i];
+      std::string b(a->array, a->len);
+      result.push_back(b);
+    }
+}
+
+const Ring /* or null */ *rawARingTower1(const Ring *K, M2_ArrayString names)
+{
+  try {
+    const M2::ConcreteRing<M2::ARingZZpFFPACK> *Kp = dynamic_cast<const M2::ConcreteRing<M2::ARingZZpFFPACK> *>(K);
+    if (Kp == 0)
+      {
+	ERROR("expected a base ring ZZ/p");
+	return NULL;
+      }
+    const M2::ARingZZpFFPACK &A = Kp->ring();
+
+    // Get the names into the correct form:
+    std::vector<std::string> varnames;
+    M2_ArrayString_to_stdvector(names, varnames);
+    const M2::ARingTower *T = M2::ARingTower::create(A, varnames);
+    return M2::ConcreteRing<M2::ARingTower>::create(T);
+  }
+  catch (exc::engine_error e) {
+    ERROR(e.what());
+    return NULL;
+  }
+}
+
+const Ring /* or null */ *rawARingTower2(const Ring *R1, M2_ArrayString new_names)
+{
+  try {
+    const M2::ConcreteRing<M2::ARingTower> *K = dynamic_cast<const M2::ConcreteRing<M2::ARingTower> *>(K);
+    if (K == 0)
+      {
+	ERROR("expected a tower ring");
+	return NULL;
+      }
+    const M2::ARingTower &A = K->ring();
+    
+    std::vector<std::string> new_varnames;
+    M2_ArrayString_to_stdvector(new_names, new_varnames);
+    const M2::ARingTower *T = M2::ARingTower::create(A, new_varnames);
+    return M2::ConcreteRing<M2::ARingTower>::create(T);
+  }
+  catch (exc::engine_error e) {
+    ERROR(e.what());
+    return NULL;
+  }
+}
+
+const Ring /* or null */ *rawARingTower3(const Ring *R1, engine_RawRingElementArray eqns)
+{
+  try {
+    const M2::ConcreteRing<M2::ARingTower> *K = dynamic_cast<const M2::ConcreteRing<M2::ARingTower> *>(K);
+    if (K == 0)
+      {
+	ERROR("expected a tower ring");
+	return NULL;
+      }
+    const M2::ARingTower &A = K->ring();
+
+    std::vector<M2::ARingTower::ElementType> extensions;
+    
+    for (int i=0; i<eqns->len; i++)
+      {
+        const RingElement *f = eqns->array[i];
+        M2::ARingTower::ElementType f1;
+        if (f->get_ring() != R1)
+          {
+            ERROR("extension element has incorrect base ring");
+            return 0;
+          }
+        A.from_ring_elem(f1, f->get_value());
+        extensions.push_back(f1);
+      }
+    const M2::ARingTower *T = M2::ARingTower::create(A, extensions);
+    return M2::ConcreteRing<M2::ARingTower>::create(T);
+  }
+  catch (exc::engine_error e) {
+    ERROR(e.what());
+    return 0;
+  }
+}
+
+// Local Variables:
+// compile-command: "make -C $M2BUILDDIR/Macaulay2/e "
+// indent-tabs-mode: nil
+// End:

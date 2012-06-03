@@ -823,6 +823,58 @@ export rawTowerQuotientRing(e:Expr):Expr := (
      );
 setupfun("rawTowerQuotientRing", rawTowerQuotientRing);
 
+export rawARingTower(e:Expr):Expr := (
+     -- e = (Ring, list of var names)
+     when e is a:Sequence do
+     if length(a) == 2 then
+       when a.0 is R:RawRingCell do (
+         	if isSequenceOfStrings(a.1) then (
+	   	     names := getSequenceOfStrings(a.1);
+	   	     toExpr(Ccode(RawRingOrNull, "rawARingTower1(", R.p, ",", names, ")"))
+	   	     )
+      	 	else
+	   	  WrongArg(2, "a list of strings"))
+       else WrongArg(1, "a ring")
+     else WrongNumArgs(2)
+     else WrongNumArgs(2)
+     );
+setupfun("rawARingTower", rawARingTower);
+
+export rawARingTowerAdjoinVariables(e:Expr):Expr := (
+     -- e = (Ring, list of var names)
+     when e is a:Sequence do
+     if length(a) == 2 then
+       when a.0 is R:RawRingCell do (
+         	if isSequenceOfStrings(a.1) then (
+	   	     names := getSequenceOfStrings(a.1);
+	   	     toExpr(Ccode(RawRingOrNull, "rawARingTower2(", R.p, ",", names, ")"))
+	   	     )
+      	 	else
+	   	  WrongArg(2, "a list of strings"))
+       else WrongArg(1, "a ring")
+     else WrongNumArgs(2)
+     else WrongNumArgs(2)
+     );
+setupfun("rawARingTowerAdjoinVariables", rawARingTowerAdjoinVariables);
+
+export rawARingTowerQuotient(e:Expr):Expr := (
+     -- e = (R:Ring, Fs:RawRingElementArray)
+     when e is a:Sequence do
+     if (length(a) == 2) then
+       when a.0 is R:RawRingCell do (
+	    if isSequenceOfRingElements(a.1) then (
+		 f := getSequenceOfRingElements(a.1);
+		 toExpr(Ccode(RawRingOrNull, "rawARingTower3(", R.p, ", ", f, ")"))
+		 )
+	    else WrongArg(2, "a sequence of ring elements")
+	    )
+       else WrongArg(1, "a ring")
+     else WrongNumArgs(2)
+     else WrongNumArgs(2)
+     );
+setupfun("rawARingTowerQuotient", rawARingTowerQuotient);
+
+
 export rawAmbientRing(e:Expr):Expr := (
      when e is R:RawRingCell do toExpr( Ccode(RawRingOrNull,"rawAmbientRing(", R.p, ")"))
      else WrongArg("a raw ring"));

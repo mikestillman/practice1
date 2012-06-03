@@ -288,6 +288,12 @@ extern "C" {
   const Ring /* or null */ *rawTowerRing2(const Ring *R1, M2_ArrayString new_names);
   const Ring /* or null */ *rawTowerRing3(const Ring *R1, engine_RawRingElementArray eqns);
 
+  const Ring /* or null */ *rawARingTower1(const Ring *R1, M2_ArrayString names);
+  /* Create a tower ring with the given variable names and base ring */
+
+  const Ring /* or null */ *rawARingTower2(const Ring *R1, M2_ArrayString new_names);
+  const Ring /* or null */ *rawARingTower3(const Ring *R1, engine_RawRingElementArray eqns);
+
 
   const Ring /* or null */ *IM2_Ring_schur(const Ring *R); /* drg: reconnected rawSchurRing */
 

@@ -8,6 +8,7 @@
 #include "aring-gf.hpp"
 #include "aring-ffpack.hpp"
 #include "aring-m2-gf.hpp"
+#include "aring-tower.hpp"
 
 namespace M2 {
   class RingPromoter

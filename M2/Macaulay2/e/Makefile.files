@@ -6,6 +6,7 @@
 
 INTERFACE = \
 	cra \
+	aring-tower \
 	aring-m2-gf \
 	aring-promoter \
 	aring-glue \

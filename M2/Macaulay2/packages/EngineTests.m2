@@ -31,24 +31,26 @@ Caveat
 SeeAlso
 ///
 
+///
 testFracRaw = () -> (
      debug Core;
-     K = rawFractionOverNoetherNormalization(raw R, 1)     
+     K = rawFractionOverNoetherNormalization(raw R, 1);
      f = (raw 1_K) / (raw x);
      g = 1_K / y;
      assert(f + g == (raw (x+y)) / raw (x*y));
      )
 testFrac = () -> (
-     R = ZZ/101[y,x,MonomialOrder=>{1,1}]/(y^3-x^2*y^2-x-3)
-     K = frac R
-     assert(1/x + 1/y == (x+y)/(x*y))
-     assert(1/x - 1/y == (-x+y)/(x*y))
-     1/y
-     1(y-x)
-     x/y^3
+     R = ZZ/101[y,x,MonomialOrder=>{1,1}]/(y^3-x^2*y^2-x-3);
+     K = frac R;
+     assert(1/x + 1/y == (x+y)/(x*y));
+     assert(1/x - 1/y == (-x+y)/(x*y));
+     1/y;
+     1(y-x);
+     x/y^3;
      )
+///
 
-
+load (EngineTests#"source directory"|"EngineTests/test-tower-rings.m2")
 -- Tests of mutable matrix operations over ZZ/p
 
 -- Test tow and column operations on dense and sparse mutable matrices,

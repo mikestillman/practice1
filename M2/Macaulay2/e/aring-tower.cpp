@@ -61,6 +61,105 @@ const ARingTower* ARingTower::create(const ARingTower &R, const std::vector<Elem
 }
 
 ///////////////////
+// Allocation /////
+///////////////////
+// TODO: what is the contract here???!!
+poly ARingTower::alloc_poly_n(long deg) const
+// if elems == 0, then set all coeffs to 0.
+{
+  poly result = new poly_struct;
+  result->polys = new poly[deg+1];
+  result->deg = deg;
+  result->len = deg+1;
+  for (int i=0; i <= deg; i++)
+    result->polys[i] = 0;
+  return result;
+}
+
+poly ARingTower::alloc_poly_0(long deg) const
+{
+  poly result = new poly_struct;
+  result->coeffs = new ARingZZpFFPACK::ElementType[deg+1];
+  result->deg = deg;
+  result->len = deg+1;
+  for (int i=0; i <= deg; i++)
+    result->coeffs[i] = 0;
+  return result;
+}
+
+void ARingTower::dealloc_poly(poly &f) const
+ // only f is freed, not any pointers in the array of f
+{
+  if (f == 0) return;
+  delete [] f->polys;
+  delete f;
+  f = 0;
+}
+
+void ARingTower::clear(int level, poly &f) const
+// free all space associated to f, set f to 0.
+{
+  if (f == 0) return;
+  if (level == 0)
+    {
+      for (int i=0; i<=f->deg; i++)
+        mBaseRing.clear(f->coeffs[i]);
+      delete [] f->coeffs;
+    }
+  else
+    {
+      for (int i=0; i<=f->deg; i++)
+        clear(level-1, f->polys[i]);
+      delete [] f->polys;
+    }
+  delete f;
+  f = 0;
+}
+
+void ARingTower::reset_degree(poly &f) const
+{
+  if (f == 0) return;
+  int fdeg = f->deg;
+  for (int j = fdeg; j>=0; --j)
+    if (f->polys[j] != 0) {
+      f->deg = j;
+      return;
+    }
+  // at this point, everything is 0!
+  dealloc_poly(f); // sets f to 0
+}
+
+poly ARingTower::copy(int level, const poly f) const
+{
+  if (f == 0) return 0;
+  poly result = alloc_poly_n(f->deg);
+  if (level == 0)
+    for (int i=0; i<=f->deg; i++) result->coeffs[i] = f->coeffs[i];
+  else
+    for (int i=0; i<=f->deg; i++) result->polys[i] = copy(level-1, f->polys[i]);
+  return result;
+}
+
+// TODO: should increase_capacity set the degree??  I don't think so...
+void ARingTower::increase_capacity(int newdeg, poly &f) const
+{
+  ASSERT(f != 0);
+  if (f->len <= newdeg)
+    {
+      poly *newelems = newarray(poly, newdeg+1);
+      poly *fp = f->polys;
+      for (int i=0; i<= f->deg; i++)
+        newelems[i] = fp[i];
+      for (int i = f->deg+1; i < newdeg+1; i++)
+        newelems[i] = 0;
+      delete [] fp;
+      f->polys = newelems;
+      f->len = newdeg+1;
+      f->deg = newdeg;
+    }
+}
+
+///////////////////
 // Display ////////
 ///////////////////
 
@@ -95,7 +194,7 @@ namespace {
     if (level == 0)
       {
         for (int i=0; i<=f->deg; i++)
-          if (f->ints[i] != 0) nterms++;
+          if (f->coeffs[i] != 0) nterms++;
       }
     else
       {
@@ -111,7 +210,7 @@ bool ARingTower::is_one(int level, const poly f) const
   if (f == 0) return false;
   if (f->deg != 0) return false;
   if (level == 0)
-    return 1 == f->ints[0];
+    return 1 == f->coeffs[0];
   else
     return is_one(level-1, f->polys[0]);
 }
@@ -156,12 +255,12 @@ void ARingTower::elem_text_out(buffer &o,
 
       bool firstterm = true;
       for (int i=f->deg; i>=0; i--)
-        if (f->ints[i] != 0)
+        if (f->coeffs[i] != 0)
           {
             if (!firstterm || p_plus) o << "+";
             firstterm = false;
-            if (i == 0 || f->ints[i] != 1)
-              o << f->ints[i];
+            if (i == 0 || f->coeffs[i] != 1)
+              mBaseRing.elem_text_out(o, f->coeffs[i], p_one, p_plus, p_parens);
             if (i  > 0)
               o << this_varname;
             if (i > 1)
@@ -191,6 +290,142 @@ void ARingTower::elem_text_out(buffer &o,
       if (needs_parens) o << ")";
     }
 }
+
+poly ARingTower::var(int level, int v)  const
+// make the variable v (but at level 'level')
+{
+  if (v > level) return 0;
+  int which = (v == 0 ? 1 : 0);
+  poly result = alloc_poly_0(which); // TODO: check that this initializes elements to 0
+  result->coeffs[which] = 1;
+  for (int i=1; i<=level; i++)
+    {
+      which = (i == v ? 1 : 0);
+      poly a = result;
+      result = alloc_poly_n(which);
+      result->polys[which] = a;
+    }
+  return result;
+}
+
+bool ARingTower::is_equal(int level, const poly f, const poly g) const
+{
+  if (f == 0)
+    {
+      if (g == 0) return true;
+      return false;
+    }
+  if (g == 0 || f->deg != g->deg) return false;
+  if (level == 0)
+    {
+      BaseCoefficientType *fp = f->coeffs;
+      BaseCoefficientType *gp = g->coeffs;
+      for (int i=0; i<=f->deg; i++)
+        if (fp[i] != gp[i]) return false;
+      return true;
+    }
+  // level > 0
+  poly *fp = f->polys;
+  poly *gp = g->polys;
+  for (int i=0; i<=f->deg; i++)
+    if (!is_equal(level-1,fp[i],gp[i])) return false;
+  return true;
+}
+
+void ARingTower::add_in_place(int level, poly &f, const poly g) const
+{
+  if (g == 0) return;
+  if (f == 0)
+    {
+      f = copy(level, g);
+      return;
+    }
+  int fdeg = f->deg;
+  int gdeg = g->deg;
+
+  increase_capacity(g->deg, f);
+  if (level == 0)
+    for (int i=0; i<=gdeg; i++) mBaseRing.add(f->coeffs[i], f->coeffs[i], g->coeffs[i]);
+  else
+    for (int i=0; i<=gdeg; i++) add_in_place(level-1, f->polys[i], g->polys[i]);
+    
+  if (gdeg > fdeg)
+    f->deg = gdeg;
+  else if (gdeg == fdeg)
+    reset_degree(f);
+}
+
+void ARingTower::negate_in_place(int level, poly &f) const
+{
+  if (f == 0) return;
+  int deg = f->deg;
+  if (level == 0)
+    {
+      for (int i=0; i<=deg; i++)
+        if (f->coeffs[i] != 0) mBaseRing.negate(f->coeffs[i], f->coeffs[i]);
+    }
+  else
+    {
+      poly *p = f->polys;
+      for (int i=0; i<=deg; i++)
+        if (f->polys[i] != 0) negate_in_place(level-1, f->polys[i]);
+    }
+}
+
+void ARingTower::subtract_in_place(int level, poly &f, const poly g) const
+{
+  if (g == 0) return;
+  if (f == 0)
+    {
+      f = copy(level, g);
+      negate_in_place(level, f);
+      return;
+    }
+  int fdeg = f->deg;
+  int gdeg = g->deg;
+
+  increase_capacity(g->deg, f);
+  if (level == 0)
+    for (int i=0; i<=gdeg; i++) mBaseRing.subtract(f->coeffs[i], f->coeffs[i], g->coeffs[i]);
+  else
+    for (int i=0; i<=gdeg; i++) subtract_in_place(level-1, f->polys[i], g->polys[i]);
+    
+  if (gdeg > fdeg)
+    f->deg = gdeg;
+  else if (gdeg == fdeg)
+    reset_degree(f);
+}
+
+void ARingTower::mult_by_coeff(int level, poly &f, const BaseCoefficientType &b) const
+{
+  ASSERT(!mBaseRing.is_zero(b));
+  if (f == 0) return;
+
+  long deg = f->deg;
+  if (level == 0)
+    {
+      for (int i=0; i<=deg; i++)
+        if (f->coeffs[i] != 0) mBaseRing.mult(f->coeffs[i], f->coeffs[i], b);
+    }
+  else
+    {
+      for (int i=0; i<=deg; i++)
+        if (f->polys[i] != 0) mult_by_coeff(level-1, f->polys[i], b);
+    }
+}
+
+void ARingTower::mult_by_coeff(poly &f, const BaseCoefficientType &b) const
+{
+  if (f == 0) return;
+  if (mBaseRing.is_zero(b))
+    {
+      clear(f);
+      return;
+    }
+  //TODO: add this line one is_one is implemented in ZZpFFPACK: if (mBaseRing.is_one(b)) return;
+  mult_by_coeff(mStartLevel, f, b);
+}
+
 
 }; // namespace M2
 

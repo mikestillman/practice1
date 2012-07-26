@@ -357,26 +357,26 @@ void DMat<CoeffRing>::initialize(int nrows, int ncols, const elem *array)
 {
   nrows_ = nrows;
   ncols_ = ncols;
-  long len = nrows * ncols;
+  size_t len = static_cast<size_t>(nrows) * static_cast<size_t>(ncols);
   array_ = newarray_clear(elem,len);
   if (array == 0)
     {
-      for (long i=0; i<len; i++)
+      for (size_t i=0; i<len; i++)
         ring().set_zero(array_[i]);
     }
   else
-    for (long i=0; i<len; i++)
+    for (size_t i=0; i<len; i++)
       ring().init_set(array_[i], array[i]);
 }
 
 template<typename CoeffRing>
 void DMat<CoeffRing>::resize(int new_nrows, int new_ncols)
 {
-  long new_len = new_nrows * new_ncols;
+  size_t new_len = static_cast<size_t>(new_nrows) * static_cast<size_t>(new_ncols);
   if (new_len == 0 || new_len != nrows_ * ncols_)
     initialize(new_nrows, new_ncols, 0);
   else
-    for (long i=0; i<new_len; i++)
+    for (size_t i=0; i<new_len; i++)
       ring().set_zero(array_[i]);
 }
 

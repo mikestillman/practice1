@@ -553,6 +553,10 @@ NONTEST = (str) -> null
 -- loadPackage "FastLinearAlgebra"
 -- debug Core
 
+
+-----------------------------------
+-- Linear algebra tests -----------
+-----------------------------------
 TEST ///
 
     kk = ZZp 101
@@ -640,8 +644,123 @@ TEST ///
     time addMultipleTo(M3, M2, M1);
 ///
 
+TEST ///
+    kk = ZZp 101;
+    A = mutableMatrix matrix(kk, {{23, -35, -29, 33}, {22, 7, -25, 11}})
+    B = mutableMatrix matrix(kk, {{-36, -40}, {-15, -43}, {-16, -43}, {15, 32}, {6, -14}})
+    M = mutableMatrix(B*A)
+    N = nullSpace M
+    assert(numColumns N == 2)
+    assert(M * N == 0)
+    N = nullSpace(M, RightSide=>false)
+    assert(N * M == 0)
+    assert(numRows N == 3)
+///
+
+TEST ///
+    N = 10
+    kk = ZZp 101
+    time A = mutableMatrix(kk, N, N, Dense=>true);
+    time fillMatrix A;
+    time B = invert A;
+    time C = A*B;
+    assert(C == mutableIdentity(kk, N))
+    idN = mutableIdentity(kk, N, Dense=>true);
+    time X = solveLinear(A, idN);
+    assert(B == X)
+///
+
+TEST ///
+  R = ZZp 5
+  Rt = R[t]
+  jordanBlock = (R, diag, n) -> (
+     m := mutableMatrix(R,n,n);
+     for i from 0 to n-1 do m_(i,i) = diag;
+     for i from 0 to n-2 do m_(i,i+1) = 1;
+     m
+     )
+  jordanForm = (R, L) -> (
+     -- L is a list of (eigenvalue, size)
+     directSum apply(L, (diag, n) -> matrix jordanBlock(R, diag, n))
+     )
+  jordanBlock(R,2_R,5)
+  M = jordanForm(R, {(2_R, 4), (1_R, 2), (0_R, 6), (0_R, 3)})
+
+  cpM = characteristicPolynomial(M, Rt)
+  mpM = minimalPolynomial(M, Rt)
+
+  A = mutableMatrix random(target M, source M)
+  Ainv = A^-1
+  N = A * (mutableMatrix M) * Ainv
+
+  cpN = characteristicPolynomial(N, Rt)
+  mpN = minimalPolynomial(N, Rt)
+
+  assert(cpM == cpN)
+  assert(mpM == mpN) -- WRONG!!
+  cpM == (t-2)^4 * (t-1)^2 * t^9
+  mpM == (t-2)^4 * (t-1)^2 * t^6
+  
+  Rt1 = ZZ/5[t]
+  cp1 = sub(cpM, Rt1)
+  mp1 = sub(mpM, Rt1)
+  factor cp1
+  factor mp1
+  -- list of top level issues with ZZp:
+  -- 1. display is using too many parentheses
+  -- 2. can't factor polynomials over Rt
+  -- 3. want linear algebra to be transparent.
+  --    A^-1  DONE
+  --    det(A)  DONE
+  --    syz A
+  --    what else?
+
+  use Rt
+
+  for i from 0 to 10 do (  
+    M = jordanBlock(R,1_R,2);
+    cp = characteristicPolynomial(M, Rt);
+    mp = minimalPolynomial(M,Rt);
+    assert(cp == (t-1)^2);
+    assert(mp == cp);  -- this fails some of the time!!
+    )
+///
+
 -- move good tests above this line
+-- XXXXXXXXXXXXXXXXXXXXXXXXXX --
 end
+
+TEST ///
+    kk = ZZ/101
+    A = random(kk^23, kk^400)
+    B = random(kk^500, kk^23)
+    M = mutableMatrix(B*A);
+    N = nullSpace M;
+    assert(numRows N == numColumns M)
+    assert(numColumns N == numColumns M - 23)
+    assert((matrix M) * (matrix N) == 0)
+    
+    time N = nullSpace(M, RightSide=>false);
+    assert(numRows N == numRows M - 23)
+    assert(numColumns N == numRows M)
+    assert((matrix N) * (matrix M) == 0)
+///
+
+TEST ///
+    kk = ZZ/101
+    A = random(kk^23, kk^1000);
+    B = random(kk^1000, kk^23);
+    M = mutableMatrix(B*A);
+    N = nullSpace M;
+    assert(numRows N == numColumns M)
+    assert(numColumns N == numColumns M - 23)
+    assert((matrix M) * (matrix N) == 0)
+    
+    time N = nullSpace(M, RightSide=>false);
+    assert(numRows N == numRows M - 23)
+    assert(numColumns N == numRows M)
+    assert((matrix N) * (matrix M) == 0)
+///
 
 TEST ///
     kk = ZZp 101
@@ -653,9 +772,16 @@ TEST ///
 
     A = mutableMatrix(kk,50000,50000, Dense=>false);
     B = mutableMatrix(kk,50000,50000, Dense=>false);
-    fillMatrix(A, Density=>.001);    
-    fillMatrix(B, Density=>.001);    
+    --time fillMatrix(A, Density=>.001);    
+    --time fillMatrix(B, Density=>.001);    
     time (A+B);
+    time (A*B); -- crashes: tries to grab too much memory: BUG
+
+    A = mutableMatrix(kk,50000,50000, Dense=>true); -- doesn't crash, but it should!!
+    B = mutableMatrix(kk,50000,50000, Dense=>true); 
+
+    A = mutableMatrix(kk,10000,10000, Dense=>true);
+
 ///
 
 TEST ///
@@ -715,49 +841,6 @@ rank A
  
 ///
 
-TEST ///
-    kk = ZZp 101;
-    --kk = ZZ/101
-    A = random(kk^2, kk^4)
-    B = random(kk^5, kk^2)
-    M = mutableMatrix(B*A)
-    N = nullSpace M
-    assert((matrix M) * (matrix N) == 0)
-    N = nullSpace(M, RightSide=>false)
-    assert((matrix N) * (matrix M) == 0)
-///
-
-TEST ///
-    kk = ZZ/101
-    A = random(kk^23, kk^400)
-    B = random(kk^500, kk^23)
-    M = mutableMatrix(B*A);
-    N = nullSpace M;
-    assert(numRows N == numColumns M)
-    assert(numColumns N == numColumns M - 23)
-    assert((matrix M) * (matrix N) == 0)
-    
-    time N = nullSpace(M, RightSide=>false);
-    assert(numRows N == numRows M - 23)
-    assert(numColumns N == numRows M)
-    assert((matrix N) * (matrix M) == 0)
-///
-
-TEST ///
-    kk = ZZ/101
-    A = random(kk^23, kk^1000);
-    B = random(kk^1000, kk^23);
-    M = mutableMatrix(B*A);
-    N = nullSpace M;
-    assert(numRows N == numColumns M)
-    assert(numColumns N == numColumns M - 23)
-    assert((matrix M) * (matrix N) == 0)
-    
-    time N = nullSpace(M, RightSide=>false);
-    assert(numRows N == numRows M - 23)
-    assert(numColumns N == numRows M)
-    assert((matrix N) * (matrix M) == 0)
-///
 
 TEST ///
 kk = ZZ/101
@@ -775,20 +858,6 @@ X = solveLinear(A,B)
 ((matrix A) * (matrix X)) - matrix B
 ///
 
-TEST ///
-kk = ZZ/101
-N = 10
-  kk = ZZp 101
-time A = mutableMatrix(kk, N, N, Dense=>true);
-time fillMatrix A;
-time B = invert A;
-time C = A*B;
-C == mutableIdentity(kk, N)
-
-idN = mutableIdentity(kk, N, Dense=>true);
-time X = solveLinear(A, idN);
-assert(B == X)
-///
 
 
 TEST ///
@@ -1407,45 +1476,6 @@ time cp = characteristicPolynomial(M, Rt);
 time mp = minimalPolynomial(M, Rt);
 ///
 
-TEST ///
-restart
-loadPackage "FastLinearAlgebra"
-R = ZZp 5
-Rt = R[t]
-jordanBlock = (R, diag, n) -> (
-     m := mutableMatrix(R,n,n);
-     for i from 0 to n-1 do m_(i,i) = diag;
-     for i from 0 to n-2 do m_(i,i+1) = 1;
-     m
-     )
-jordanForm = (R, L) -> (
-     -- L is a list of (eigenvalue, size)
-     directSum apply(L, (diag, n) -> matrix jordanBlock(R, diag, n))
-     )
-jordanBlock(R,2_R,5)
-M = jordanForm(R, {(2_R, 4), (1_R, 2), (0_R, 6), (0_R, 3)})
-A = random(target M, source M)
-Ainv = matrix invert(mutableMatrix A)
-A * Ainv
-N = A * M * Ainv
-
-cp = characteristicPolynomial(N, Rt)
-mp = minimalPolynomial(N, Rt)
-
-Rt1 = ZZ/5[t]
-cp1 = sub(cp, Rt1)
-mp1 = sub(mp, Rt1)
-factor cp1
-factor mp1
-  -- list of top level issues with ZZp:
-  -- 1. display is using too many parentheses
-  -- 2. can't factor polynomials over Rt
-  -- 3. want linear algebra to be transparent.
-  --    A^-1
-  --    det(A)
-  --    syz A
-  --    what else?
-///
 
 /// -- looking into LUdivine
 restart
@@ -1772,6 +1802,32 @@ det(M - t*id_(P^3))
 
 --  JAKOB: remove using namespace LinBox from everywhere in LinBox.
 --  optimal matrix transposing seem not be trivial - http://en.wikipedia.org/wiki/In-place_matrix_transposition 
+--
+-- 26 July 2012
+--   Mike: debug memory allocation for dense matrices.  Maybe change int values to size_t's
+--         get parens OK
+--         look into: factorization over ZZp.
+--   Jakob: minimal polynomial bug.
+--   Miletone #1:
+--     tests for dense linear algebra over ZZ/p, p <= ???
+--     top level access to these functions
+--     characteristic and minimal polynomial (implemented in same way as other functions)
+--     all dense linear algebra routines over ZZ/p complete (e.g. +, -, *, transpose, submatrix)
+--     fix bugs:
+--       1. minimalPolynomial appears probabilistic.  Is that true?
+--          if so, find a version that is correct!
+--     notes:
+--       syz and kernel should use nullSpace
+--     document:
+--       all linear algebra functions
+--   Milestone #2:
+--     Connect sparse matrix routines from linbox to M2 (over ZZ/p, other fields)
+--   Milestone #3:
+--     Write basic linear algebra functiions (more generic versions) for more general rings/fields
+--   Milestone #4:
+--     Connect normal form operations from linbox to M2 (Hermite, Smith, LLL, Frobenius, ...)
+--     Make sure that ZZ operations and QQ operations match linbox
+
 ----------------------------------------------
 -- not discussed yet:
 --    a. bugs in ffpack ZZ/p: basis(2,R) fails (R = polyring over ZZ/p).  Fix this?  MIKE 

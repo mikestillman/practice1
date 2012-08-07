@@ -43,6 +43,8 @@ namespace M2 {
     ring_GF,
     ring_GFM2,
     ring_FFPACK,
+    ring_RR,
+    ring_CC,
     ring_RRR,
     ring_CCC,
     ring_tower_ZZp,

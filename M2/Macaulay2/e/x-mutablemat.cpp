@@ -667,10 +667,16 @@ MutableMatrix /* or null */ * IM2_MutableMatrix_submatrix1(const MutableMatrix *
  ** Cmputations ****************
  *******************************/
 
+
 M2_arrayintOrNull IM2_FF_LU(MutableMatrix *M)
 {
   return FF_LUComputation::DO(M);
 }
+
+
+
+#include <fplll-interface.h>
+
 
 M2_bool rawLLL(MutableMatrix *M,
                 MutableMatrix /* or null */ *U,
@@ -680,6 +686,11 @@ M2_bool rawLLL(MutableMatrix *M,
   if (strategy == 0)
     {
       return LLLoperations::LLL(M,U,threshold);
+    }
+
+  if (strategy == 4)    //fplll, pfush...
+    {
+      return fp_LLL(M,U,strategy);
     }
 
   long a = mpz_get_si(mpq_numref(threshold));
@@ -1047,8 +1058,9 @@ engine_RawRingElementArray convertRingelemsToArray(const Ring *R,
     result->array[i] = RingElement::make_raw( R, static_cast<int>(elems[i]) );
   
   return result;
-}
+} 
 
+// attention: method is probabilistic
 engine_RawRingElementArrayOrNull rawLinAlgCharPoly(MutableMatrix* A)
 // returns an array whose coefficients give the characteristic polynomial of the square matrix A
 {
@@ -1060,14 +1072,19 @@ engine_RawRingElementArrayOrNull rawLinAlgCharPoly(MutableMatrix* A)
       ERROR("expected a dense mutable matrix over the ffpack finite field");
       return 0;
     }
-  M2::ARingZZpFFPACK::ElementType* elemsA = B->get_Mat()->get_array();
+ // M2::ARingZZpFFPACK::ElementType* elemsA = B->get_Mat()->get_array();
+
+  DMatZZp::ElementType* elemsA = newarray( DMatZZp::ElementType, A->n_rows() * A->n_cols());    
+  B->get_Mat()->copy_elems((A->n_rows())*(A->n_cols()), elemsA, 1, B->get_Mat()->get_array(), 1); 
+
   std::vector< M2::ARingZZpFFPACK::ElementType > charpoly;
 
-  FFPACK::CharPoly(B->get_Mat()->ring().field(), charpoly, A->n_rows(), elemsA, A->n_rows());
+  FFPACK::CharPoly(B->get_Mat()->ring().field(), charpoly, A->n_rows(), elemsA, A->n_rows(),
+                    FFPACK::FfpackLUK );
 
-  for (size_t i=0; i<charpoly.size(); i++)
-    std::cout << charpoly[i] << " ";
-  std::cout << std::endl;
+  //for (size_t i=0; i<charpoly.size(); i++)
+  //  std::cout << charpoly[i] << " ";
+  //std::cout << std::endl;
   return convertRingelemsToArray(R, charpoly);
 }
 

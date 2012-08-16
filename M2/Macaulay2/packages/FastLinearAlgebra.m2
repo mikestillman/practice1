@@ -229,6 +229,10 @@ characteristicPolynomial(MutableMatrix, Ring) := (M, P) -> (
      )
 characteristicPolynomial(Matrix, Ring) := (M, P) -> characteristicPolynomial(mutableMatrix M, P)
 
+
+-- todo: 1. repeat x times, but what is x?
+-- 2. : not implemented. needs to pass computation method and probability
+
 minimalPolynomial = method()
 minimalPolynomial(MutableMatrix, Ring) := (M, P) -> (
      R := ring M;
@@ -558,23 +562,35 @@ NONTEST = (str) -> null
 -- Linear algebra tests -----------
 -----------------------------------
 TEST ///
-
+    --basic tests for rank, invert, characteristicPolynomial, minimalPolynomial, nullSpace, solveLinear, rowRankProfile, columnRankProfile, addMultipleTo
+    --
     kk = ZZp 101
     R = kk[t]
     M1 = mutableMatrix matrix(kk, {{2, 16, 29}, {-18, 24, 12}, {-41, 7, -31}})
     M2 = mutableMatrix matrix(kk, {{-39, 27, 9}, {-44, 14, 28}, {-22, -23, 14}})
+    M1C=M1+0*M1
+    M2C=M2+0*M2
 
     assert(M1 * M2 == mutableMatrix((matrix M1) * (matrix M2)))
-    assert(rank M1 == 3)
+    assert(rank M1 == 3)   
     assert(rank M2 == 3)
+    assert(M1C==M1);    assert(M2C==M2) ;
+
+    M1inv=invert M1;
+    assert(M1C==M1);  
 
     assert(M1 * invert M1  == mutableIdentity(kk, 3))
+    
     assert(M1^-1 == invert M1)
     assert(M1^2 == M1*M1)
     assert(M1^-2 == (invert M1)*(invert M1))
 
     cp = characteristicPolynomial(M1, R)
+    assert(M1C==M1);  
+
     mp = minimalPolynomial(M1,R)
+    assert(M1C==M1);  
+
     assert(mp == cp)
     mp2 = minimalPolynomial(mutableMatrix (matrix M1 ++ matrix M1),R)
     assert(mp2 == mp)
@@ -582,6 +598,7 @@ TEST ///
     assert(mp3 == mp * minimalPolynomial(M2, R))
 
     assert(nullSpace M1 == 0)
+    assert(M1C==M1);  
     assert(nullSpace(M1, RightSide=>false) == 0)
 
     M11 = mutableMatrix ((matrix M1) || (matrix M1))
@@ -589,17 +606,35 @@ TEST ///
     assert(numRows nullSpace(M11, RightSide=>false) == 3)
 
     X = solveLinear(M1, M2)
+    assert(M1C==M1);  
+    assert(M2C==M2);  
     assert(M1 * X == M2)
+    assert(M1C==M1);  
     Y = solveLinear(M1, M2, RightSide=>false)
     assert(Y * M1 == M2)
 
     assert(rowRankProfile(M1) == {0,1,2})
+    assert(M1C==M1);  
     assert(columnRankProfile(M1) == {0,1,2})
+    assert(M1C==M1);  
     assert(rowRankProfile(M11) == {0,1,2})
     assert(columnRankProfile(M11) == {0,1,2})
 
     C = mutableMatrix(kk,3,3)
     testAddMultipleTo(C,M1,M2)
+    assert(M1C==M1);
+    assert(M2C==M2);    
+///
+
+TEST ///
+    -- todo: how to test fpLLL?
+    --kk = ZZ 
+    --M1 = mutableMatrix random(kk^3, kk^7)
+    --assert(LLL M1==LLL(M1,Strategy=>fpLLL));
+    
+    --kk = ZZ 
+    --M1 = mutableMatrix random(kk^3, kk^3)
+    --assert(LLL M1==LLL(M1,Strategy=>fpLLL));
 ///
 
 TEST ///
@@ -645,6 +680,7 @@ TEST ///
 ///
 
 TEST ///
+    -- nullspace
     kk = ZZp 101;
     A = mutableMatrix matrix(kk, {{23, -35, -29, 33}, {22, 7, -25, 11}})
     B = mutableMatrix matrix(kk, {{-36, -40}, {-15, -43}, {-16, -43}, {15, 32}, {6, -14}})
@@ -658,6 +694,7 @@ TEST ///
 ///
 
 TEST ///
+     -- solveLinear
     N = 10
     kk = ZZp 101
     time A = mutableMatrix(kk, N, N, Dense=>true);
@@ -669,10 +706,14 @@ TEST ///
     time X = solveLinear(A, idN);
     assert(B == X)
 ///
+-- loadPackage "FastLinearAlgebra"
+-- debug Core
 
 TEST ///
+  -- minimalPolynomial
   R = ZZp 5
   Rt = R[t]
+  GRt=ZZ/5[t];
   jordanBlock = (R, diag, n) -> (
      m := mutableMatrix(R,n,n);
      for i from 0 to n-1 do m_(i,i) = diag;
@@ -687,17 +728,51 @@ TEST ///
   M = jordanForm(R, {(2_R, 4), (1_R, 2), (0_R, 6), (0_R, 3)})
 
   cpM = characteristicPolynomial(M, Rt)
-  mpM = minimalPolynomial(M, Rt)
 
-  A = mutableMatrix random(target M, source M)
-  Ainv = A^-1
+  mpmList= for i from 0 to 40 list
+ (
+      sub( minimalPolynomial(M, Rt),GRt)
+  );
+  mpM=sub(lcm mpmList,Rt);
+
+   A = mutableMatrix random(target M, source M)
+   while (rank A!=numRows A) do
+    ( A = mutableMatrix random(target M, source M)
+   )
+
+  Ainv = A^-1 
+  assert(Ainv^-1==A);
   N = A * (mutableMatrix M) * Ainv
+  mN= matrix A * M *matrix Ainv
+  NC=N+0*N
+  A=A+0*A
+  iN = Ainv * (mutableMatrix M) * A
+  miN= matrix Ainv * M *matrix A
+  
+  assert(rank mN==rank N)
+  assert(NC==N);
+  --N = Ainv * (mutableMatrix M) * A
 
-  cpN = characteristicPolynomial(N, Rt)
+  initialMpN = minimalPolynomial(N, Rt)
   mpN = minimalPolynomial(N, Rt)
+  assert(NC==N);
+  mpnList= for i from 0 to 40 list
+ (
+      sub( minimalPolynomial(N, Rt),GRt)
+  );
+  assert(NC==N);
+
+  mpN=sub(lcm mpnList,Rt);
+
+
+  assert(NC==N);
+  cpN = characteristicPolynomial(N, Rt)
+  assert(NC==N);
 
   assert(cpM == cpN)
   assert(mpM == mpN) -- WRONG!!
+
+
   cpM == (t-2)^4 * (t-1)^2 * t^9
   mpM == (t-2)^4 * (t-1)^2 * t^6
   
@@ -719,11 +794,14 @@ TEST ///
 
   for i from 0 to 10 do (  
     M = jordanBlock(R,1_R,2);
+    print M;
     cp = characteristicPolynomial(M, Rt);
     mp = minimalPolynomial(M,Rt);
     assert(cp == (t-1)^2);
     assert(mp == cp);  -- this fails some of the time!!
     )
+
+   mpN/cpN  --segfault
 ///
 
 -- move good tests above this line
@@ -784,10 +862,11 @@ TEST ///
 
 ///
 
+
 TEST ///
 needsPackage "FastLinearAlgebra"
 debug Core
-
+--test givaro field 
  
 nrTests = 100; -- may depend on cardinality, e.g. 1 % or so
 fieldHashTable = constructGivaroField( 37,1 );
@@ -1530,7 +1609,8 @@ det(M - t*id_(P^3))
 --      (a) subclass MutableMat<coeffRing, ...>
 --      (b) include in MutableMatrix: the functions we want.
 --      (c) write the matrix class.
--- Also, want GF(q).  Current problem: givaro didn't even compile.
+-- Also, want GF(q).  Current problem:
+--  givaro didn't even compile. Compiles now.
 
 -- invert2 DONE
 -- test that with solve DONE
@@ -1548,22 +1628,16 @@ det(M - t*id_(P^3))
 -- HW:
 --  Mike:
 --    think about the interface for ffpack matrices, so we do not need to copy matrices each operation
---  Jakob:
---    check with ffpack people about: row rank profile.  DONE
+
 
 -- HW after 24 May 2011:
---   FIXED givaro seems to crash M2 when linked in (Jakob and Mike will both look at this).  Still does! FIXED
 --   linbox: try to compile it in (maybe after givaro is working) FIXED: but need to patch M2
 --   need: how to use givaro in the same way as for fflas-ffpack. (Where is doc and test code for this?  Jakob will send to Mike?)
 --     converting elements?
 --     what exactly is the field?  ZZ/p[a]/(g(a)).  What is g?
---   need: new snapshots of givaro and fflas-ffpack.  Dan does this? DONE
---   need: ask them about license?  Check with Dan.  ffpack: LGPL license.  givaro: LGPL? DONE: seems OK
---   ask Dan: look at the givaro license. DONE
 --   Mike: in my GF ring code, allow givaro to decide the polynomial, and/or tell givaro what the poly is.
 --    learn givaro myself before our next meeting.
 --    REALLY start thinking about design for placing these in as M2 types.
---   Jakob: play with givaro
 --
 -- HW after 15 June 2011:
 --   Jakob needs to check valgrind on his givaro-mpir mix
@@ -1624,8 +1698,6 @@ det(M - t*id_(P^3))
 --      a few functions need to be added.
 --
 -- TODO notes made 14 Oct 2011.
---   - Jakob: doxygen: to do tags, make help, place documentation directory "elsewhere", handle options for generating class info DONE
---   - Mike: recompile all stuff, and retest everything -- we recall some test not working. CONTINUAL
 --   - goal: have fast linear algebra over finite fields, and possibly other fields too.
 --      problem: connect this seamlessly into M2
 --   - we will add in calls that operate on mutables matrices.
@@ -1649,9 +1721,6 @@ det(M - t*id_(P^3))
 --         to instantiate them with DMat, SMat.
 --
 -- TODO notes 19 Jan 2012
---    a. get latest changes of Jakob working (Givaro problem Jakob DONE)
---    b. merge in trunk changes (Mike DONE)
---    c. DONE possibly: merge out changes back to the trunk, delete the branch, and create a new branch. (ask Dan for read/write privs for Jakob on new branch)
 --    d. put x-mutablemat routines (fast linear algebra) into dmat.  Organize dispatch in x-mutablemat.
 --    e. tests: for matrices/elements for all of our new ring types (ffpack ZZ/p, givaro GF, ...)
 --    f. have toplevel GF have an option to call new GF code, same with ZZ/p.
@@ -1671,12 +1740,6 @@ det(M - t*id_(P^3))
 -- TODO generated 26 Jan 2012
 --  Getting ZZ/p and GF ffpack and givaro and M2 routines all working at top level, and with dense/sparse matrices
 --    a. bugs in ffpack ZZ/p: basis(2,R) fails (R = polyring over ZZ/p).  Fix this?  MIKE
---    b. DONE GF givaro: routine to get the defining polynomial coeffs (see M2_makearrayint in monordering.c). JAKOB
----   b1. DONE M2 GF in the same framework (as ConcreteRing). MIKE
---    c. promote/lift/eval beween these rings MIKE (or both of us, after a,b,d,e are done).
---    d. DONE top level M2 function to create GF from Givaro. (needs (b).  MIKE).
---       this needs: the polynomial
---       DONE another routine: create givaro GF ring using a specific poly (M2_arrayint as input) (JAKOB)
 --    e. make a function called primitiveGenerator(ZZ/p), or primitiveGenerator(GF). (BOTH: Jakob for givaro and ffpack, Mike for M2)
 --       top level: each finite field should have routines: char, order, vdim??, generator. (MIKE)
 --       char kk, kk.order (order), kk.degree (dimension over ZZ/p), kk_0 is the generator
@@ -1695,8 +1758,6 @@ det(M - t*id_(P^3))
 --    this will put us into place to write the linear algebra routines for these fields.
 --
 -- TODO generated 20. Feb 2012
---      Jakob: ask givaro authors if there is a reason for their choice of the generator
---      can we set the primitive element ourself ? - yes
 --      inside of aring-gf code: check that promote, lift, and eval are "correct".
 --      Mike:
 --        Problem: suppose phi : K = GF(p^n) --> R, for some ring R.
@@ -1707,9 +1768,7 @@ det(M - t*id_(P^3))
 --                 SEEMS OK in ARingGFM2 code, but we need to make sure it is OK in ARingGF code.  Then: fix logic in m2/galois.m2.
 -- TODO made 1 Mar 2012
 --      Jakob: ask givaro authors if there is a reason for their choice of the generator
---        can we set the primitive element ourself ? DONE, need to Check 
 --        (2)Does givaro, ffpack, linbox have initialized variables which occur before main()?
---        (3) make sure all givaro, ffpack uses are enclosed by #ifdef... DONE (Jakob)
 --      Mike:
 --        get M2 on our branch compiled: gcc 4.2.1: with givaro,  and also without givaro.  Merge in the changes from the trunk
 --          same with gcc 4.6.2.
@@ -1729,7 +1788,6 @@ det(M - t*id_(P^3))
 --         d. (Jakob and Mike): finally get to write the linear algebra routines.
 --
 -- TODO 22 Mar 2012
---     Jakob: why is the bound for modulus in ffpack about 67 million?  is it really? - yes. (<2^26)
 --            compute the generator in a faster manner, perhaps change interface to rawARing... to take a generator.
 --            debug GF determinant.  Seems not to be working. -  FFPACK calls for matrices over extension fields are illegal. 
 --            benchmarks should also appear as test and fail on specified hardware if the runtime increased significantly #
@@ -1802,13 +1860,14 @@ det(M - t*id_(P^3))
 
 --  JAKOB: remove using namespace LinBox from everywhere in LinBox.
 --  optimal matrix transposing seem not be trivial - http://en.wikipedia.org/wiki/In-place_matrix_transposition 
+-- useful link: http://www.linalg.org/linbox-dev-html/
 --
 -- 26 July 2012
 --   Mike: debug memory allocation for dense matrices.  Maybe change int values to size_t's
 --         get parens OK
 --         look into: factorization over ZZp.
 --   Jakob: minimal polynomial bug.
---   Miletone #1:
+--   Milestone #1:
 --     tests for dense linear algebra over ZZ/p, p <= ???
 --     top level access to these functions
 --     characteristic and minimal polynomial (implemented in same way as other functions)
@@ -1827,12 +1886,45 @@ det(M - t*id_(P^3))
 --   Milestone #4:
 --     Connect normal form operations from linbox to M2 (Hermite, Smith, LLL, Frobenius, ...)
 --     Make sure that ZZ operations and QQ operations match linbox
-
 ----------------------------------------------
 -- not discussed yet:
 --    a. bugs in ffpack ZZ/p: basis(2,R) fails (R = polyring over ZZ/p).  Fix this?  MIKE 
 --        => i suggest we will use M4RI for basis(2,R) op: we (mostly Mike) did setup this itsy bitsy template interface to incorporate other field implementations
 --           and therefore we should also use it extensively ;-)
+
+CONTINUAL:
+--  Jakob: make sure all givaro, ffpack uses are enclosed by #ifdef... CONTINUAL (Jakob)
+--  Mike: recompile all stuff, and retest everything -- we recall some test not working. CONTINUAL
+
+----------- DONE:
+-- HW after 24 May 2011:
+--   FIXED givaro seems to crash M2 when linked in (Jakob and Mike will both look at this).  Still does! FIXED
+--   need: new snapshots of givaro and fflas-ffpack.  Dan does this? DONE
+--   need: ask them about license?  Check with Dan.  ffpack: LGPL license.  givaro: LGPL? DONE: seems OK
+--   ask Dan: look at the givaro license. DONE
+--   Jakob: play with givaro
+-- TODO notes made 14 Oct 2011.
+--   - Jakob: doxygen: to do tags, make help, place documentation directory "elsewhere", handle options for generating class info DONE
+-- TODO notes 19 Jan 2012
+--    a. get latest changes of Jakob working (Givaro problem Jakob DONE)
+--    b. merge in trunk changes (Mike DONE)
+--    c. DONE possibly: merge out changes back to the trunk, delete the branch, and create a new branch. (ask Dan for read/write privs for Jakob on new branch)
+-- TODO notes 26 Jan 2011
+--    b. DONE GF givaro: routine to get the defining polynomial coeffs (see M2_makearrayint in monordering.c). JAKOB
+---   b1. DONE M2 GF in the same framework (as ConcreteRing). MIKE
+--    c. promote/lift/eval beween these rings MIKE (or both of us, after a,b,d,e are done).
+--    d. DONE top level M2 function to create GF from Givaro. (needs (b).  MIKE).
+--       this needs: the polynomial
+--       DONE another routine: create givaro GF ring using a specific poly (M2_arrayint as input) (JAKOB)
+-- TODO made 1 Mar 2012
+--        can we set the primitive element ourself ? DONE, need to Check 
+-- TODO 22 Mar 2012
+--     Jakob: why is the bound for modulus in ffpack about 67 million?  is it really? - yes. (<2^26)
+-- TODO generated 20. Feb 2012
+--      Jakob: ask givaro authors if there is a reason for their choice of the generator
+--      can we set the primitive element ourself ? - yes
+--  Jakob:
+--    check with ffpack people about: row rank profile.  DONE
 
 R = GF(2,7)
 ambient R

@@ -35,6 +35,7 @@ INTERFACE = \
 	LLL \
 	fractionfreeLU \
 	ntl-interface \
+	fplll-interface \
 	mat \
 	dmat \
 	smat \

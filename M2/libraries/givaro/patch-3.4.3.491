@@ -1,3 +1,32 @@
+--- givaro-3.4.3.491//src/library/poly1/givpoly1proot.inl.orig	2012-09-27 14:58:51.000000000 +0200
++++ givaro-3.4.3.491//src/library/poly1/givpoly1proot.inl	2012-09-27 15:00:40.000000000 +0200
+@@ -594,14 +594,14 @@ namespace Givaro {
+ 	template<class Domain, class Tag, class RandIter >
+ 	inline typename Poly1FactorDom<Domain,Tag, RandIter>::Rep& Poly1FactorDom<Domain,Tag, RandIter>::give_prim_root(Rep& R, const Rep& F)  const
+ 	{
+-		Degree n; degree(n,F);
++		Degree n; this->degree(n,F);
+ 		Residu_t MOD = _domain.residu();
+ 		//    this->write(std::cout << "Give Pr: ", F) << std::endl;
+ 
+ 
+ 		// Search for a primitive BINOMIAL : X^i + a
+ 		for(Degree di=1;di<n;++di) {
+-			init(R, di);
++			this->init(R, di);
+ 			//         for(Residu_t a=MOD; a--; )
+ 			for(Residu_t a=0; a<MOD;++a ) {
+ 				_domain.assign(R[0],a);
+@@ -611,7 +611,7 @@ namespace Givaro {
+ 		}
+ 		// Search for a primitive TRINOMIAL : X^i + b*X^j + a
+ 		for(Degree di=2;di<n;++di) {
+-			init(R, di);
++			this->init(R, di);
+ 			for(Degree dj=1;dj<di;++dj)
+ 				//             for(Residu_t b=MOD; b--;)
+ 				for(Residu_t b=0; b<MOD;++b) {
+
 diff -rupN givaro-3.4.3.491//src/kernel/zpz/givgfq.inl givaro-3.4.3.491.copy//src/kernel/zpz/givgfq.inl
 --- givaro-3.4.3.491//src/kernel/zpz/givgfq.inl  2011-05-24 17:32:04.000000000 +0200
 +++ givaro-3.4.3.491.copy//src/kernel/zpz/givgfq.new.inl  2012-03-30 16:31:12.000000000 +0200

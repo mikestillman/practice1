@@ -32,6 +32,7 @@ export {
    output2partition,
    output2bracket,
    bracket2partition,
+   redcheckers2partitions,
    redChkrPos,
    moveRed,
    moveCheckers,
@@ -49,6 +50,7 @@ export {
    CriticalRow,
    Polynomials,
    Solutions,
+   solveSchubertProblem,
    SolutionsSuperset -- temporary
    }
 
@@ -90,7 +92,7 @@ ERROR'TOLERANCE := 0.001
 -- 1 = timing main processes
 -- 2 = verify solutions agains blackbox solver (no timing)
 -- 3 = time processes and blackbox solver 
-DEBUG'LEVEL = 2
+DEBUG'LEVEL = 3
 
 
 solutionsHash := new MutableHashTable;
@@ -125,7 +127,7 @@ partition2bracket(List,ZZ,ZZ) := (l, k, n) -> (
 output2partition = method(TypicalValue => List)
 output2partition(List) := redpos ->(
 		n:= #redpos;
-		posn := select(redpos, x->x!= NC);
+		posn := select( redpos, x->x!= NC);
 		k:= #posn;
 		partitn := new MutableList from k:0;
 		apply(#posn, j->(
@@ -555,13 +557,19 @@ playCheckers(List,List,ZZ,ZZ) := (partn1,partn2,k,n) -> (
         --  self
 	--  )
      --else(
-     	  root := playCheckers ([blackChkrs, redChkrs], null, {}, all'nodes);  -- returns the root of the tree
-	  if DEBUG'LEVEL>1 then print VerticalList keys all'nodes;
-	  root
+     print "this is the root";
+     print([blackChkrs, redChkrs]);
+     root := playCheckers ([blackChkrs, redChkrs], null, {}, all'nodes);  -- returns the root of the tree
+     if DEBUG'LEVEL>1 then print VerticalList keys all'nodes;
+     root
     -- )
 )
 
 playCheckers (Array,Thing,List,MutableHashTable) := (board,father,typeofmove,all'nodes) ->(
+    -- Document this function!! it is not understandable
+    -- all'nodes is a HashTable whose keys are boards,
+    -- and this is where we store all nodes that we have
+    -- already visited.
      node'exists := all'nodes#?board; 
      self := if node'exists  
      then all'nodes#board 
@@ -571,11 +579,19 @@ playCheckers (Array,Thing,List,MutableHashTable) := (board,father,typeofmove,all
 	  Fathers => {}
 	  };
      if father=!=null then self.Fathers = self.Fathers | {(father,typeofmove)};
-     if not node'exists then (
-     	  (children,c) := moveCheckers board;
-     	  self.CriticalRow = c;
-     	  self.Children = apply(children, b -> playCheckers (take(b,2),self,last b,all'nodes));
-	  all'nodes#board = self;
+     if not node'exists then ( --add the ultimate node part here...
+<< "this is node'exists "<< node'exists<<endl;
+--	 coordX := makeLocalCoordinates board; -- local coordinates X = (x_(i,j))
+--     	 if numgens ring coordX == 0 then ( 
+--	     print "great success: we hit the ULTIMATE LEAF";
+--	     self.Solutions = {lift(coordX,FFF)};
+--	     self.IsResolved = true;
+--	     )else(
+     	     (children,c) := moveCheckers board;
+     	     self.CriticalRow = c;
+     	     self.Children = apply(children, b -> playCheckers (take(b,2),self,last b,all'nodes));
+	     all'nodes#board = self;
+--	     );
 	  );
      self
 )
@@ -659,7 +675,7 @@ resolveNode(MutableHashTable,List) := (node,remaining'conditions'and'flags) ->
 if not node.IsResolved then (
      n := #node.Board#0;
      coordX := makeLocalCoordinates node.Board; -- local coordinates X = (x_(i,j))
-     if numgens ring coordX == 0 then (
+     if numgens ring coordX == 0 then ( -- We need to move this block to playcheckers
 	  print "great success: we hit the ULTIMATE LEAF";
 	  if #remaining'conditions'and'flags > 0
 	  then error "invalid Schubert problem"
@@ -668,7 +684,7 @@ if not node.IsResolved then (
      else ( -- coordX has variables
      black := first node.Board;
           
-     if node.Children == {} then node.FlagM = matrix mutableIdentity(FFF,n)
+     if node.Children == {} then node.FlagM = matrix mutableIdentity(FFF,n) --change here
      else scan(node.Children, c->resolveNode(c,remaining'conditions'and'flags));
      
      if DEBUG'LEVEL >= 2 then (
@@ -699,7 +715,8 @@ if not node.IsResolved then (
 	       	    ), 
 	       ss-> (map(CC,ring coordX,matrix ss)) coordX
 	       );      	  
-     	  if node.Children == {} then (
+     	  if node.Children == {} then ( -- change Also Here
+	      --------------------------------------
 	       --(Vars,Coeffs) := coefficients polynomials;
 	       --rws:= numRows Coeffs - 1;
 	       -- we solve the linear system
@@ -707,7 +724,22 @@ if not node.IsResolved then (
 	       --node.Solutions = {(map(CC,ring coordX,matrix sub(transpose Soluts, CC))) coordX}
 	       --print(node.SolutionsSuperset);
 	       --print({(map(CC,ring coordX,matrix sub(transpose Soluts, CC))) coordX});
-	       node.Solutions = node.SolutionsSuperset; 
+	       ------------------------
+	       -- Precondition this with the DEBUGG LeVEL
+	       print "calling solveSchubertProblem from resolveNode ";
+	       print(node.Board);
+	       lambda := output2partition(last node.Board);
+	       print(lambda);
+	       k:=#lambda;
+	       validpartition := true;
+	       scan(lambda, i-> if i>n-k then validpartition = false) ;
+	       if validpartition then(
+		   node.Solutions = solveSchubertProblem(prepend((lambda,id_(FFF^n)), remaining'conditions'and'flags),k,n);
+	       	   )else(   
+		   << "-- partition is not valid: " << lambda << endl;
+		   node.Solutions = {}; 
+		   );
+	       --node.Solutions = node.SolutionsSuperset; 
      	       ); -- should change!!! 
      	  );
      scan(node.Fathers, father'movetype->(
@@ -888,6 +920,41 @@ if not node.IsResolved then (
      ) -- END resolveNode
 
 
+---------------
+-- solveSchubertProblem
+---------------
+-- Function that solves a Schubert problem
+-- by first taking two of the conditions,
+-- then create a tree (with nodes) by playing a 
+-- checker game, then resolve the node numerically
+-- using homotopies, and gluing the solutions to each
+-- node
+---------------
+-- input:
+--    SchPblm := list of Schubert conditions with flags
+--    k,n := the Grassmannian G(k,n)
+-- output:
+--    list of solutions
+---------------
+solveSchubertProblem = method()
+solveSchubertProblem(List,ZZ,ZZ) := (SchPblm,k,n) ->(
+    -- take the first two conditions
+    twoconds := take(SchPblm,2);
+    -- extract the partitions and the flags
+    l1:=first first twoconds;
+    F1 := last first twoconds;
+    l2 := first last twoconds;
+    F2 := last last twoconds;
+    << "calling playCheckers from solveSchubert "<< l1<< l2<<k<<n<< endl;
+    remaining'conditions'and'flags:=drop(SchPblm,2);
+    newDag := playCheckers(l1,l2,k,n);
+    resolveNode(newDag,remaining'conditions'and'flags);
+    -- we do a change of coordinates
+    B:=solve(F2,rsort id_(FFF^n));
+    apply(newDag.Solutions, sln-> sln*B )
+    )
+
+
 toRawSolutions = method()
 toRawSolutions(Matrix,Matrix) := (coordX,X) -> (
      a := flatten entries coordX;
@@ -1055,6 +1122,56 @@ isRedCheckerInRegionE(ZZ,MutableHashTable) := (i,node) -> (
      e1 := position(black, b->b==r);
      i < e1 and i >= e0
      )
+ 
+---------------
+-- SolveLinAlg
+---------------
+-- A function to solve the linear
+-- algebra problem that comes from
+-- intersecting two Schubert varieties
+-- with respect to complementary
+-- partitions
+--
+-- we use this function to solve the
+-- Ultimate Leaf of the tree
+--
+-- Input: two sequences (l,L) , (m,M)
+--  	where l,m are brackets
+--      L,M are flags (i.e., square matrices)
+--
+-- Output: a list 
+--      if l,m are complementary, then returns
+--      the matrix with the solutions
+--      if they are not complementary, then
+--      returns an empty list (as the problem
+--      has no solutions)
+--
+-- Note: we start by assuming that the flags
+-- L and M are in general position
+---------------
+
+-- OJO!! right now it assumes that the first
+-- two flags are opposite flags e_1,...,e_m
+-- and e_m,e_m-1, ... e_1
+-- we need to make a change of coordinates
+-- to post the actual solutions when we give 
+-- the flags of the problem.
+solveLinAlg = method(TypicalValue => List)
+solveLinAlg(Sequence,Sequence,Sequence):=(lL,mM,kn) -> (
+    (l,L):= lL;
+    (m,M):= mM;
+    (k,n):=kn;
+    -- l,m are partitions
+    -- L,M are matrices representing the flags
+    ll:=l+reverse(m);
+    if #ll==1 and first ll == n then(
+	l1 := partition2bracket(l,k,n);
+	l1 = apply(l1, i-> i-1);
+	{solve(L,M_l1)}
+	)else {} 
+    )
+
+
 -----------------------------
 -- end Numerical LR-Homotopies
 -----------------------------
@@ -1283,7 +1400,7 @@ doc ///
       Example
          ---- Simple Schubert Problem
        	 k = 3
-	 			 n = 7
+	 n = 7
        	 l = {2,1,0}
        	 m = {1,1,0}
        	 ----  Generate random flags G----
@@ -1476,8 +1593,9 @@ resolveNode(root, {({1},random(FFF^4,FFF^4)), ({1},random(FFF^4,FFF^4))})
 assert(#root.Solutions==2)
 -- not a tree
 root = playCheckers({2,1,0},{2,1,0},3,6)
-resolveNode(root, {({2,1,0},random(FFF^6,FFF^6))})
+time resolveNode(root, {({2,1,0},random(FFF^6,FFF^6))})
 assert(#root.Solutions==2)
+peek root
 -- test code and assertions here
 -- may have as many TEST sections as needed
 ///
@@ -1574,4 +1692,43 @@ black = {6,7,8,9,11,12,13,14,10,5,4,3,2,1};
 red = {}
 
 
+restart
+needsPackage "NumericalSchubertCalculus";
 
+
+SchPblm = {({1},id_(FFF^4)), ({1},rsort(id_(FFF^4))),({1},random(FFF^4,FFF^4)), ({1},random(FFF^4,FFF^4))};
+solveSchubertProblem(SchPblm,2,4)
+
+SchPblm = {({1}), ({1}),({1},random(FFF^4,FFF^4)), ({1},random(FFF^4,FFF^4))};
+solveSchubertProblem(SchPblm,2,4)
+
+playCheckers({2,0},{1},2,4)
+ 
+partition2bracket({2,0},2,4)
+partition2bracket({1},2,4)
+redChkrPos({1,4},{2,4},2,4)
+-- redChkrPos(partition2bracket({2,1},3,6),partition2bracket({2},3,6),3,6)
+
+
+twoconds = take(SchPblm,2);
+l1=first first twoconds;
+F1= last first twoconds;
+l2= first last twoconds;
+F2= last last twoconds;
+remaining'conditions'and'flags=drop(SchPblm,2);
+newDag = playCheckers(l1,l2,2,4);
+resolveNode(newDag,remaining'conditions'and'flags);
+
+SchPblm = {({2,1}), ({1})};
+twoconds = take(SchPblm,2)
+l1= first twoconds
+if class last twoconds === Sequence then( 
+l2= first last twoconds
+F2= last last twoconds
+)
+remaining'conditions'and'flags=drop(SchPblm,2);
+newDag = playCheckers(l1,l2,2,4);
+resolveNode(newDag,remaining'conditions'and'flags);
+peek newDag
+
+solveSchubertProblem(SchPblm,2,4)

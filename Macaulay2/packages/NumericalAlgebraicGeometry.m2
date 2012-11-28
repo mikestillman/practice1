@@ -9,8 +9,8 @@ PHC'EXISTS := (version#"VERSION" > "1.4")
 
 newPackage select((
      "NumericalAlgebraicGeometry",
-     Version => "1.4",
-     Date => "March, 2011",
+     Version => "1.5.0.1",
+     Date => "November, 2012",
      Headline => "Numerical Algebraic Geometry",
      HomePage => "http://people.math.gatech.edu/~aleykin3/NAG4M2",
      AuxiliaryFiles => true,
@@ -70,6 +70,7 @@ exportMutable {
 protect Processing, protect Undetermined -- possible values of SolutionStatus
 protect SolutionAttributes -- option of getSolution 
 protect Tracker -- an internal key in Point 
+
 -- experimental:
 protect AllowSingular -- in movePoints, regeneration
 protect LanguageCPP, protect MacOsX, protect System, 
@@ -92,7 +93,7 @@ BERTINIexe = NumericalAlgebraicGeometry#Options#Configuration#"BERTINI";
 HOM4PS2exe = NumericalAlgebraicGeometry#Options#Configuration#"HOM4PS2";
 
 DBG = 0; -- debug level (10=keep temp files)
-SLPcounter := 0; -- the number of compiled SLPs (used in naming dynamic libraries)
+SLPcounter = 0; -- the number of compiled SLPs (used in naming dynamic libraries)
 lastPathTracker := null; -- path tracker object used last
 
 DEFAULT = new MutableHashTable from {
@@ -900,6 +901,211 @@ track (List,List,List) := List => o -> (S,T,solsS) -> (
 	       if PT=!=null then p.Tracker=PT;
 	       p
 	       ))
+     )
+
+trackHomotopy = method(TypicalValue => List, Options =>{
+	  Software=>null, NoOutput=>null, 
+     	  -- step control
+	  tStep => null, -- initial
+          tStepMin => null,
+	  stepIncreaseFactor => null,
+	  numberSuccessesBeforeIncrease => null,
+	  -- predictor 
+	  Predictor=>null, 
+	  MultistepDegree => null, -- used only for Predictor=>Multistep
+	  -- corrector 
+	  maxCorrSteps => null,
+     	  CorrectorTolerance => null, -- tracking tolerance
+	  -- end of path
+	  EndZoneFactor => null, -- EndZoneCorrectorTolerance = CorrectorTolerance*EndZoneFactor when 1-t<EndZoneFactor 
+	  InfinityThreshold => null -- used to tell if the path is diverging
+	  } )
+trackHomotopy(Thing,List) := List => o -> (H,solsS) -> (
+-- tracks homotopy H starting with solutions solsS 
+-- IN:  H = either a column vector of polynomials in CC[x1,...,xn,t] -- !!! not implemented 
+--          or an SLP representing one -- !!! at this point it is preSLP
+-- OUT: solsT = list of target solutions corresponding to solsS
+     o = new MutableHashTable from o;
+     scan(keys o, k->if o#k===null then o#k=DEFAULT#k); 
+     o = new OptionTable from o;
+
+     stepDecreaseFactor := 1/o.stepIncreaseFactor;
+     theSmallestNumber := 1e-16;
+    
+     -- the code works only for preSLP!!!
+     (R,slpH) := H;
+     n := numgens R - 1;
+     K := coefficientRing R;
+     
+     slpHx := transposePreSLP jacobianPreSLP(slpH,toList(0..n-1));
+     slpHt := transposePreSLP jacobianPreSLP(slpH,{n}); 
+    
+     -- evaluation times
+     etH := 0;
+     etHx := 0; 
+     etHt := 0;
+   
+     fromSlpMatrix := (S,inputMatrix) -> evaluatePreSLP(S, flatten entries inputMatrix);
+     evalH := (x0,t0)-> (
+	 tr := timing (
+	     transpose fromSlpMatrix(slpH, transpose x0 | matrix {{t0}})
+	     );
+	 etH = etH + tr#0;
+	 tr#1
+	 );
+     evalHx := (x0,t0)-> (
+	 tr := timing (
+	     fromSlpMatrix(slpHx, transpose x0 | matrix {{t0}})
+	     );
+	 etHx = etHx + tr#0;
+	 tr#1
+	 );  
+     evalHt := (x0,t0)->(
+	 tr := timing (
+	     fromSlpMatrix(slpHt, transpose x0 | matrix {{t0}})
+	     );
+	 etHt = etHt + tr#0;
+	 tr#1
+	 );
+     solveHxTimesDXequalsMinusHt := (x0,t0) -> solve(evalHx(x0,t0),-evalHt(x0,t0)); 
+     
+     compStartTime := currentTime();      
+
+     rawSols := if o.Software===M2 then 
+	 apply(#solsS, sN->(
+	       s := solsS#sN;
+	       s'status := Processing;
+	       endZone := false;
+	       CorrectorTolerance := ()->(if endZone then o.EndZoneFactor else 1)*o.CorrectorTolerance;
+	       if DBG > 2 then << "tracking solution " << toString s << endl;
+     	       tStep := o.tStep;
+	       predictorSuccesses := 0;
+	       x0 := s; 
+	       t0 := 0_K; 
+	       count := 1; -- number of computed points
+	       stepAdj := 0; -- step adjustment number (wrt previous step): 
+	                     -- newstep = oldstep * stepIncreaseFactor^stepAdj  
+	       while s'status === Processing and 1-t0 > theSmallestNumber do (
+		    if 1-t0<=o.EndZoneFactor+theSmallestNumber and not endZone then (
+			 endZone = true;
+			 -- to do: see if this path coinsides with any other path
+			 );
+		    if DBG > 4 then << "--- current t = " << t0 << endl;
+                    -- monitor numerical stability: perhaps change patches if not stable ???
+		    -- Hx0 := evalHx(x0,t0);
+		    -- svd := sort first SVD Hx0;
+		    -- if o.Projectivize and first svd / last svd > condNumberThresh then ( 
+     	       	    --	 << "CONDITION NUMBER = " <<  first svd / last svd << endl;			 
+		    --	 );
+
+		    -- predictor step
+		    if DBG>9 then << ">>> predictor" << endl;
+		    local dx; local dt;
+		    -- default dt; Certified and Multistep modify dt
+		    dt = if endZone then min(tStep, 1-t0) else min(tStep, 1-o.EndZoneFactor-t0);
+
+		    if o.Predictor == Tangent then (
+			Hx0 := evalHx(x0,t0);
+			Ht0 := evalHt(x0,t0);
+			dx = solve(Hx0,-dt*Ht0);
+			) 
+		    else if o.Predictor == Euler then (
+			H0 := evalH(x0,t0);
+			Hx0 = evalHx(x0,t0);
+			Ht0 = evalHt(x0,t0);
+			dx = solve(Hx0, -H0-Ht0*dt);
+			)
+		    else if o.Predictor == RungeKutta4 then (
+			--k1 := evalMinusInverseHxHt(x0,t0);
+			--k2 := evalMinusInverseHxHt(x0+.5*k1,t0+.5*dt);
+			--k3 := evalMinusInverseHxHt(x0+.5*k2,t0+.5*dt);
+			--k4 := evalMinusInverseHxHt(x0+k3,t0+dt);
+			--dx = (1/6)*(k1+2*k2+2*k3+k4)*dt;     
+			dx1 := solveHxTimesDXequalsMinusHt(x0,t0);
+			dx2 := solveHxTimesDXequalsMinusHt(x0+.5*dx1*dt,t0+.5*dt);
+			dx3 := solveHxTimesDXequalsMinusHt(x0+.5*dx2*dt,t0+.5*dt);
+			dx4 := solveHxTimesDXequalsMinusHt(x0+dx3*dt,t0+dt);
+			dx = (1/6)*dt*(dx1+2*dx2+2*dx3+dx4);     
+			)
+		    else error "unknown Predictor";
+
+
+		    if DBG > 3 then << " x0 = " << x0 << ", t0 = " << t0 << ", res=" <<  toString evalH(x0,t0) << ",  dt = " << dt << ",  dx = " << toString dx << endl;
+
+    	 	    t1 := t0 + dt;
+		    x1 := x0 + dx;
+		    
+		    -- corrector step
+		    if DBG>9 then << ">>> corrector" << endl;
+		    nCorrSteps := 0;
+		    dx = infinity;
+		    while dx === infinity or norm dx > CorrectorTolerance()*norm x1+theSmallestNumber 
+		    and nCorrSteps < o.maxCorrSteps
+		    do( 
+			dx = solve(evalHx(x1,t1), -evalH(x1,t1));
+			x1 = x1 + dx;
+			nCorrSteps = nCorrSteps + 1;
+			if DBG > 4 then <<"corrector step " << nCorrSteps << endl <<"x=" << toString x1 << " res=" <<  toString evalH(x1,t1) 
+			<< endl << " dx=" << dx << endl;
+			if norm x1 > o.InfinityThreshold
+			then ( s'status = Infinity; dx = 0 );
+			);
+		    if DBG>9 then << ">>> step adjusting" << endl;
+		    if dt > o.tStepMin 
+		    and norm dx > CorrectorTolerance() * norm x1 then ( -- predictor failure 
+			predictorSuccesses = 0;
+			stepAdj = stepAdj - 1;
+			tStep = stepDecreaseFactor*tStep;
+			if DBG > 2 then << "decreased tStep to "<< tStep << endl;	 
+			if tStep < o.tStepMin then s'status = MinStepFailure;
+			) 
+		    else ( -- predictor success
+			predictorSuccesses = predictorSuccesses + 1;
+			x0 = x1;
+			t0 = t1;
+			count = count + 1;
+			if nCorrSteps <= o.maxCorrSteps - 1 -- over 2 / minus 2 ???
+			   and predictorSuccesses >= o.numberSuccessesBeforeIncrease 
+			then (			      
+			    predictorSuccesses = 0;
+			    if o.Predictor =!= Certified then (
+				stepAdj = 1;
+				tStep = o.stepIncreaseFactor*tStep;	
+				if DBG > 2 then << "increased tStep to "<< tStep << endl;
+				)
+			    )
+			 else stepAdj = 0; -- keep the same step size
+			 );
+		    );        	    
+	       if s'status===Processing then s'status = Regular;
+	       if DBG > 0 then << (if s'status == Regular then "."
+		    else if s'status == Singular then "S"
+		    else if s'status == MinStepFailure then "M"
+		    else if s'status == Infinity then "I"
+		    else error "unknown solution status"
+		    ) << if (sN+1)%100 == 0 then endl else flush;
+	       -- create a solution record 
+	       (x0,
+		   NumberOfSteps => count-1, -- number of points - 1 
+		   SolutionStatus => s'status, 
+		   LastT => t0, 
+		   ConditionNumber => conditionNumber evalHx(x0,t0)
+		   ) 
+    	    ))
+    else error "wrong Software option";
+    
+    if DBG>3 then print rawSols;
+    ret := if o.NoOutput then null 
+    else rawSols/(s->{flatten entries first s} | drop(toList s,1));
+    if DBG>0 then (
+	  if o.Software==M2 then (
+	       << "Number of solutions = " << #ret << endl << "Average number of steps per path = " << toRR sum(ret,s->s#1#1)/#ret << endl;
+     	       if DBG>1 then (
+	       	    << "Evaluation time (M2 measured): Hx = " << etHx << " , Ht = " << etHt << " , H = " << etH << endl;
+		    )
+	       )
+	   );
+     apply(ret, s->point toList s)
      )
 
 refine = method(TypicalValue => List, Options =>{
@@ -1926,702 +2132,7 @@ liftSolution(List, Matrix) := o->(c,dT)->(
      ret
      ) 
 
-
------------- preSLPs ------------------------------------------------------------------------
--- preSLP = (constants, program, output_description)
---   constants = list of elements in CC
---   program = node, node, ...
---     node = {binary_operation, a, b}
---         or {multi_operation, n, a1, ... , an}        
---         or {copy, a}                                 -- copies node n    
---       a,b,ai are 
---          negative integers (relative position) 
---          or const => i (refers to i-th constant)
--- 	    or in => i (refers to i-th input) 
---       binary_operation = {sum, product}
---       multi_operation = {msum, mproduct} 
---   output_description = Matrix over ZZ (each entry refers to a node)
-
-libPREFIX = "/tmp/slpFN.";
-slpCOMPILED = 100;
-slpPREDICTOR = 101;
-slpCORRECTOR = 102;
-slpEND = 0;
-slpCOPY = 1; --"COPY"; -- node positions for slpCOPY commands are absolute
-slpMULTIsum = 2; --"MULTIsum";
-slpPRODUCT = 3; --"PRODUCT";
-
--- types of predictors
-predRUNGEKUTTA = 1;
-predTANGENT = 2;
-predEULER = 3;
-predPROJECTIVENEWTON = 4;
-
-shiftConstsSLP = method(TypicalValue=>List);
-shiftConstsSLP (List,ZZ) := (slp,shift) -> apply(slp, 
-     n->apply(n, b->
-	  if class b === Option and b#0 === "const" 
-     	  then "const"=>shift+b#1 
-     	  else b
-	  )
-     );
-
-poly2preSLP = method(TypicalValue=>Sequence)
-poly2preSLP RingElement :=  g -> (
-     prog := {}; -- our SLP
-     R := ring g;
-     const := coefficient(1_R,g);
-     finalMULTIsum := {}; -- list of nodes for final multisum
-     constants := if const == 0 then {} else ( finalMULTIsum = finalMULTIsum | {"const"=>0}; {const} );
-     f := g - const;
-     scan(numgens R, i->(
-	       fnox := sum(select(listForm f,ec->(first ec)#i==0), (e,c)->c*R_e); -- fnox := f%R_i;
-	       if fnox == 0 then fnox = 0_R;
-	       fx := f - fnox;
-	       if fx != 0 then (
-		    fxOverRi := --fx//R_i
-		    sum(listForm fx, (e,c)->c*R_(take(e,i)|{e#i-1}|drop(e,i+1)));
-		    if fxOverRi == 0 then fxOverRi = 0_R;      
-	       	    (constfx, progfx, outfx) := poly2preSLP(
-			 fxOverRi
-			 );
-	       	    -- shift constant nodes positions
-	       	    prog = prog | shiftConstsSLP(progfx, #constants); 
-	       	    constants = constants | constfx;
-	       	    -- multiply by x=R_i
-	       	    prog = prog | {{slpPRODUCT, "in"=>i, -1}};
-	       	    finalMULTIsum = finalMULTIsum | {#prog-1};
-		    );	       
-	       f = fnox;
-	       )); 
-     curPos := #prog;
-     if #finalMULTIsum === 1 then (
-       	  if finalMULTIsum#0 === curPos-1  -- if trivial 
-       	  then null -- do nothing
-       	  else if class finalMULTIsum#0 === Option and finalMULTIsum#0#0 == "const" then 
-	  prog = prog | {{slpCOPY, finalMULTIsum#0}}
-	  else error "unknown trivial MULTIsum"; 
-	  )   
-     else prog = prog | {{slpMULTIsum, #finalMULTIsum} | apply(finalMULTIsum, 
-	       p->if class p === Option then p 
-	       else p - curPos -- add a relative position
-	       )};    
-      (constants, prog, matrix{{#prog-1}})
-     )
-
-
-concatPreSLPs = method() -- concatenate pre-slps 
--- ( if 2 slp's output matrices A and B, their concatenation returns A|B )
-concatPreSLPs List := S -> (
-     c := {};
-     p := {}; 
-     o := null;
-     scan(S, s->(
-	       if o === null then o = s#2
-	       else -- shift output by the current length of the program 
-	            o = o | (s#2 + map(ZZ^(numgens target s#2), ZZ^(numgens source s#2), (i,j)->#p));  
-	       p = p | apply(s#1, a->
-		    apply(a, b->
-			 if class b === Option and b#0 == "const" 
-			 then b#0=>b#1+#c -- shift the constants
-			 else b
-			 ) 
-		    );
-	       c = c | s#0;
-	       ));     
-     (c,p,o)
-     );
-
-stackPreSLPs = method() -- stacks pre-slps (A||B)
-stackPreSLPs List := S -> (
-     c := {};
-     p := {}; 
-     o := null;
-     scan(S, s->(
-	       if o === null then o = s#2
-	       else -- shift output by the current length of the program 
-	            o = o || (s#2 + map(ZZ^(numgens target s#2), ZZ^(numgens source s#2), (i,j)->#p));  
-	       p = p | apply(s#1, a->
-		    apply(a, b->
-			 if class b === Option and b#0 == "const" 
-			 then b#0=>b#1+#c -- shift the constants
-			 else b
-			 ) 
-		    );
-	       c = c | s#0;
-	       ));     
-     (c,p,o)
-     );
-     
-evaluatePreSLP = method() -- evaluates preSLP S at v
-evaluatePreSLP (Sequence,List) := (S,v)-> (
-     val := {};
-     constants := S#0;
-     slp := S#1;
-     scan(#slp, i->(
-	   n := slp#i;
-	   k := first n;
-	   if k === slpCOPY then (
-	   	if class n#1 === Option and n#1#0 == "const" then val = val | {constants#(n#1#1)}
-		else error "unknown node type"; 
-		)  
-	   else if k === slpMULTIsum then (
-		val = val | { sum(2..1+n#1, 
-			  j->if class n#j === Option and n#j#0 == "const" then constants#(n#j#1)
-			  else if class n#j === ZZ then val#(i+n#j)
-			  else error "unknown node type" 
-			  )
-		     }
-	   	)
-	   else if k === slpPRODUCT then (
-		val = val | { 
-		     product(1..2, j->(
-          		       if class n#j === Option and n#j#0 == "const" then constants#(n#j#1)
-			       else if class n#j === Option and n#j#0 == "in" then v#(n#j#1)
-			       else if class n#j === ZZ then val#(i+n#j)
-			       else error "unknown node type" 
-			       ))
-		     }
-		)
-	   else error "unknown SLP node key";   
-	   ));
- matrix apply(entries S#2, r->apply(r, e->val#e))
- )
-
-transposePreSLP = method() 
-transposePreSLP(List,List,Matrix) := (C,slp,M) -> (C, slp, transpose M)
-
-jacobianPreSLP = method() -- finds jacobian of S with respect to inputs listed in L
-jacobianPreSLP (Sequence, List) := (S,L) -> (  
-     constants := S#0 | {1_CC};
-     slp := S#1;
-     outMatrix := S#2;
-     if numgens target outMatrix != 1 then error "preSLP: row vector expected";
-     diffNodeVar := (ni,vj)->( 
-	  -- augments slp with nodes necessary to differentiate node #ni w.r.t. input #vj 
-	  -- output: the (absolute) position of the result in slp (or -1 "zero")
-	  n := slp#ni;
-	  k := first n;
-	  if k === slpCOPY then (
-	       if class n#1 === Option and n#1#0 == "const" 
-	       then return -1 -- "zero"
-	       else error "unknown node type"; 
-	       )  
-	  else if k === slpMULTIsum then (
-	       pos := toList apply(2..1+n#1, j->if class n#j === Option and n#j#0 == "const" then -1 -- "zero"
-		    else if class n#j === ZZ then diffNodeVar(ni+n#j,vj)
-		    else error "unknown node type" 
-		    );
-	       summands := select(pos, p->p!=-1);
-	       if #summands == 0 then return -1 -- "zero"
-	       else if #summands == 1 then return first summands
-	       else (
-		    slp = slp | {{slpMULTIsum,#summands} | apply(summands, i->i-#slp)};
-		    return (#slp-1);
-		    )
-	       )
-	   else if k === slpPRODUCT then (
-	       pos = toList apply(1..2, j->(
-			 if class n#j === Option and n#j#0 == "in" then (
-			      if n#j#1 == vj then ( 
-     	       	    	      	   slp = slp | {{slpPRODUCT}|
-					toList apply(1..2, t->if t==j 
-					     then "const"=> #constants-1 -- "one"
-					     else (
-						  if class n#t === ZZ then ni+n#t-#slp
-					     	  else n#t
-						  )
-					     )};
-				   (#slp-1)
-				   )
-			      else -1 -- "zero"
-			      )
-			 else if class n#j === ZZ then (
-			      p:=diffNodeVar(ni+n#j,vj);
-			      if p==-1 then -1 -- "zero"
-			      else (
-			      	   slp = slp | {
-				   	{slpPRODUCT}|
-				   	toList apply(1..2, t->
-					     if t==j 
-					     then p-#slp 
-					     else (
-					     	  if class n#t === ZZ then ni+n#t-#slp
-					     	  else n#t
-					     	  )
-					     )};
-			      	   (#slp-1)
-				   )
-			      )
-			 else error "unknown node type" 
-			 ));
-	       summands = select(pos, p->p!=-1);
-	       if #summands == 0 then return -1 -- "zero"
-	       else if #summands == 1 then return first summands
-	       else (
-		    slp = slp | {{slpMULTIsum,#summands} | apply(summands, p->p-#slp)};
-		    return (#slp-1);
-		    )
-	       )
-	   else error "unknown SLP node key";   
-	  ); 
-     newOut := transpose matrix apply(first entries outMatrix, ni->apply(L, vj->diffNodeVar(ni,vj)));
-     constants = constants | {0_CC};
-     slp = slp | {{slpCOPY, "const"=>#constants-1}};
-     ( constants, slp,  
-	 matrix apply(entries newOut, row->apply(row, i->if i==-1 then (#slp-1) else i)) ) 
-     )
-
-prunePreSLP = method() -- finds jacobian of S with respect to inputs listed in L
-prunePreSLP (List,List,Matrix) := (C,slp,outMatrix) -> (
-     -- look for duplicate constants
-     newC := {};
-     remap := apply(#C, i->(
-	       p := position(newC,c->C#i==c);
-	       if p =!= null 
-	       then p
-	       else ( 
-		    newC = newC | {C#i};
-		    #newC - 1
-		    )
-	       ));
-     newslp := apply(slp, n->(
-	   k := first n;
-	   if k === slpCOPY then (
-	   	if class n#1 === Option and n#1#0 == "const" then {n#0,"const"=>remap#(n#1#1)}
-		else error "unknown node type"
-		)  
-	   else if k === slpMULTIsum then (
-		{n#0,n#1} | toList apply(2..1+n#1, 
-		     j -> if class n#j === Option and n#j#0 == "const" 
-		     then "const"=>remap#(n#j#1) 
-		     else n#j
-		     )
-	   	)
-	   else if k === slpPRODUCT then (
-		{n#0} | toList apply(1..2, j->
-		     if class n#j === Option and n#j#0 == "const" 
-		     then "const" => remap#(n#j#1)
-		     else n#j
-		     )
-		)
-	   else error "unknown SLP node key"   
-	   ));
-     	  (newC,newslp,outMatrix)
-     )
-
--- create a file <fn>.cpp with C++ code for the function named fn that evaluates a preSLP S
--- format:
---   void fn(const complex* a, complex* b)
--- here: input array a
---       output array b 
-preSLPtoCPP = method(TypicalValue=>Nothing, Options=>{System=>MacOsX})
-preSLPtoCPP (Sequence,String) := o-> (S,filename)-> (
-     constants := S#0;
-     slp := S#1;
-     fn := "slpFN"; -- function name
-     f := openOut(filename);
-     f << ///
-#include<stdio.h>
-#include<math.h>
-
-class complex
-{
-private:
-  double real;  // Real Part
-  double imag;      //  Imaginary Part                                                                                                       
-public:
-  complex();
-  complex(double,double);
-  complex(const complex&);
-  //complex(M2_CCC);
-  complex operator +(complex);
-  complex operator -(complex);
-  complex operator *(complex);
-  complex operator /(complex);
-  complex getconjugate();
-  complex getreciprocal();
-  double getreal();
-  double getimaginary();
-  bool operator ==(complex);
-  void operator =(complex);
-  void sprint(char*);
-};
-
-complex::complex() { }
-complex::complex(double r, double im)
-{
-  real=r;
-  imag=im;
-}
- 
-//                                 COPY CONSTRUCTOR
-complex::complex(const complex &c)
-{
-  this->real=c.real;
-  this->imag=c.imag;
-}
- 
-void complex::operator =(complex c)
-{
-  real=c.real;
-  imag=c.imag;
-}
- 
- 
-complex complex::operator +(complex c)
-{
-  complex tmp;
-  tmp.real=this->real+c.real;
-  tmp.imag=this->imag+c.imag;
-  return tmp;
-}
- 
-complex complex::operator -(complex c)
-{
-  complex tmp;
-  tmp.real=this->real - c.real;
-  tmp.imag=this->imag - c.imag;
-  return tmp;
-}
- 
-complex complex::operator *(complex c)
-{
-  complex tmp;
-  tmp.real=(real*c.real)-(imag*c.imag);
-  tmp.imag=(real*c.imag)+(imag*c.real);
-  return tmp;
-}
- 
-complex complex::operator /(complex c)
-{
-  double div=(c.real*c.real) + (c.imag*c.imag);
-  complex tmp;
-  tmp.real=(real*c.real)+(imag*c.imag);
-  tmp.real/=div;
-  tmp.imag=(imag*c.real)-(real*c.imag);
-  tmp.imag/=div;
-  return tmp;
-}
-complex complex::getconjugate()
-{
-  complex tmp;
-  tmp.real=this->real;
-  tmp.imag=this->imag * -1;
-  return tmp;
-}
- 
-complex complex::getreciprocal()
-{
-  complex t;
-  t.real=real;
-  t.imag=imag * -1;
-  double div;
-  div=(real*real)+(imag*imag);
-  t.real/=div;
-  t.imag/=div;
-  return t;
-}
- 
-double complex::getreal()
-{
-  return real;
-}
- 
-double complex::getimaginary()
-{
-  return imag;
-}
- 
-bool complex::operator ==(complex c)
-{
-  return (real==c.real)&&(imag==c.imag) ? 1 : 0;
-}
-
-void complex::sprint(char* s)
-{
-  sprintf(s, "(%lf) + i*(%lf)", real, imag);
-}
-/// << endl;
-     if o.System === MacOsX then f << ///#define EXPORT __attribute__((visibility("default")))/// <<endl;
-     if o.System === MacOsX then f << /// extern "C" EXPORT ///;
-     f << "void " << fn << "(complex* a, complex* b)" << endl  
-     << "{" << endl 
-     << "  complex ii(0,1);" << endl
-     << "  complex c[" << #constants << "]; " << endl
-     << "  complex node[" << #slp << "];" << endl
-     << "  complex* n = node;" << endl; -- current node      
-     -- hardcode the constants
-     scan(#constants, i-> f << "c[" << i << "] = " << "complex(" <<
-	  realPart constants#i << "," << imaginaryPart constants#i << ");" << endl);
-     scan(#slp, i->(
-	   n := slp#i;
-	   k := first n;
-	   f << "  *n = ";
-	   if k === slpCOPY then (
-	   	if class n#1 === Option and n#1#0 == "const" 
-		then f << "c[" << n#1#1 << "];" 
-		else error "unknown node type"; 
-		)  
-	   else if k === slpMULTIsum then (
-		scan(2..1+n#1, j->(
-			  if class n#j === Option and n#j#0 == "const" 
-			  then f << "c[" << n#j#1 << "]"
-			  else if class n#j === ZZ 
-			  then f << "node[" << i+n#j << "]"
-		     	  else error "unknown node type";
-			  if j < 1+n#1 then f << " + ";
-		     	  ));
-		f << ";";
-		)
-	   else if k === slpPRODUCT then (
-		scan(1..2, j->(
-			  if class n#j === Option then (
-			       if n#j#0 == "in" 
-			       then f << "a[" << n#j#1 << "]"
-			       else if n#j#0 == "const"
-			       then f << "c[" << n#j#1 << "]"
-			       else error "unknown node type"
-			       ) 
-			  else if class n#j === ZZ 
-			  then f << "node[" << i+n#j << "]"
-			  else error "unknown node type";
-			  if j < 2 then f << " * "; 
-			  ));
-		f << ";";
-	   	)
-	   else error "unknown SLP node key";   
-	   f << " n++;" << endl
-	   ));
-      f << "  // creating output" << endl << "  n = b;" << endl;
-      scan(flatten entries S#2, e->(
-	   	f << "  *(n++) = node[" << e << "];" << endl 		
-		));
-      f << "}" << endl << close; 	              
-      )
-
--- create a file <fn>.c with C code for the function named fn that evaluates a preSLP S
--- format:
---   void fn(const complex* a, complex* b)
--- here: input array a
---       output array b 
-preSLPtoC = method(TypicalValue=>Nothing, Options=>{System=>MacOsX})
-preSLPtoC (Sequence,String) := o-> (S,filename)-> (
-     constants := S#0;
-     slp := S#1;
-     fn := "slpFN"; -- function name
-     f := openOut(filename);
-     f << ///
-#include<stdio.h>
-#include<math.h>
-
-typedef struct 
-{
-  double re;  
-  double im;  
-} complex;
-
-inline void init_complex(complex* c, double r, double i) __attribute__((always_inline));
-void init_complex(complex* c, double r, double i)
-{ c->re = r; c->im = i; }
-
-/* #define init_complex(c,r,i) { c->re = r; c->im = i; } */
-
-/* register */ 
-static double r_re, r_im; 
-
-inline set_r(complex c) __attribute__((always_inline));
-inline set_r(complex c) 
-{ r_re = c.re; r_im = c.im; }
-
-/* #define set_r(c) { r_re = c.re; r_im = c.im; } */
-
-inline copy_r_to(complex* c) __attribute__((always_inline));
-inline copy_r_to(complex* c) 
-{ c->re = r_re; c->im = r_im; }
-
-/* #define copy_r_to(c) { c->re = r_re; c->im = r_im; } */
-
-inline add(complex c) __attribute__((always_inline));
-inline add(complex c)
-{ r_re += c.re; r_im += c.im; }
-
-/* #define add(c) { r_re += c.re; r_im += c.im; } */
-
-inline mul(complex c) __attribute__((always_inline));
-inline mul(complex c)
-{ 
-  double t_re = r_re*c.re - r_im*c.im;
-  r_im = r_re*c.im + r_im*c.re;
-  r_re = t_re;
-}
-
-/*#define mul(c) { double t_re = r_re*c.re - r_im*c.im; r_im = r_re*c.im + r_im*c.re; r_re = t_re; } */
-
-/// << endl;
-     -- if o.System === MacOsX then f << ///#define EXPORT __attribute__((visibility("default")))/// <<endl;
-     -- if o.System === MacOsX then f << /// extern "C" EXPORT ///;
-     f << "void " << fn << "(complex* a, complex* b)" << endl  
-     << "{" << endl 
-     << "  complex c[" << #constants << "]; " << endl
-     << "  complex node[" << #slp << "];" << endl
-     << "  complex* cp = c;" << endl
-     << "  complex* n = node;" << endl; -- current node      
-     -- hardcode the constants
-     scan(#constants, i-> f <<  "init_complex(cp," <<
-	  realPart constants#i << "," << imaginaryPart constants#i << "); cp++;" << endl);
-     scan(#slp, i->(
-	   n := slp#i;
-	   k := first n;
-	   if k === slpCOPY then (
-	   	if class n#1 === Option and n#1#0 == "const" 
-		then f << "  *n = c[" << n#1#1 << "];" 
-		else error "unknown node type"; 
-		)  
-	   else if k === slpMULTIsum then (
-		scan(2..1+n#1, j->(
-			  if class n#j === Option and n#j#0 == "const" 
-			  then f << (if j>2 then "add" else "set_r") << "(c[" << n#j#1 << "]); "
-			  else if class n#j === ZZ 
-			  then f << (if j>2 then "add" else "set_r") << "(node[" << i+n#j << "]); "
-		     	  else error "unknown node type";
-		     	  ));
-		f << "copy_r_to(n);";
-		)
-	   else if k === slpPRODUCT then (
-		scan(1..2, j->(
-			  if class n#j === Option then (
-			       if n#j#0 == "in" 
-			       then f << (if j>1 then "mul" else "set_r") << "(a[" << n#j#1 << "]); "
-			       else if n#j#0 == "const"
-			       then f << (if j>1 then "mul" else "set_r") << "(c[" << n#j#1 << "]); "
-			       else error "unknown node type"
-			       ) 
-			  else if class n#j === ZZ 
-			  then f << (if j>1 then "mul" else "set_r") << "(node[" << i+n#j << "]); "
-			  else error "unknown node type";
-			  ));
-		f << "copy_r_to(n);";
-	   	)
-	   else error "unknown SLP node key";   
-	   f << " n++;" << endl
-	   ));
-      f << "  // creating output" << endl << "  n = b;" << endl;
-      scan(flatten entries S#2, e->(
-	   	f << "  *(n++) = node[" << e << "];" << endl 		
-		));
-      f << "}" << endl << close; 	              
-      )
-
-///
-restart
-loadPackage "NumericalAlgebraicGeometry"; debug NumericalAlgebraicGeometry;
-R = CC[x,y,z]
-g = 3*y^2+(2.1+ii)*x
---g = 1 + 2*x^2 + 3*x*y^2 + 4*z^2
---g = random(3,R)
-pre = poly2preSLP g
-g3 = concatPreSLPs {pre,pre,pre}
-g6 = stackPreSLPs {g3,g3}
-eg = evaluatePreSLP(g6,gens R)
-eg_(1,1) == g
---preSLPtoCPP(g6,"slpFN")
-debug Core
-(constMAT, prog) = fromPreSLP(3,g6)
-rSLP = rawSLP(raw constMAT, prog)
-K = CC_53
-params = matrix{{ii_K,1_K,-1_K}}; 
-result = rawEvaluateSLP(rSLP, raw params)
-sub(g, params) - (map(K,result))_(0,0)
-
-///
------------------ SLPs -----------------------------------------------------
--- SLP = (constants, array of ints)
--- constants = one-row matrix
--- array of ints = 
---0  #constants
---1  #inputs 
---2  #rows in output
---3  #columns in output
---4  type of program (slpCOMPILED,slpINTERPRETED,slpPREDICTOR) 
---   OR the beginning of slp operations list
---
---   if COMPILED then {
---5     integer -> used to create the dynamic library filename
---   }
---   else if PREDICTOR then {
---5     predictor type  
---6+    list of catalog numbers of SLPs for Hx,Ht,H
---   } else {
---     list of commands
---     output matrix entries (numbers of nodes) 
---   }
-  
-preSLPinterpretedSLP = method()
-preSLPinterpretedSLP (ZZ,Sequence) := (nIns,S) -> (
--- makes input for rawSLP from pre-slp
-     consts := S#0;
-     slp := S#1;   
-     o := S#2;
-     SLPcounter = SLPcounter + 1;
-     curNode := #consts+nIns;
-     p := {};
-     scan(slp, n->(
-	   k := first n;
-	   if k === slpCOPY then (
-	   	if class n#1 === Option and n#1#0 == "const" then p = p | {slpCOPY} | {n#1#1} 
-		else error "unknown node type" 
-		)  
-	   else if k === slpMULTIsum then (
-		p = p | {slpMULTIsum, n#1} | toList apply(2..1+n#1, 
-		     j->if class n#j === Option and n#j#0 == "const" then n#j#1
-		     else if class n#j === ZZ then curNode+n#j
-		     else error "unknown node type" 
-		     )
-	   	)
-	   else if k === slpPRODUCT then (
-		p = p | {slpPRODUCT} | toList apply(1..2, j->(
-          		       if class n#j === Option then (
-				    if n#j#0 == "in" then #consts + n#j#1
-				    else if n#j#0 == "const" then n#j#1
-				    else error "unknown node type"
-				    ) 
-			       else if class n#j === ZZ then curNode+n#j
-			       else error "unknown node type" 
-			       ))
-		)
-	   else error "unknown SLP node key";   
-	   curNode = curNode + 1;
-	   ));
-     p = {#consts,nIns,numgens target o, numgens source o} | p | {slpEND}
-	 | apply(flatten entries o, e->e+#consts+nIns); 
-     (map(CC^1,CC^(#consts), {consts}), p)
-     )
-
-preSLPcompiledSLP = method(TypicalValue=>Nothing, Options=>{System=>MacOsX, Language=>LanguageC})
-preSLPcompiledSLP (ZZ,Sequence) := o -> (nIns,S) -> (
--- makes input for rawSLP from pre-slp
-     consts := S#0;
-     slp := S#1;   
-     out := S#2;
-     fname := SLPcounter; SLPcounter = SLPcounter + 1; -- this gives libraries distinct names 
-                                                       -- the name of the function stays the same, should it change?
-     curNode := #consts+nIns;
-     p := {#consts,nIns,numgens target out, numgens source out} | {slpCOMPILED}
-          | { fname }; -- "lib_name" 
-     cppName := libPREFIX | toString fname | if o.Language === LanguageCPP then ".cpp" else ".c";
-     libName := libPREFIX | toString fname | if o.System === Linux then ".so" else  ".dylib";
-     (if o.Language === LanguageCPP then preSLPtoCPP else preSLPtoC) (S, cppName, System=>o.System);
-     compileCommand := if o.System === Linux then "gcc -shared -Wl,-soname," | libName | " -o " | libName | " " | cppName | " -lc -fPIC"
-     else if o.System === MacOsX and version#"pointer size" === 8 then "g++ -m64 -dynamiclib -O2 -o " | libName | " " | cppName
-     else if o.System === MacOsX then (
-     	  "gcc -dynamiclib -O1 -o " | libName | " " | cppName
-	  )
-     else error "unknown OS";
-     print compileCommand;
-     run compileCommand;      
-     (map(CC^1,CC^(#consts), {consts}), p)
-     )
+load "./NumericalAlgebraicGeometry/SLP.m2"
 
 NAGtrace = method()
 NAGtrace ZZ := l -> (gbTrace=l; oldDBG:=DBG; DBG=l; oldDBG);

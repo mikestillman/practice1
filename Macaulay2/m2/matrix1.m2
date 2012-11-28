@@ -111,7 +111,6 @@ map(Module,Module,List) := Matrix => options -> (M,N,p) -> (
      if all(p, o -> (
 	       instance(o,Option)
 	       and #o == 2
-	       and class o#1 === R
 	       and class o#0 === Sequence
 	       and #o#0 == 2
 	       and class o#0#0 === ZZ
@@ -120,7 +119,7 @@ map(Module,Module,List) := Matrix => options -> (M,N,p) -> (
 	  ) then (		    -- sparse list of entries
      	  rows := apply(p, o -> o#0#0);
 	  cols := apply(p, o -> o#0#1);
-	  ents := toSequence apply(p, o -> raw o#1);
+	  ents := toSequence apply(p, o -> raw promote(o#1,R));
 	  pref := 0;					    -- ???
 	  m := (
 	       if class N === Module
@@ -490,7 +489,9 @@ eulers(Ideal) := (I) -> eulers((ring I)^1/I)
 euler(Ideal) := (I) -> euler((ring I)^1/I)
 
 RingElement * Ideal := Ideal => (r,I) -> ideal (r ** generators I)
+Ideal * RingElement := Ideal => (I,r) -> ideal ((generators I)**r)
 ZZ * Ideal := (r,I) -> ideal (r * generators I)
+Ideal * ZZ := (I,r) -> ideal (r * generators I)
 
 generators Ideal := Matrix => opts -> (I) -> I.generators
 Ideal_* := I -> first entries generators I
@@ -624,14 +625,34 @@ homology(Matrix,Matrix) := Module => opts -> (g,f) -> (
 	  subquotient(h, if N.?relations then f | N.relations else f)))
 
 Hom(Matrix, Module) := Matrix => (f,N) -> (
-     if isFreeModule source f and isFreeModule target f
-     then transpose f ** N
-     else notImplemented())
+     -- this function was written by David Eisenbud
+     --say f: M --> M'
+     mfdual := transpose matrix f;
+     cN := cover N;
+     --Hom(M,N)
+     MN := Hom(source f,N);
+     --Hom(M',N)    
+     M'N :=Hom(target f, N);
+     --Hom(f,N): Hom(M',N) --> Hom(M,N)
+     map(MN, M'N, ((mfdual**cN) * generators M'N)//generators MN)
+     )
 
-Hom(Module, Matrix) := Matrix => (N,f) -> (
-     if isFreeModule N 
-     then dual N ** f
-     else notImplemented())
+Hom(Module, Matrix) := Matrix => (M,g) -> (
+     -- this function was written by David Eisenbud
+     --say g: N --> N'	 
+     mg := matrix g;     
+     cMdual := dual cover M;
+     --Hom(M,N)
+     MN := Hom(M,source g);
+     --Hom(M,N')    
+     MN' := Hom(M,target g);
+     --Hom(f,N): Hom(M',N) --> Hom(M,N)
+     map(MN', MN, ((cMdual**mg)*generators MN)//generators MN')
+     )
+
+Hom(Matrix,Matrix) := Matrix => (f,g) -> (
+     -- this function was written by David Eisenbud
+     Hom(source f, g)*Hom(f, source g))
 
 dual(Matrix) := Matrix => {} >> o -> f -> (
      R := ring f;
